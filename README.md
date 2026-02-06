@@ -47,7 +47,7 @@ npm -v
 
 Clone the repository:
 
-git clone https://github.com/contornosdesignsprojects/abc-frontend.git
+git clone https://github.com/Fernando2300/abc-frontend.git
 
 Navigate into the project directory:
 
