@@ -1,16 +1,139 @@
-# React + Vite
+# ABC Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend application for the ABC project, built with React, Vite, and Tailwind CSS v4.
 
-Currently, two official plugins are available:
+This repository contains the full frontend setup, layout structure, linting configuration, and documentation required to start feature development.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## Technologies Used
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React (with Vite)
+- Tailwind CSS v4
+- JavaScript (ESM)
+- ESLint
+- npm
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Project Structure
+
+src/
+pages/
+components/
+hooks/
+services/
+App.jsx
+main.jsx
+index.css
+
+---
+
+## Prerequisites
+
+Before running the project, make sure you have:
+
+- Node.js (version 18 or higher recommended)
+- npm installed
+
+You can verify by running:
+
+node -v  
+npm -v
+
+---
+
+## Installation
+
+Clone the repository:
+
+git clone https://github.com/contornosdesignsprojects/abc-frontend.git
+
+Navigate into the project directory:
+
+cd abc-frontend
+
+Install dependencies:
+
+npm install
+
+---
+
+## Running the Project
+
+Start the development server:
+
+npm run dev
+
+The application will be available at:
+
+http://localhost:5173
+
+---
+
+## Available Scripts
+
+npm run dev  
+Starts the development server with hot reload.
+
+npm run build  
+Builds the project for production.
+
+npm run preview  
+Previews the production build locally.
+
+npm run lint  
+Runs ESLint to check code quality.
+
+---
+
+## Tailwind CSS
+
+This project uses Tailwind CSS version 4.
+
+Tailwind is configured globally in index.css and works across all components and pages.
+
+---
+
+## Development Guidelines
+
+- All new features should be developed in the develop branch
+- Follow existing folder structure
+- Keep components small and reusable
+- Use Tailwind utility classes instead of custom CSS when possible
+- Ensure the project builds without errors before committing
+
+---
+
+## Git Workflow
+
+- main: protected, stable branch
+- develop: active development branch
+- Use clear commit messages following this pattern:
+
+feat: new feature  
+fix: bug fix  
+chore: tooling or configuration changes
+
+---
+
+## Quick Start Guide
+
+1. Clone the repository
+2. Install dependencies with npm install
+3. Run npm run dev
+4. Open http://localhost:5173 in the browser
+5. Start building features
+
+---
+
+## Project Status
+
+Base frontend infrastructure completed.  
+Ready for feature development and backend integration.
+
+---
+
+## Maintainer
+
+Contornos Designs
