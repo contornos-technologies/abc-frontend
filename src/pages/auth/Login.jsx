@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext'; 
+import { login } from '../../services/authService';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { handleLogin } = useAuth(); // ✅ NOVO
+
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState('');
@@ -11,43 +15,36 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
-  
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
 
-  const errors = { email: '', password: '' };
-  if (!email) errors.email = 'O email é obrigatório.';
-  else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Insira um email válido.';
-  if (!password) errors.password = 'A senha é obrigatória.';
-  else if (password.length < 6) errors.password = 'A senha deve ter pelo menos 6 caracteres.';
+    const errors = { email: '', password: '' };
+    if (!email) errors.email = 'O email é obrigatório.';
+    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Insira um email válido.';
+    if (!password) errors.password = 'A senha é obrigatória.';
+    else if (password.length < 6) errors.password = 'A senha deve ter pelo menos 6 caracteres.';
 
-  setFieldErrors(errors);
-  if (errors.email || errors.password) return;
+    setFieldErrors(errors);
+    if (errors.email || errors.password) return;
 
-  setLoading(true);
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Credenciais inválidas.');
+    setLoading(true);
+    try {
+      const data = await login({ email, password });
 
-    // ✅ MUDANÇA 1: escolhe o storage consoante rememberMe
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem('token', data.token);
-    storage.setItem('user', JSON.stringify(data.user));
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem('token', data.token);
+      storage.setItem('user', JSON.stringify(data.user));
+        handleLogin(data);
+        navigate(data.user.role === 'ADMIN' ? '/admin' : '/profile');
 
-    navigate(data.user.role === 'ADMIN' ? '/admin' : '/profile');
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -80,6 +77,7 @@ const handleSubmit = async (e) => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
 
+          {/* EMAIL */}
           <div>
             <label htmlFor="email" className="block mb-2" style={{ color: '#0A3956' }}>
               Email
@@ -88,27 +86,30 @@ const handleSubmit = async (e) => {
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <Mail size={20} style={{ color: '#6C757D' }} />
               </div>
-<input
-  type="email"
-  id="email"
-  value={email}
-  onChange={(e) => {
-    setEmail(e.target.value);
-    setFieldErrors((prev) => ({ ...prev, email: '' }));
-  }}
-  placeholder="seu@email.com"
-  className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 focus:outline-none ${
-    fieldErrors.email ? 'border-red-400' : 'border-gray-300'
-  }`}
-  onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(246, 146, 32, 0.3)'; }}
-  onBlur={(e) => { e.target.style.boxShadow = ''; }}
-/>
-{fieldErrors.email && (
-  <p className="text-red-500 text-xs mt-1 animate-slideDown">{fieldErrors.email}</p>
-)}
+
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setFieldErrors((prev) => ({ ...prev, email: '' }));
+                }}
+                placeholder="seu@email.com"
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 focus:outline-none ${
+                  fieldErrors.email ? 'border-red-400' : 'border-gray-300'
+                }`}
+                onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(246, 146, 32, 0.3)'; }}
+                onBlur={(e) => { e.target.style.boxShadow = ''; }}
+              />
+
+              {fieldErrors.email && (
+                <p className="text-red-500 text-xs mt-1 animate-slideDown">{fieldErrors.email}</p>
+              )}
             </div>
           </div>
 
+          {/* PASSWORD */}
           <div>
             <label htmlFor="password" className="block mb-2" style={{ color: '#0A3956' }}>
               Senha
@@ -117,25 +118,27 @@ const handleSubmit = async (e) => {
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <Lock size={20} style={{ color: '#6C757D' }} />
               </div>
+
               <input
-  type={showPassword ? 'text' : 'password'}
-  id="password"
-  value={password}
-  onChange={(e) => {
-    setPassword(e.target.value);
-    setFieldErrors((prev) => ({ ...prev, password: '' }));
-  }}
-  placeholder="........"
-  className={`w-full pl-10 pr-12 py-3 border rounded-lg transition-all duration-200 focus:outline-none ${
-    fieldErrors.password ? 'border-red-400' : 'border-gray-300'
-  }`}
-  onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(246, 146, 32, 0.3)'; }}
-  onBlur={(e) => { e.target.style.boxShadow = ''; }}
-  required
-/>
-{fieldErrors.password && (
-  <p className="text-red-500 text-xs mt-1 animate-slideDown">{fieldErrors.password}</p>
-)}
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setFieldErrors((prev) => ({ ...prev, password: '' }));
+                }}
+                placeholder="........"
+                className={`w-full pl-10 pr-12 py-3 border rounded-lg transition-all duration-200 focus:outline-none ${
+                  fieldErrors.password ? 'border-red-400' : 'border-gray-300'
+                }`}
+                onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(246, 146, 32, 0.3)'; }}
+                onBlur={(e) => { e.target.style.boxShadow = ''; }}
+              />
+
+              {fieldErrors.password && (
+                <p className="text-red-500 text-xs mt-1 animate-slideDown">{fieldErrors.password}</p>
+              )}
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -149,6 +152,7 @@ const handleSubmit = async (e) => {
             </div>
           </div>
 
+          {/* REMEMBER */}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -163,23 +167,14 @@ const handleSubmit = async (e) => {
                 Lembrar-me
               </label>
             </div>
-            <a
-              href="#"
-              style={{ color: '#F69220' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#0A3956'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#F69220'; }}
-            >
-              Esqueceu a senha?
-            </a>
           </div>
 
+          {/* BUTTON */}
           <button
             type="submit"
             disabled={loading}
             className="w-full py-3 px-6 rounded-lg transition-all duration-200 active:scale-95 disabled:opacity-60"
             style={{ backgroundColor: '#F69220', color: 'white', fontWeight: 'bold' }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#E67E0D'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#F69220'; }}
           >
             {loading ? 'A entrar...' : 'Entrar'}
           </button>
@@ -191,8 +186,6 @@ const handleSubmit = async (e) => {
           <Link
             to="/signup"
             style={{ color: '#F69220', fontWeight: '500' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#0A3956'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = '#F69220'; }}
           >
             Criar conta
           </Link>
