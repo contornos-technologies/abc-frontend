@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/layout/PrivateRoute';
 import Login from './pages/auth/Login';
-import Signup from './pages/auth/Signup'
+import Signup from './pages/auth/Signup';
+import Profile from './pages/student/Profile';
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
 
           {/* Estudante — requer login */}
           <Route path="/profile" element={
-            <PrivateRoute><div>Profile (em breve)</div></PrivateRoute>
+            <PrivateRoute><Profile/></PrivateRoute>
           } />
           <Route path="/enrollment" element={
             <PrivateRoute><div>Enrollment (em breve)</div></PrivateRoute>
