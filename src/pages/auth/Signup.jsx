@@ -31,23 +31,10 @@ export default function Signup() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // ── Validações ──────────────────────────────────────────────
   const validateFullName = (name) => name.trim().length >= 3;
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone) => {
-    const digits = phone.replace(/\D/g, '');
-    return digits.length >= 9;
-  };
-
-  const validateBI = (bi) => {
-    const biRegex = /^\d{9}[A-Z]{2}\d{3}$/;
-    return biRegex.test(bi);
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhone = (phone) => phone.replace(/\D/g, '').length >= 9;
+  const validateBI = (bi) => /^\d{9}[A-Z]{2}\d{3}$/.test(bi);
 
   const getPasswordStrength = (password) => {
     if (password.length < 6) return 0;
@@ -74,11 +61,9 @@ export default function Signup() {
     passwordsMatch &&
     acceptTerms;
 
-  // ── Handlers ────────────────────────────────────────────────
   const handleBlur   = (field) => setTouched((prev) => ({ ...prev, [field]: true }));
   const handleChange = (field, value) => setFormData((prev) => ({ ...prev, [field]: value }));
 
-  // ← COLA AQUI ↓
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid) return;
@@ -89,10 +74,10 @@ export default function Signup() {
 
     try {
       await signup({
-        name:     formData.fullName,
+        fullName: formData.fullName,
         email:    formData.email,
         password: formData.password,
-        phone:    `+244${formData.phone.replace(/\D/g, '')}`, // ← adiciona +244 automaticamente
+        phone:    `+244${formData.phone.replace(/\D/g, '')}`,
         bi:       formData.bi,
       });
 
@@ -100,17 +85,25 @@ export default function Signup() {
       setTimeout(() => navigate('/login'), 2000);
 
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao criar conta.');
+      const msg = err.response?.data?.error || err.response?.data?.message || '';
+
+      if (msg.toLowerCase().includes('email')) {
+        setError('Este email já está registado. Tenta fazer login ou usa outro email.');
+      } else if (msg.toLowerCase().includes('bi')) {
+        setError('Este Bilhete de Identidade já está registado.');
+      } else if (msg.toLowerCase().includes('telefone') || msg.toLowerCase().includes('phone')) {
+        setError('Este número de telefone já está registado.');
+      } else {
+        setError(msg || 'Erro ao criar conta. Tenta novamente.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ── Helpers de estilo ────────────────────────────────────────
   const focusStyle  = (e) => { e.target.style.borderColor = '#F69220'; e.target.style.boxShadow = '0 0 0 2px rgba(246,146,32,0.2)'; };
   const resetShadow = (e) => { e.target.style.boxShadow = 'none'; };
 
-  // ── Render ───────────────────────────────────────────────────
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
@@ -128,20 +121,6 @@ export default function Signup() {
           </p>
           <div className="h-0.5 w-full" style={{ backgroundColor: '#F69220' }} />
         </div>
-
-        {/* Mensagem de erro global */}
-        {error && (
-          <div className="bg-red-50 border border-red-300 text-red-600 rounded-lg p-3 mb-4 text-sm text-center">
-            {error}
-          </div>
-        )}
-
-        {/* Mensagem de sucesso */}
-        {success && (
-          <div className="bg-green-50 border border-green-300 text-green-600 rounded-lg p-3 mb-4 text-sm text-center">
-            {success}
-          </div>
-        )}
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -214,7 +193,7 @@ export default function Signup() {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
-                placeholder="+244 900 000 000"
+                placeholder="923 000 000"
                 className="w-full h-12 pl-20 pr-4 rounded-lg border transition-all outline-none"
                 style={{ borderColor: touched.phone && !validatePhone(formData.phone) ? '#DC3545' : '#D1D5DB' }}
                 onFocus={focusStyle}
@@ -300,8 +279,6 @@ export default function Signup() {
                 }
               </button>
             </div>
-
-            {/* Indicador de força da senha */}
             {formData.password && (
               <div className="mt-2">
                 <div className="flex gap-1 mb-1">
@@ -418,6 +395,21 @@ export default function Signup() {
               </span>
             ) : 'Criar Conta'}
           </button>
+
+          {/* Erro — abaixo do botão */}
+          {error && (
+            <div className="bg-red-50 border border-red-300 text-red-600 rounded-lg p-3 text-sm text-center">
+              {error}
+            </div>
+          )}
+
+          {/* Sucesso — abaixo do botão */}
+          {success && (
+            <div className="bg-green-50 border border-green-300 text-green-600 rounded-lg p-3 text-sm text-center">
+              {success}
+            </div>
+          )}
+
         </form>
 
         {/* Rodapé */}

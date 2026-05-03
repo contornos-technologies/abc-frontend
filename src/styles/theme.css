@@ -1,0 +1,76 @@
+/*
+ * theme.css — Variáveis CSS do sistema de design
+ * Gerado a partir do Figma Make, adaptado para o projecto ABC.
+ *
+ * IMPORTANTE: Estas variáveis são usadas pelos componentes shadcn/ui (ui/).
+ * As cores do ABC (laranja, azul, etc.) estão definidas directamente nas
+ * classes Tailwind dos componentes (bg-[#F69220], etc.) e NÃO aqui.
+ * Os dois sistemas coexistem sem conflito.
+ */
+
+:root {
+  --font-size: 16px;
+
+  /* Cores base */
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+
+  /* Primário — usado pelos componentes shadcn */
+  --primary: #030213;
+  --primary-foreground: #ffffff;
+
+  /* Secundário */
+  --secondary: #f4f6f9;
+  --secondary-foreground: #030213;
+
+  /* Muted */
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+
+  /* Accent */
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+
+  /* Destrutivo */
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+
+  /* Bordas e inputs */
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --ring: #a1a1aa;
+
+  /* Border radius base */
+  --radius: 0.625rem;
+
+  /* Pesos tipográficos */
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+}
+
+/* Mapear variáveis para Tailwind (usado por componentes shadcn) */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 { font-size: 1.5rem;   font-weight: var(--font-weight-medium); line-height: 1.5; }
+  h2 { font-size: 1.25rem;  font-weight: var(--font-weight-medium); line-height: 1.5; }
+  h3 { font-size: 1.125rem; font-weight: var(--font-weight-medium); line-height: 1.5; }
+  h4 { font-size: 1rem;     font-weight: var(--font-weight-medium); line-height: 1.5; }
+}

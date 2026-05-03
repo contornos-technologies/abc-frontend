@@ -1,44 +1,71 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
+export const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ NOVO
-
-  useEffect(() => {
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
-    const savedUser =
-      localStorage.getItem("user") || sessionStorage.getItem("user");
-
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser)); // ✅ user completo em vez de { logged: true }
+export function AuthProvider({ children }) {
+  const [token, setToken]   = useState(() => localStorage.getItem('abc_token'));
+  const [user, setUser]     = useState(() => {
+    try {
+      const t = localStorage.getItem('abc_token');
+      if (!t) return null;
+      // Decode JWT payload (base64)
+      const payload = JSON.parse(atob(t.split('.')[1]));
+      return payload; // { userId, role, studentId, fullName?, email? }
+    } catch {
+      return null;
     }
+  });
 
-    setLoading(false); // ✅ só depois de verificar
-  }, []);
+  // Enrich user with profile data after login
+  // so Sidebar can show fullName + email
+  const [profile, setProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('abc_profile');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  const handleLogin = (data) => {
-    setUser(data.user);
-  };
+  function login(newToken, profileData) {
+    localStorage.setItem('abc_token', newToken);
+    if (profileData) {
+      localStorage.setItem('abc_profile', JSON.stringify(profileData));
+      setProfile(profileData);
+    }
+    try {
+      const payload = JSON.parse(atob(newToken.split('.')[1]));
+      setUser(payload);
+    } catch {
+      setUser(null);
+    }
+    setToken(newToken);
+  }
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
+  function logout() {
+    localStorage.removeItem('abc_token');
+    localStorage.removeItem('abc_profile');
+    setToken(null);
     setUser(null);
-  };
+    setProfile(null);
+  }
 
-  const getToken = () =>
-    localStorage.getItem("token") || sessionStorage.getItem("token");
+  // Merge JWT payload with profile data so Sidebar gets fullName + email
+  const enrichedUser = user
+    ? {
+        ...user,
+        fullName: profile?.fullName || user?.fullName || '',
+        email:    profile?.user?.email || profile?.email || user?.email || '',
+      }
+    : null;
 
   return (
-    <AuthContext.Provider value={{ user, loading, handleLogin, handleLogout, getToken }}>
+    <AuthContext.Provider value={{ user: enrichedUser, token, login, logout, setProfile }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  return useContext(AuthContext);
+}

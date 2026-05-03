@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; 
-import { login } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
+import { login as loginService } from '../../services/authService';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { handleLogin } = useAuth(); // ✅ NOVO
+  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
+  const [rememberMe, setRememberMe]     = useState(false);
+  const [email, setEmail]               = useState('');
+  const [password, setPassword]         = useState('');
+  const [error, setError]               = useState('');
+  const [loading, setLoading]           = useState(false);
+  const [fieldErrors, setFieldErrors]   = useState({ email: '', password: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,16 +31,35 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const data = await login({ email, password });
+      const data = await loginService({ email, password });
 
-      const storage = rememberMe ? localStorage : sessionStorage;
-      storage.setItem('token', data.token);
-      storage.setItem('user', JSON.stringify(data.user));
-        handleLogin(data);
-        navigate(data.user.role === 'ADMIN' ? '/admin' : '/profile');
+      const payload = JSON.parse(atob(data.token.split('.')[1]));
+      const userInfo = data.user || payload;
+
+      // ✅ Bloqueio do admin
+      if (userInfo.role === 'ADMIN') {
+        setError('Acesso não permitido. Use o portal administrativo.');
+        return;
+      }
+
+      login(data.token, userInfo);
+      navigate('/student/profile');
 
     } catch (err) {
-      setError(err.message);
+      const status = err.response?.status;
+      const msg    = err.response?.data?.error || err.response?.data?.message || '';
+
+      if (status === 401) {
+        setError('Email ou senha incorrectos. Verifica os teus dados e tenta novamente.');
+      } else if (status === 404) {
+        setError('Não encontrámos nenhuma conta com este email. Verifica ou cria uma conta nova.');
+      } else if (status === 429) {
+        setError('Demasiadas tentativas. Aguarda alguns minutos e tenta novamente.');
+      } else if (!navigator.onLine) {
+        setError('Sem ligação à internet. Verifica a tua rede e tenta novamente.');
+      } else {
+        setError(msg || 'Erro ao fazer login. Tenta novamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -69,12 +88,6 @@ export default function Login() {
           <p style={{ color: '#6C757D' }}>Acesse sua conta para continuar</p>
         </div>
 
-        {error && (
-          <div className="animate-slideDown bg-red-50 border border-red-300 text-red-600 rounded-lg p-3 mb-4 text-sm text-center">
-            {error}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-5">
 
           {/* EMAIL */}
@@ -86,7 +99,6 @@ export default function Login() {
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <Mail size={20} style={{ color: '#6C757D' }} />
               </div>
-
               <input
                 type="email"
                 id="email"
@@ -100,11 +112,10 @@ export default function Login() {
                   fieldErrors.email ? 'border-red-400' : 'border-gray-300'
                 }`}
                 onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(246, 146, 32, 0.3)'; }}
-                onBlur={(e) => { e.target.style.boxShadow = ''; }}
+                onBlur={(e)  => { e.target.style.boxShadow = ''; }}
               />
-
               {fieldErrors.email && (
-                <p className="text-red-500 text-xs mt-1 animate-slideDown">{fieldErrors.email}</p>
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
               )}
             </div>
           </div>
@@ -118,7 +129,6 @@ export default function Login() {
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <Lock size={20} style={{ color: '#6C757D' }} />
               </div>
-
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="password"
@@ -132,13 +142,11 @@ export default function Login() {
                   fieldErrors.password ? 'border-red-400' : 'border-gray-300'
                 }`}
                 onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(246, 146, 32, 0.3)'; }}
-                onBlur={(e) => { e.target.style.boxShadow = ''; }}
+                onBlur={(e)  => { e.target.style.boxShadow = ''; }}
               />
-
               {fieldErrors.password && (
-                <p className="text-red-500 text-xs mt-1 animate-slideDown">{fieldErrors.password}</p>
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
               )}
-
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -146,7 +154,7 @@ export default function Login() {
               >
                 {showPassword
                   ? <EyeOff size={20} style={{ color: '#6C757D' }} />
-                  : <Eye size={20} style={{ color: '#6C757D' }} />
+                  : <Eye    size={20} style={{ color: '#6C757D' }} />
                 }
               </button>
             </div>
@@ -179,14 +187,18 @@ export default function Login() {
             {loading ? 'A entrar...' : 'Entrar'}
           </button>
 
+          {/* ERRO — abaixo do botão */}
+          {error && (
+            <div className="bg-red-50 border border-red-300 text-red-600 rounded-lg p-3 text-sm text-center">
+              {error}
+            </div>
+          )}
+
         </form>
 
         <div className="text-center mt-6">
           <span style={{ color: '#6C757D' }}>Nao tem conta? </span>
-          <Link
-            to="/signup"
-            style={{ color: '#F69220', fontWeight: '500' }}
-          >
+          <Link to="/signup" style={{ color: '#F69220', fontWeight: '500' }}>
             Criar conta
           </Link>
         </div>
