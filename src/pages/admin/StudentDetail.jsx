@@ -388,7 +388,7 @@ export default function StudentDetail() {
               <SectionCard title="Dados Pessoais" icon={User} color="#0A3956">
                 <InfoRow icon={User}       label="Nome completo"   value={student.fullName} />
                 <InfoRow icon={CreditCard} label="BI"              value={student.bi} mono />
-                <InfoRow icon={Phone}      label="Telefone"        value={student.phone} />
+                <InfoRow icon={Phone}      label="Telefone"        value={student.user?.phone} /> {/* ✅ V12.3 — era student.phone */}
                 <InfoRow icon={Mail}       label="Email"           value={student.user?.email} />
                 <InfoRow icon={Calendar}   label="Data nascimento" value={formatDate(student.birthDate)} />
                 <InfoRow icon={Calendar}   label="Registado em"    value={formatDate(student.createdAt)} />

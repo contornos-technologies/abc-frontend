@@ -199,9 +199,9 @@ function PageSkeleton() {
 // ─── Modal de Aprovação ───────────────────────────────────────────────────────
 
 function ApproveModal({ payment, onClose, onSuccess }) {
-  const target    = payment.studentTarget;
-  const student   = target?.student;
-  const isPartial = payment.status === 'PARTIAL';
+  const target      = payment.studentTarget;
+  const student     = target?.student;
+  const isPartial   = payment.status === 'PARTIAL';
   const minRequired = Math.ceil(Number(target?.finalAmount || 0) * 0.7);
 
   const [amountPaid, setAmountPaid] = useState(String(Number(payment.remainingBalance || 0)));
@@ -356,7 +356,6 @@ function ApproveModal({ payment, onClose, onSuccess }) {
             </select>
           </div>
 
-          {/* Erro — em baixo, padrão signup/login */}
           {error && (
             <div className="flex items-start gap-3 bg-[#F8D7DA] border border-[#F5C6CB] rounded-lg px-4 py-3">
               <ErrorIcon size={16} className="text-[#DC3545] flex-shrink-0 mt-0.5" />
@@ -368,7 +367,7 @@ function ApproveModal({ payment, onClose, onSuccess }) {
           )}
         </div>
 
-        {/* Botões em baixo — padrão signup/login */}
+        {/* Botões */}
         <div className="px-6 pb-6 flex flex-col gap-2">
           <button
             onClick={handleSubmit}
@@ -406,10 +405,11 @@ export default function PaymentsManagement() {
   const [pageError, setPageError]      = useState(null);
   const [selectedPayment, setSelected] = useState(null);
 
-  const [search, setSearch]        = useState('');
-  const [statusFilter, setStatus]  = useState('Todos');
-  const [yearFilter, setYear]      = useState('Todos');
+  const [search, setSearch]       = useState('');
+  const [statusFilter, setStatus] = useState('Todos');
+  const [yearFilter, setYear]     = useState('Todos');
 
+  // ── Carregar pagamentos ───────────────────────────────────────────────────
   const loadData = useCallback(async () => {
     setLoading(true);
     setPageError(null);
@@ -432,22 +432,30 @@ export default function PaymentsManagement() {
     await loadData();
   };
 
+  // ── Exportar CSV — CORRIGIDO ──────────────────────────────────────────────
   const handleExportCsv = async () => {
     try {
-      const res = await api.get('/admin/reports/payments/csv', { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const token = localStorage.getItem('abc_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/admin/reports/payments/csv`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `pagamentos_${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = `pagamentos_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
-      window.URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);
     } catch {
       alert('Não foi possível exportar o CSV. Tenta novamente.');
     }
   };
 
+  // ── Filtros ───────────────────────────────────────────────────────────────
   const availableYears = ['Todos', ...new Set(
-    payments.map(p => p.studentTarget?.year).filter(Boolean).sort((a,b) => b - a)
+    payments.map(p => p.studentTarget?.year).filter(Boolean).sort((a, b) => b - a)
   )];
 
   const filtered = payments.filter(p => {
@@ -461,9 +469,10 @@ export default function PaymentsManagement() {
     );
   });
 
-  const totalArrecadado = payments.reduce((s,p) => s + Number(p.amountPaid || 0), 0);
-  const totalPendente   = payments.filter(p => p.status === 'PENDING').reduce((s,p) => s + Number(p.remainingBalance || 0), 0);
-  const totalParcial    = payments.filter(p => p.status === 'PARTIAL').reduce((s,p) => s + Number(p.remainingBalance || 0), 0);
+  // ── KPIs ──────────────────────────────────────────────────────────────────
+  const totalArrecadado = payments.reduce((s, p) => s + Number(p.amountPaid || 0), 0);
+  const totalPendente   = payments.filter(p => p.status === 'PENDING').reduce((s, p) => s + Number(p.remainingBalance || 0), 0);
+  const totalParcial    = payments.filter(p => p.status === 'PARTIAL').reduce((s, p) => s + Number(p.remainingBalance || 0), 0);
 
   const activeFilters = [
     statusFilter !== 'Todos' && { key: 'status', label: PAYMENT_CONFIG[statusFilter]?.label || statusFilter },
@@ -512,7 +521,7 @@ export default function PaymentsManagement() {
           </div>
           <button
             onClick={handleExportCsv}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white flex-shrink-0"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white flex-shrink-0 hover:opacity-90 transition-opacity"
             style={{ backgroundColor: '#0A3956' }}
           >
             <Download size={15} />

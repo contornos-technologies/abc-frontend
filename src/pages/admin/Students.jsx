@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Phone, ChevronRight,
-  UserPlus, X, SlidersHorizontal, RefreshCw, AlertCircle,
+  UserPlus, X, SlidersHorizontal, RefreshCw, AlertCircle, Download,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -224,6 +224,27 @@ export default function Students() {
 
   useEffect(() => { loadStudents(); }, [loadStudents]);
 
+  // ── Exportar CSV ──────────────────────────────────────────────────────────
+  const handleExportCsv = async () => {
+    try {
+      const token = localStorage.getItem('abc_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/admin/reports/students/csv`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `estudantes_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Não foi possível exportar o CSV. Tenta novamente.');
+    }
+  };
+
   const filteredStudents = useMemo(() => {
     let list = allStudents;
     if (search.trim()) {
@@ -289,6 +310,15 @@ export default function Students() {
               className="p-2 rounded-lg text-gray-400 hover:text-[#0A3956] hover:bg-blue-50 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
+            </button>
+            {/* Botão Exportar CSV — NOVO */}
+            <button
+              onClick={handleExportCsv}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: '#0A3956' }}
+            >
+              <Download className="w-4 h-4" />
+              Exportar CSV
             </button>
             <button
               onClick={() => navigate('/admin/students/new')}
@@ -401,7 +431,7 @@ export default function Students() {
                   const name          = s.fullName ?? '—';
                   const email         = getEmail(s);
                   const bi            = s.bi ?? '—';
-                  const phone         = s.phone ?? '—';
+                  const phone         = s.user?.phone ?? '—';
                   const subjectNames  = getSubjectNames(s);
                   const subjectCount  = getSubjectCount(s);
                   const scholarship   = getScholarship(s);
@@ -582,7 +612,7 @@ export default function Students() {
                 const name          = s.fullName ?? '—';
                 const email         = getEmail(s);
                 const bi            = s.bi ?? '—';
-                const phone         = s.phone ?? '—';
+                const phone         = s.user?.phone ?? '—';
                 const subjectNames  = getSubjectNames(s);
                 const subjectCount  = getSubjectCount(s);
                 const scholarship   = getScholarship(s);
@@ -620,7 +650,6 @@ export default function Students() {
                         <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Pgto</span>
                         <PaymentBadge value={paymentStatus} />
                       </div>
-                      {/* Disciplinas — mobile */}
                       {!hasTarget ? (
                         <span className="text-xs text-gray-400 italic self-center">Sem inscrição</span>
                       ) : subjectCount > 0 ? (

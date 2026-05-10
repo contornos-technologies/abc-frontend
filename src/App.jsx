@@ -24,6 +24,10 @@ import Cards from './pages/admin/Cards';
 import Notifications from './pages/admin/Notifications';
 import Exams from './pages/admin/Exams';
 import ExamDetail from './pages/admin/ExamDetail';
+import Analytics from './pages/admin/Analytics';
+
+// Publics
+import Home from './pages/public/Home';
 
 function App() {
   return (
@@ -37,7 +41,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/portal/acesso" element={<AdminLogin />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Home />} />
           <Route path="/about"   element={<div>About (em breve)</div>} />
           <Route path="/courses" element={<div>Courses (em breve)</div>} />
           <Route path="/contact" element={<div>Contact (em breve)</div>} />
@@ -73,14 +77,13 @@ function App() {
           }>
             <Route index element={<Dashboard />} />
             <Route path="students" element={<Students />} />
-            {/* Adicionar aqui à medida que forem criados: */}
             <Route path="students/:id" element={<StudentDetail />} />
             <Route path="payments" element={<PaymentsManagement />} />
             <Route path="cards" element={<Cards />} />    
             <Route path="notifications" element={<Notifications />} /> 
             <Route path="exams" element={<Exams />} />
             <Route path="exams/:id" element={<ExamDetail />} />
-            {/* <Route path="analytics" element={<Analytics />} /> */}
+            <Route path="analytics" element={<Analytics />} />
           </Route>
 
         </Routes>

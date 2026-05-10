@@ -9,9 +9,9 @@ export default function PersonalInfoCard({ student, onUpdate }) {
   const [success, setSuccess]     = useState(false);
 
   const [form, setForm] = useState({
-    fullName:  student?.fullName  || '',
-    email:     student?.user?.email || '',
-    phone:     student?.phone     || '',
+    fullName:  student?.fullName        || '',
+    email:     student?.user?.email     || '',
+    phone:     student?.user?.phone     || '', // ✅ V12.3 — era student?.phone
   });
 
   function handleChange(e) {
@@ -22,7 +22,7 @@ export default function PersonalInfoCard({ student, onUpdate }) {
     setForm({
       fullName: student?.fullName     || '',
       email:    student?.user?.email  || '',
-      phone:    student?.phone        || '',
+      phone:    student?.user?.phone  || '', // ✅ V12.3 — era student?.phone
     });
     setError('');
     setSuccess(false);
@@ -110,10 +110,10 @@ export default function PersonalInfoCard({ student, onUpdate }) {
       {!isEditing ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
-            { label: 'NOME COMPLETO',         value: student?.fullName || '—' },
-            { label: 'EMAIL',                 value: student?.user?.email || '—' },
-            { label: 'BILHETE DE IDENTIDADE', value: student?.bi || '—' },
-            { label: 'TELEFONE',              value: student?.phone || '—' },
+            { label: 'NOME COMPLETO',         value: student?.fullName        || '—' },
+            { label: 'EMAIL',                 value: student?.user?.email     || '—' },
+            { label: 'BILHETE DE IDENTIDADE', value: student?.bi              || '—' },
+            { label: 'TELEFONE',              value: student?.user?.phone     || '—' }, // ✅ V12.3 — era student?.phone
           ].map((info) => (
             <div key={info.label} className="bg-[#F8FAFC] p-4 rounded-lg">
               <div className="text-[11px] uppercase tracking-wider text-[#6B7280] mb-2">

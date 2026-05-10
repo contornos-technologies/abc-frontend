@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { login as loginService } from '../../services/authService';
@@ -10,28 +10,27 @@ export default function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe]     = useState(false);
-  const [email, setEmail]               = useState('');
+  const [identifier, setIdentifier]     = useState('');
   const [password, setPassword]         = useState('');
   const [error, setError]               = useState('');
   const [loading, setLoading]           = useState(false);
-  const [fieldErrors, setFieldErrors]   = useState({ email: '', password: '' });
+  const [fieldErrors, setFieldErrors]   = useState({ identifier: '', password: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    const errors = { email: '', password: '' };
-    if (!email) errors.email = 'O email é obrigatório.';
-    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Insira um email válido.';
+    const errors = { identifier: '', password: '' };
+    if (!identifier) errors.identifier = 'O email ou telefone é obrigatório.';
     if (!password) errors.password = 'A senha é obrigatória.';
     else if (password.length < 6) errors.password = 'A senha deve ter pelo menos 6 caracteres.';
 
     setFieldErrors(errors);
-    if (errors.email || errors.password) return;
+    if (errors.identifier || errors.password) return;
 
     setLoading(true);
     try {
-      const data = await loginService({ email, password });
+      const data = await loginService({ identifier, password });
 
       const payload = JSON.parse(atob(data.token.split('.')[1]));
       const userInfo = data.user || payload;
@@ -50,9 +49,9 @@ export default function Login() {
       const msg    = err.response?.data?.error || err.response?.data?.message || '';
 
       if (status === 401) {
-        setError('Email ou senha incorrectos. Verifica os teus dados e tenta novamente.');
+        setError('Email/telefone ou senha incorrectos. Verifica os teus dados e tenta novamente.');
       } else if (status === 404) {
-        setError('Não encontrámos nenhuma conta com este email. Verifica ou cria uma conta nova.');
+        setError('Não encontrámos nenhuma conta com estes dados. Verifica ou cria uma conta nova.');
       } else if (status === 429) {
         setError('Demasiadas tentativas. Aguarda alguns minutos e tenta novamente.');
       } else if (!navigator.onLine) {
@@ -90,32 +89,33 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* EMAIL */}
+          {/* EMAIL OU TELEFONE */}
           <div>
-            <label htmlFor="email" className="block mb-2" style={{ color: '#0A3956' }}>
-              Email
+            <label htmlFor="identifier" className="block mb-2" style={{ color: '#0A3956' }}>
+              Email ou Telefone
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Mail size={20} style={{ color: '#6C757D' }} />
+                <User size={20} style={{ color: '#6C757D' }} />
               </div>
               <input
-                type="email"
-                id="email"
-                value={email}
+                type="text"
+                id="identifier"
+                value={identifier}
                 onChange={(e) => {
-                  setEmail(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, email: '' }));
+                  setIdentifier(e.target.value);
+                  setFieldErrors((prev) => ({ ...prev, identifier: '' }));
                 }}
-                placeholder="seu@email.com"
+                placeholder="seu@email.com ou 923 456 789"
+                autoComplete="username"
                 className={`w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200 focus:outline-none ${
-                  fieldErrors.email ? 'border-red-400' : 'border-gray-300'
+                  fieldErrors.identifier ? 'border-red-400' : 'border-gray-300'
                 }`}
                 onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(246, 146, 32, 0.3)'; }}
                 onBlur={(e)  => { e.target.style.boxShadow = ''; }}
               />
-              {fieldErrors.email && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+              {fieldErrors.identifier && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.identifier}</p>
               )}
             </div>
           </div>

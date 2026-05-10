@@ -142,11 +142,6 @@ function StudentRow({ student, selected, onToggle, onOpenCard, generatingId }) {
         </div>
       </td>
 
-      {/* Curso */}
-      <td className="px-4 py-3 text-sm text-[#374151] hidden lg:table-cell">
-        {student.targetCourse || student.course || '—'}
-      </td>
-
       {/* Pagamento */}
       <td className="px-4 py-3">
         <PaymentBadge status={student.paymentStatus || student.payment?.status} />
@@ -156,7 +151,7 @@ function StudentRow({ student, selected, onToggle, onOpenCard, generatingId }) {
       <td className="px-4 py-3 text-xs text-[#6C757D] hidden md:table-cell">
         {student.scholarshipType === 'FULL'
           ? <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#0A395618] text-[#0A3956]">Bolsa Completa</span>
-          : student.scholarshipType === 'PARTIAL'
+          : student.scholarshipType === 'PARTIAL_50' || student.scholarshipType === 'PARTIAL_75'
             ? <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#F6922018] text-[#F69220]">Bolsa Parcial</span>
             : '—'
         }
@@ -221,11 +216,8 @@ function StudentCard({ student, selected, onToggle, onOpenCard, generatingId }) 
           {student.scholarshipType === 'FULL' && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#0A395618] text-[#0A3956]">Bolsa Completa</span>
           )}
-          {student.scholarshipType === 'PARTIAL' && (
+          {(student.scholarshipType === 'PARTIAL_50' || student.scholarshipType === 'PARTIAL_75') && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#F6922018] text-[#F69220]">Bolsa Parcial</span>
-          )}
-          {student.targetCourse && (
-            <span className="text-xs text-[#6C757D]">{student.targetCourse}</span>
           )}
         </div>
 
@@ -270,9 +262,9 @@ export default function Cards() {
         params: { page, limit: 20 },
       });
       const data = res.data?.students ?? res.data?.data ?? res.data;
-const total = res.data?.total;
-setStudents(Array.isArray(data) ? data : []);
-if (total !== undefined) setPagination(prev => ({ ...prev, total }));
+      const total = res.data?.total;
+      setStudents(Array.isArray(data) ? data : []);
+      if (total !== undefined) setPagination(prev => ({ ...prev, total }));
     } catch (err) {
       if (err.response?.status === 401) { navigate('/portal/acesso'); return; }
       setPageError(getErrorMessage(err));
@@ -301,61 +293,60 @@ if (total !== undefined) setPagination(prev => ({ ...prev, total }));
   };
 
   // ── Abrir cartão individual ───────────────────────────────────────────────
-const openCard = async (studentId) => {
-  setGeneratingId(studentId);
-  try {
-    const res = await api.get(`/admin/cards/student/${studentId}`, {
-      responseType: 'blob',
-    });
-    const blob = new Blob([res.data], { type: 'application/pdf' });
-    const url  = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-  } catch (err) {
-    if (err.response?.status === 401) { navigate('/portal/acesso'); return; }
-    alert('Erro ao gerar o cartão. Tenta novamente.');
-  } finally {
-    setGeneratingId(null);
-  }
-};
+  const openCard = async (studentId) => {
+    setGeneratingId(studentId);
+    try {
+      const res = await api.get(`/admin/cards/student/${studentId}`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url  = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (err) {
+      if (err.response?.status === 401) { navigate('/portal/acesso'); return; }
+      alert('Erro ao gerar o cartão. Tenta novamente.');
+    } finally {
+      setGeneratingId(null);
+    }
+  };
 
   // ── Imprimir folha A4 (seleccionados) ────────────────────────────────────
   const printSelected = async () => {
-  if (selected.size === 0) return;
-  setPrintingSheet(true);
-  try {
-    const ids = Array.from(selected).join(',');
-    const res = await api.get(`/admin/cards/sheet`, {
-      params: { ids },
-      responseType: 'blob',
-    });
-    const blob = new Blob([res.data], { type: 'application/pdf' });
-    const url  = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-    setSelected(new Set());
-  } catch (err) {
-    alert('Erro ao gerar a folha. Tenta novamente.');
-  } finally {
-    setPrintingSheet(false);
-  }
-};
-
+    if (selected.size === 0) return;
+    setPrintingSheet(true);
+    try {
+      const ids = Array.from(selected).join(',');
+      const res = await api.get(`/admin/cards/sheet`, {
+        params: { ids },
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url  = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setSelected(new Set());
+    } catch (err) {
+      alert('Erro ao gerar a folha. Tenta novamente.');
+    } finally {
+      setPrintingSheet(false);
+    }
+  };
 
   // ── Imprimir folha A4 (últimos 10) ───────────────────────────────────────
- const printLatest = async () => {
-  setPrintingSheet(true);
-  try {
-    const res = await api.get(`/admin/cards/sheet`, {
-      responseType: 'blob',
-    });
-    const blob = new Blob([res.data], { type: 'application/pdf' });
-    const url  = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-  } catch (err) {
-    alert('Erro ao gerar a folha. Tenta novamente.');
-  } finally {
-    setPrintingSheet(false);
-  }
-};
+  const printLatest = async () => {
+    setPrintingSheet(true);
+    try {
+      const res = await api.get(`/admin/cards/sheet`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url  = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (err) {
+      alert('Erro ao gerar a folha. Tenta novamente.');
+    } finally {
+      setPrintingSheet(false);
+    }
+  };
 
   // ── Filtros locais ────────────────────────────────────────────────────────
   const filtered = students.filter(s => {
@@ -407,7 +398,6 @@ const openCard = async (studentId) => {
 
         {/* Botões de impressão */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Imprimir seleccionados — só aparece quando há selecção */}
           {selected.size > 0 && (
             <button
               onClick={printSelected}
@@ -422,7 +412,6 @@ const openCard = async (studentId) => {
             </button>
           )}
 
-          {/* Imprimir últimos 10 */}
           <button
             onClick={printLatest}
             disabled={printingSheet || students.length === 0}
@@ -503,7 +492,6 @@ const openCard = async (studentId) => {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[#F8F9FA] border-b border-[#DEE2E6]">
-                {/* Checkbox — seleccionar todos */}
                 <th className="px-4 py-3 w-10">
                   <button onClick={toggleAll} className="flex items-center justify-center">
                     {allSelected
@@ -513,7 +501,6 @@ const openCard = async (studentId) => {
                   </button>
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6C757D] uppercase tracking-wide">Estudante</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6C757D] uppercase tracking-wide hidden lg:table-cell">Curso</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6C757D] uppercase tracking-wide">Pagamento</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6C757D] uppercase tracking-wide hidden md:table-cell">Bolsa</th>
                 <th className="px-4 py-3"></th>
@@ -537,7 +524,6 @@ const openCard = async (studentId) => {
 
       {/* ── CARDS — Mobile ── */}
       <div className="flex flex-col gap-3 md:hidden">
-        {/* Seleccionar todos — mobile */}
         {filtered.length > 0 && (
           <button
             onClick={toggleAll}
