@@ -96,16 +96,32 @@ export default function ExamDetail() {
       // Normalizar resposta — suporta { data: {...} } e {...} directamente
       const examData = examRes.data?.data ?? examRes.data
 
+      // ✅ CORRIGIDO V12.5 — Bug principal: questões a 0 após import
+      //
+      // O endpoint GET /admin/exams/:id/questions devolve:
+      //   { sections: [{ id, questions: [...] }], unassignedQuestions: [...] }
+      // NÃO devolve um array plano — por isso qData era sempre [].
+      //
+      // Solução: extrair questões de dentro de cada secção (flatMap)
+      // e garantir que cada questão tem sectionId (pode estar apenas na secção pai).
       const qRaw = qRes.data?.data ?? qRes.data
-      const qData = Array.isArray(qRaw)
-        ? qRaw
-        : Array.isArray(qRaw?.questions)
-          ? qRaw.questions
-          : Array.isArray(qRaw?.data)
-            ? qRaw.data
-            : Array.isArray(qRaw?.items)
-              ? qRaw.items
+
+      const questoesDasSeccoes = Array.isArray(qRaw?.sections)
+        ? qRaw.sections.flatMap((s) =>
+            Array.isArray(s.questions)
+              ? s.questions.map((q) => ({
+                  ...q,
+                  sectionId: q.sectionId ?? s.id,
+                }))
               : []
+          )
+        : []
+
+      const questoesSemSeccao = Array.isArray(qRaw?.unassignedQuestions)
+        ? qRaw.unassignedQuestions
+        : []
+
+      const qData = [...questoesDasSeccoes, ...questoesSemSeccao]
 
       // DEBUG TEMPORÁRIO — apagar depois
       console.log(
@@ -118,12 +134,17 @@ export default function ExamDetail() {
         Array.isArray(qData) ? 'é array' : 'NÃO é array'
       )
       console.log(
-        '[loadExam] qData raw:',
+        '[loadExam] qData raw (primeiros 400 chars):',
         JSON.stringify(qRes.data).substring(0, 400)
       )
+      console.log('[loadExam] questions sample:', qData.slice(0, 2))
       console.log(
-        '[loadExam] questions sample:',
-        Array.isArray(qData) ? qData.slice(0, 2) : qData
+        '[loadExam] total questões extraídas:',
+        qData.length,
+        '| das secções:',
+        questoesDasSeccoes.length,
+        '| sem secção:',
+        questoesSemSeccao.length
       )
 
       if (!examData || typeof examData !== 'object' || !examData.id) {
@@ -135,7 +156,7 @@ export default function ExamDetail() {
       }
 
       setExam(examData)
-      setQuestions(Array.isArray(qData) ? qData : [])
+      setQuestions(qData)
     } catch (err) {
       if (err.response?.status === 401) {
         navigate('/portal/acesso')
