@@ -9,11 +9,11 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const [scrolled,     setScrolled]     = useState(false);
-  const [menuOpen,     setMenuOpen]     = useState(false);
-  const [activePath,   setActivePath]   = useState("/");
+  const [scrolled,   setScrolled]   = useState(false);
+  const [menuOpen,   setMenuOpen]   = useState(false);
+  const [activePath, setActivePath] = useState("/");
 
-  // ── efeito de scroll ───────────────────────────────────────────────────────
+  // ── efeito de scroll ──────────────────────────────────────────────────────
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
@@ -33,20 +33,22 @@ export default function Navbar() {
   }, []);
 
   // ── cores dinâmicas baseadas no scroll ────────────────────────────────────
-  const isLight    = scrolled || menuOpen;
-  const textColor  = isLight ? "text-[#0A3956]" : "text-white";
-  const logoColor  = isLight ? "text-[#0A3956]" : "text-white";
-  const iconColor  = isLight ? "#0A3956"        : "#ffffff";
+  const isScrolled = scrolled || menuOpen;
+
+  // transparente: textos escuros (hero claro)
+  // scroll: fundo azul #0A3956, textos brancos
+  const textColor = isScrolled ? "text-white"       : "text-[#071C35]";
+  const iconColor = isScrolled ? "#ffffff"           : "#071C35";
 
   return (
     <>
-      {/* ── barra principal ─────────────────────────────────────────────── */}
+      {/* ── barra principal ───────────────────────────────────────────────── */}
       <header
         className={`
-          fixed top-0 left-0 right-0 z-50 h-16
+          fixed top-0 left-0 right-0 z-50 h-20
           transition-all duration-300 ease-in-out
-          ${isLight
-            ? "bg-white shadow-md"
+          ${isScrolled
+            ? "bg-[#0A3956] shadow-lg"
             : "bg-transparent"}
         `}
       >
@@ -55,14 +57,31 @@ export default function Navbar() {
           {/* ── logo ──────────────────────────────────────────────────────── */}
           <a
             href="/"
-            className={`flex items-center gap-2 font-bold text-xl tracking-tight transition-colors duration-300 ${logoColor} hover:opacity-80`}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity duration-200"
           >
-            <GraduationCap size={26} color={iconColor} strokeWidth={2.2} />
-            <span>ABC</span>
+            {/* ícone quadrado */}
+            <div className={`
+              w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300
+              ${isScrolled
+                ? "bg-white/10 border border-white/20"
+                : "bg-white border-2 border-[#0A3956]/20 shadow-sm"}
+            `}>
+              <GraduationCap size={24} color={isScrolled ? "#ffffff" : "#0A3956"} strokeWidth={2.2} />
+            </div>
+
+            {/* nome duas linhas */}
+            <div>
+              <p className={`text-[18px] font-extrabold leading-none transition-colors duration-300 ${textColor}`}>
+                ABC
+              </p>
+              <p className={`text-[13px] mt-0.5 transition-colors duration-300 ${isScrolled ? "text-white/70" : "text-[#071C35]/60"}`}>
+                Centro Preparatório
+              </p>
+            </div>
           </a>
 
           {/* ── links desktop ─────────────────────────────────────────────── */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((link) => {
               const isActive = activePath === link.href;
               return (
@@ -70,20 +89,16 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`
-                    relative px-4 py-2 text-sm font-medium rounded-lg
-                    transition-all duration-200
-                    ${textColor}
+                    text-sm font-semibold transition-all duration-200
                     ${isActive
-                      ? "text-[#F69220]"
-                      : `hover:text-[#F69220] ${isLight ? "hover:bg-orange-50" : "hover:bg-white/10"}`
+                      ? "text-[#1565A8]"
+                      : `${textColor} hover:text-[#1565A8]`
                     }
+                    ${!isScrolled && isActive ? "text-[#1565A8]" : ""}
+                    ${isScrolled && isActive  ? "text-white font-bold" : ""}
                   `}
                 >
                   {link.label}
-                  {/* linha laranja no link activo */}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-[#F69220] rounded-full" />
-                  )}
                 </a>
               );
             })}
@@ -92,7 +107,7 @@ export default function Navbar() {
           {/* ── botões de acção + hamburger ───────────────────────────────── */}
           <div className="flex items-center gap-3">
 
-            {/* Criar Conta — link simples, só desktop */}
+            {/* Inscrição — link simples, só desktop */}
             <a
               href="/signup"
               className={`
@@ -101,7 +116,7 @@ export default function Navbar() {
                 hover:text-[#F69220] ${textColor}
               `}
             >
-              Criar Conta
+              Inscrição
             </a>
 
             {/* Portal do Aluno — botão laranja, só desktop */}
@@ -111,9 +126,10 @@ export default function Navbar() {
                 hidden sm:inline-flex items-center gap-2
                 bg-[#F69220] hover:bg-[#e0821a]
                 text-white text-sm font-semibold
-                px-5 py-2.5 rounded-lg
+                px-5 py-2.5 rounded-2xl
                 transition-all duration-200
-                shadow-sm hover:shadow-md
+                shadow-lg shadow-orange-200/50
+                hover:shadow-xl hover:shadow-orange-200/60
               "
             >
               Portal do Aluno
@@ -124,13 +140,13 @@ export default function Navbar() {
               onClick={() => setMenuOpen((prev) => !prev)}
               className={`
                 md:hidden p-2 rounded-lg transition-colors duration-200
-                ${isLight ? "hover:bg-gray-100" : "hover:bg-white/10"}
+                ${isScrolled ? "hover:bg-white/10" : "hover:bg-black/5"}
               `}
               aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
             >
               {menuOpen
-                ? <X     size={22} color={iconColor} />
-                : <Menu  size={22} color={iconColor} />
+                ? <X    size={22} color={iconColor} />
+                : <Menu size={22} color={iconColor} />
               }
             </button>
           </div>
@@ -140,11 +156,13 @@ export default function Navbar() {
       {/* ── menu mobile ───────────────────────────────────────────────────── */}
       <div
         className={`
-          fixed top-16 left-0 right-0 z-40
+          fixed top-20 left-0 right-0 z-40
           bg-white shadow-lg border-t border-gray-100
           transition-all duration-300 ease-in-out
           md:hidden
-          ${menuOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"}
+          ${menuOpen
+            ? "opacity-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 -translate-y-2 pointer-events-none"}
         `}
       >
         <nav className="max-w-[1200px] mx-auto px-4 py-4 flex flex-col gap-1">
@@ -159,8 +177,8 @@ export default function Navbar() {
                   px-4 py-3 rounded-lg text-sm font-medium
                   transition-colors duration-200
                   ${isActive
-                    ? "text-[#F69220] bg-orange-50 font-semibold"
-                    : "text-[#0A3956] hover:text-[#F69220] hover:bg-orange-50"
+                    ? "text-[#1565A8] bg-blue-50 font-semibold"
+                    : "text-[#071C35] hover:text-[#1565A8] hover:bg-blue-50"
                   }
                 `}
               >
@@ -172,7 +190,7 @@ export default function Navbar() {
           {/* botões no menu mobile */}
           <div className="pt-3 mt-2 border-t border-gray-100 flex flex-col gap-2">
 
-            {/* Criar Conta — secundário */}
+            {/* Inscrição — secundário */}
             <a
               href="/signup"
               onClick={() => setMenuOpen(false)}
@@ -180,12 +198,12 @@ export default function Navbar() {
                 flex items-center justify-center
                 border-2 border-[#0A3956]
                 text-[#0A3956] text-sm font-semibold
-                px-5 py-3 rounded-lg w-full
+                px-5 py-3 rounded-xl w-full
                 transition-all duration-200
                 hover:bg-gray-50
               "
             >
-              Criar Conta
+              Inscrição
             </a>
 
             {/* Portal do Aluno — principal */}
@@ -196,7 +214,7 @@ export default function Navbar() {
                 flex items-center justify-center
                 bg-[#F69220] hover:bg-[#e0821a]
                 text-white text-sm font-semibold
-                px-5 py-3 rounded-lg w-full
+                px-5 py-3 rounded-xl w-full
                 transition-all duration-200
               "
             >

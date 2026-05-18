@@ -1,10 +1,12 @@
 import PublicLayout from "../../components/public/PublicLayout";
+import Hero from "../../components/public/sections/Hero";
+import Stats from "../../components/public/sections/Stats";
 
 export default function Home() {
   return (
     <PublicLayout>
-      {/* Hero temporário só para testar o Navbar */}
-      <div className="min-h-screen bg-[#0A3956]" />
+      <Hero />
+      <Stats />
     </PublicLayout>
   );
 }
