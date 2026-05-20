@@ -43,7 +43,7 @@ function App() {
           <Route path="/portal/acesso" element={<AdminLogin />} />
           <Route path="/" element={<Home />} />
           <Route path="/about"   element={<div>About (em breve)</div>} />
-          <Route path="/courses" element={<div>Courses (em breve)</div>} />
+          <Route path="/servicos" element={<div>Serviços (em breve)</div>} />
           <Route path="/contact" element={<div>Contact (em breve)</div>} />
 
           {/* ──────────────── */}
