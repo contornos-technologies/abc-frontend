@@ -57,7 +57,7 @@ export default function WhyChoose() {
 
   return (
 
-    <section className="w-full bg-[#FAFBFD] pt-14 pb-24 lg:pt-16 lg:pb-32">
+    <section className="w-full bg-[#FAFBFD] pt-14 pb-24 lg:pt-16 lg:pb-24">
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
