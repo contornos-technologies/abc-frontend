@@ -3,6 +3,7 @@ import Hero from "../../components/public/sections/Hero";
 import Stats from "../../components/public/sections/Stats";
 import WhyChoose from "../../components/public/sections/WhyChoose";
 import Disciplines from "../../components/public/sections/Disciplines";
+import Pricing from "../../components/public/sections/Pricing";
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
       <Stats />
       <WhyChoose />
       <Disciplines />
+      <Pricing />
     </PublicLayout>
   );
 }
