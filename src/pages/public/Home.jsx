@@ -4,6 +4,7 @@ import Stats from "../../components/public/sections/Stats";
 import WhyChoose from "../../components/public/sections/WhyChoose";
 import Disciplines from "../../components/public/sections/Disciplines";
 import Pricing from "../../components/public/sections/Pricing";
+import Testimonials from "../../components/public/sections/Testimonials";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <WhyChoose />
       <Disciplines />
       <Pricing />
+       <Testimonials />
     </PublicLayout>
   );
 }
