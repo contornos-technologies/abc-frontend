@@ -110,6 +110,7 @@ export default function Navbar() {
             {/* Inscrição — link simples, só desktop */}
             <a
               href="/signup"
+              
               className={`
                 hidden sm:inline-flex text-sm font-medium
                 transition-colors duration-300

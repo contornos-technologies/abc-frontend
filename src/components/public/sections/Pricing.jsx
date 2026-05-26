@@ -157,8 +157,8 @@ export default function Pricing() {
 
                 ${tier.popular
                   ? `
-                    border-2 border-[#F7941D]
-                    shadow-[0_10px_30px_rgba(247,148,29,0.12)]
+                    border-2 border-[#F69220]
+                    shadow-[0_10px_30px_rgba(246,146,32,0.12)]
                     lg:scale-[1.03]
                   `
                   : `
@@ -178,7 +178,7 @@ export default function Pricing() {
                     top-0
                     -translate-x-1/2
                     -translate-y-1/2
-                    bg-[#F7941D]
+                    bg-[#F69220]
                     text-white
                     text-[13px]
                     font-semibold
@@ -215,7 +215,7 @@ export default function Pricing() {
                     lg:text-[38px]
                     leading-none
                     font-extrabold
-                    text-[#F7941D]
+                    text-[#F69220]
                     mb-4
                   "
                 >
@@ -416,8 +416,8 @@ export default function Pricing() {
               px-8
               sm:px-10
               py-4
-              bg-[#F7941D]
-              hover:bg-[#ea860f]
+              bg-[#F69220]
+              hover:bg-[#e0821a]
               text-white
               text-[16px]
               sm:text-lg
@@ -426,7 +426,7 @@ export default function Pricing() {
               transition-all
               duration-300
               hover:-translate-y-0.5
-              shadow-[0_10px_30px_rgba(247,148,29,0.18)]
+              shadow-[0_10px_30px_rgba(246,146,32,0.18)]
             "
           >
             Começar Inscrição →

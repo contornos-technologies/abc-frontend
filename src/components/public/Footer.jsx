@@ -1,4 +1,12 @@
-import { GraduationCap, MapPin, Phone, Mail, MessageCircle, Facebook, Instagram } from "lucide-react";
+import {
+  GraduationCap,
+  MapPin,
+  Phone,
+  Mail,
+  MessageCircle,
+  Facebook,
+  Instagram
+} from "lucide-react";
 
 const NAV_LINKS = [
   { label: "Início",   href: "/" },
@@ -8,7 +16,7 @@ const NAV_LINKS = [
 ];
 
 const DISCIPLINES = [
-   "Matemática",
+  "Matemática",
   "Física",
   "Química",
   "Biologia",
@@ -71,21 +79,19 @@ export default function Footer() {
 
           {/* ── coluna 1 — identidade ──────────────────────────────────── */}
           <div className="lg:col-span-1">
-            {/* logo */}
+
             <a
               href="/"
               className="flex items-center gap-2 font-bold text-xl tracking-tight text-white hover:opacity-80 transition-opacity duration-200"
             >
-              <GraduationCap size={26} strokeWidth={2.2} className="text-[#F69220]" />
+              <GraduationCap size={26} strokeWidth={2.2} className="text-[#FFB347]" />
               <span>ABC</span>
             </a>
 
-            {/* frase de missão */}
             <p className="mt-4 text-sm text-white/70 leading-relaxed">
               Preparamos os melhores estudantes de Huambo para o sucesso nos exames e na vida.
             </p>
 
-            {/* redes sociais */}
             <div className="mt-6 flex items-center gap-3">
               {SOCIAL_LINKS.map((social) => {
                 const Icon = social.icon;
@@ -98,7 +104,7 @@ export default function Footer() {
                     aria-label={social.label}
                     className="
                       w-9 h-9 rounded-lg
-                      bg-white/10 hover:bg-[#F69220]
+                      bg-white/10 hover:bg-[#FFB347]
                       flex items-center justify-center
                       transition-all duration-200
                     "
@@ -112,7 +118,7 @@ export default function Footer() {
 
           {/* ── coluna 2 — navegação ───────────────────────────────────── */}
           <div>
-            <h3 className="text-[#F69220] text-sm font-semibold uppercase tracking-widest mb-5">
+            <h3 className="text-[#FFB347] text-sm font-semibold uppercase tracking-widest mb-5">
               Navegação
             </h3>
             <ul className="space-y-3">
@@ -139,7 +145,7 @@ export default function Footer() {
 
           {/* ── coluna 3 — disciplinas ─────────────────────────────────── */}
           <div>
-            <h3 className="text-[#F69220] text-sm font-semibold uppercase tracking-widest mb-5">
+            <h3 className="text-[#FFB347] text-sm font-semibold uppercase tracking-widest mb-5">
               Disciplinas
             </h3>
             <ul className="space-y-3">
@@ -158,18 +164,20 @@ export default function Footer() {
 
           {/* ── coluna 4 — contacto ────────────────────────────────────── */}
           <div>
-            <h3 className="text-[#F69220] text-sm font-semibold uppercase tracking-widest mb-5">
+            <h3 className="text-[#FFB347] text-sm font-semibold uppercase tracking-widest mb-5">
               Contacto
             </h3>
+
             <ul className="space-y-4">
               {CONTACT_INFO.map((item, index) => {
                 const Icon = item.icon;
+
                 const content = (
                   <div className="flex items-start gap-3">
                     <Icon
                       size={16}
                       strokeWidth={2}
-                      className="text-[#F69220] mt-0.5 shrink-0"
+                      className="text-[#FFB347] mt-0.5 shrink-0"
                     />
                     <span className="text-sm text-white/70 hover:text-white transition-colors duration-200">
                       {item.text}
@@ -205,12 +213,10 @@ export default function Footer() {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 
-            {/* copyright */}
             <p className="text-xs text-white/50">
               © {year} ABC — Academia Berço do Conhecimento. Todos os direitos reservados.
             </p>
 
-            {/* links legais */}
             <div className="flex items-center gap-6">
               <a
                 href="/privacidade"

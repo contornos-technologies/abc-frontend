@@ -189,7 +189,7 @@ export default function Disciplines() {
                 left-0
                 h-full
                 w-[5px]
-                bg-[#F7941D]
+                bg-[#F69220]
               "
             />
 
