@@ -28,6 +28,7 @@ import Analytics from './pages/admin/Analytics';
 
 // Publics
 import Home from './pages/public/Home';
+import Contact from './pages/public/Contact';
 
 function App() {
   return (
@@ -42,10 +43,9 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/portal/acesso" element={<AdminLogin />} />
           <Route path="/" element={<Home />} />
-          <Route path="/about"   element={<div>About (em breve)</div>} />
+           <Route path="/sobre" element={<div>Sobre (em breve)</div>} />
           <Route path="/servicos" element={<div>Serviços (em breve)</div>} />
-          <Route path="/contact" element={<div>Contact (em breve)</div>} />
-
+           <Route path="/contacto" element={<Contact />} />
           {/* ──────────────── */}
           {/* ESTUDANTE        */}
           {/* ──────────────── */}
