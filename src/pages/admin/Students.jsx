@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Phone, ChevronRight,
@@ -198,6 +198,21 @@ export default function Students() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
 
+  // ── Dropdown exportar ─────────────────────────────────────────────────────
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportRef = useRef(null);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setExportOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const hasActiveFilters = search || paymentFilter || scholarFilter || yearFilter;
 
   const clearFilters = () => {
@@ -224,8 +239,9 @@ export default function Students() {
 
   useEffect(() => { loadStudents(); }, [loadStudents]);
 
-  // ── Exportar CSV ──────────────────────────────────────────────────────────
+  // ── Exportar CSV Estudantes ───────────────────────────────────────────────
   const handleExportCsv = async () => {
+    setExportOpen(false);
     try {
       const token = localStorage.getItem('abc_token');
       const response = await fetch(
@@ -242,6 +258,28 @@ export default function Students() {
       URL.revokeObjectURL(url);
     } catch {
       alert('Não foi possível exportar o CSV. Tenta novamente.');
+    }
+  };
+
+  // ── Exportar CSV Bolsas ───────────────────────────────────────────────────
+  const handleExportScholarshipsCsv = async () => {
+    setExportOpen(false);
+    try {
+      const token = localStorage.getItem('abc_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/admin/reports/scholarships/csv`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bolsas_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Não foi possível exportar o CSV de bolsas. Tenta novamente.');
     }
   };
 
@@ -311,15 +349,51 @@ export default function Students() {
             >
               <RefreshCw className="w-4 h-4" />
             </button>
-            {/* Botão Exportar CSV — NOVO */}
-            <button
-              onClick={handleExportCsv}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: '#0A3956' }}
-            >
-              <Download className="w-4 h-4" />
-              Exportar CSV
-            </button>
+
+            {/* ── Dropdown Exportar Relatórios ── */}
+            <div className="relative" ref={exportRef}>
+              <button
+                onClick={() => setExportOpen((prev) => !prev)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: '#0A3956' }}
+              >
+                <Download className="w-4 h-4" />
+                Exportar Relatórios
+                <svg
+                  className={`w-3 h-3 ml-1 transition-transform duration-200 ${exportOpen ? 'rotate-180' : ''}`}
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {exportOpen && (
+                <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
+                  <button
+                    onClick={handleExportCsv}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0A3956] transition-colors"
+                  >
+                    <Download className="w-4 h-4 flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-medium">Lista de Estudantes</p>
+                      <p className="text-xs text-gray-400">Todos os estudantes</p>
+                    </div>
+                  </button>
+                  <div className="border-t border-gray-100" />
+                  <button
+                    onClick={handleExportScholarshipsCsv}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0A3956] transition-colors"
+                  >
+                    <Download className="w-4 h-4 flex-shrink-0" />
+                    <div className="text-left">
+                      <p className="font-medium">Lista de Bolsas</p>
+                      <p className="text-xs text-gray-400">Estudantes com bolsa</p>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button
               onClick={() => navigate('/admin/students/new')}
               className="hidden sm:inline-flex items-center gap-2 bg-[#28A745] hover:bg-[#218838] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"

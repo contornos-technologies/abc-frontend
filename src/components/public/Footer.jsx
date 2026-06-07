@@ -7,12 +7,13 @@ import {
   Facebook,
   Instagram
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const NAV_LINKS = [
-  { label: "Início",   href: "/" },
-  { label: "Sobre",    href: "/sobre" },
-  { label: "Serviços", href: "/servicos" },
-  { label: "Contacto", href: "/contacto" },
+  { label: "Início",   to: "/" },
+  { label: "Sobre",    to: "/sobre" },
+  { label: "Serviços", to: "/servicos" },
+  { label: "Contacto", to: "/contacto" },
 ];
 
 const DISCIPLINES = [
@@ -28,43 +29,16 @@ const DISCIPLINES = [
 ];
 
 const SOCIAL_LINKS = [
-  {
-    label: "Facebook",
-    href: "#",
-    icon: Facebook,
-  },
-  {
-    label: "Instagram",
-    href: "#",
-    icon: Instagram,
-  },
-  {
-    label: "WhatsApp",
-    href: "https://wa.me/244900000000",
-    icon: MessageCircle,
-  },
+  { label: "Facebook",  href: "#",                          icon: Facebook },
+  { label: "Instagram", href: "#",                          icon: Instagram },
+  { label: "WhatsApp",  href: "https://wa.me/244900000000", icon: MessageCircle },
 ];
 
 const CONTACT_INFO = [
-  {
-    icon: MapPin,
-    text: "Huambo, Angola",
-  },
-  {
-    icon: Phone,
-    text: "+244 900 000 000",
-    href: "tel:+244900000000",
-  },
-  {
-    icon: Mail,
-    text: "geral@abc-centro.ao",
-    href: "mailto:geral@abc-centro.ao",
-  },
-  {
-    icon: MessageCircle,
-    text: "WhatsApp",
-    href: "https://wa.me/244900000000",
-  },
+  { icon: MapPin,        text: "Huambo, Angola" },
+  { icon: Phone,         text: "+244 900 000 000", href: "tel:+244900000000" },
+  { icon: Mail,          text: "geral@abc-centro.ao", href: "mailto:geral@abc-centro.ao" },
+  { icon: MessageCircle, text: "WhatsApp", href: "https://wa.me/244900000000" },
 ];
 
 export default function Footer() {
@@ -74,19 +48,18 @@ export default function Footer() {
     <footer className="bg-[#0A3956] text-white">
 
       {/* ── corpo principal ─────────────────────────────────────────────── */}
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
           {/* ── coluna 1 — identidade ──────────────────────────────────── */}
           <div className="lg:col-span-1">
-
-            <a
-              href="/"
+            <Link
+              to="/"
               className="flex items-center gap-2 font-bold text-xl tracking-tight text-white hover:opacity-80 transition-opacity duration-200"
             >
               <GraduationCap size={26} strokeWidth={2.2} className="text-[#FFB347]" />
               <span>ABC</span>
-            </a>
+            </Link>
 
             <p className="mt-4 text-sm text-white/70 leading-relaxed">
               Preparamos os melhores estudantes de Huambo para o sucesso nos exames e na vida.
@@ -123,22 +96,22 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               {NAV_LINKS.map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
                     className="text-sm text-white/70 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>
-                <a
-                  href="/login"
+                <Link
+                  to="/login"
                   className="text-sm text-white/70 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
                 >
                   Portal do Aluno
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -151,12 +124,12 @@ export default function Footer() {
             <ul className="space-y-3">
               {DISCIPLINES.map((disc) => (
                 <li key={disc}>
-                  <a
-                    href="/servicos"
+                  <Link
+                    to="/servicos"
                     className="text-sm text-white/70 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
                   >
                     {disc}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -167,18 +140,13 @@ export default function Footer() {
             <h3 className="text-[#FFB347] text-sm font-semibold uppercase tracking-widest mb-5">
               Contacto
             </h3>
-
             <ul className="space-y-4">
               {CONTACT_INFO.map((item, index) => {
                 const Icon = item.icon;
 
                 const content = (
                   <div className="flex items-start gap-3">
-                    <Icon
-                      size={16}
-                      strokeWidth={2}
-                      className="text-[#FFB347] mt-0.5 shrink-0"
-                    />
+                    <Icon size={16} strokeWidth={2} className="text-[#FFB347] mt-0.5 shrink-0" />
                     <span className="text-sm text-white/70 hover:text-white transition-colors duration-200">
                       {item.text}
                     </span>
@@ -218,18 +186,18 @@ export default function Footer() {
             </p>
 
             <div className="flex items-center gap-6">
-              <a
-                href="/privacidade"
+              <Link
+                to="/privacidade"
                 className="text-xs text-white/50 hover:text-white/80 transition-colors duration-200"
               >
                 Política de Privacidade
-              </a>
-              <a
-                href="/termos"
+              </Link>
+              <Link
+                to="/termos"
                 className="text-xs text-white/50 hover:text-white/80 transition-colors duration-200"
               >
                 Termos de Uso
-              </a>
+              </Link>
             </div>
 
           </div>

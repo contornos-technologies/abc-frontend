@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { label: "Contacto", href: "/contacto" },
 ];
 
-export default function Navbar({ darkHero = false }) {
+export default function Navbar({ darkHero = false, showBorder = false }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activePath, setActivePath] = useState("/");
@@ -63,8 +63,8 @@ export default function Navbar({ darkHero = false }) {
           transition-all duration-300 ease-in-out
           ${
             isScrolled
-              ? "bg-[#0A3956]/95 backdrop-blur-md"
-              : "bg-transparent"
+  ? "bg-[#0A3956]/95 backdrop-blur-md"
+  : `bg-transparent ${showBorder ? "border-b border-gray-200 md:border-none" : ""}`
           }
         `}
       >

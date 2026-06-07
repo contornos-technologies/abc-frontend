@@ -10,101 +10,54 @@ import {
 import whyChooseImage from "../../../assets/why-choose-abc.png";
 
 const benefits = [
-  {
-    icon: HandshakeIcon,
-    title: "Comprometimento",
-    description:
-      "Comprometidos não só com o teu ingresso, mas com o teu sucesso ao longo de toda a formação superior.",
-  },
-
-  {
-    icon: BookOpenCheck,
-    title: "Ensino de Excelência",
-    description:
-      "Professores qualificados que transformam o teu modo de estudar e impulsionam os teus resultados académicos.",
-  },
-
-  {
-    icon: Crosshair,
-    title: "Orientação Precisa e Eficaz",
-    description:
-      "Focamos nas matérias mais recorrentes nos exames e nos mecanismos certos para responderes correctamente.",
-  },
-
-  {
-    icon: CalendarClock,
-    title: "Horários Flexíveis",
-    description:
-      "Aulas nos horários mais favoráveis, definidos para se adaptarem às tuas necessidades diárias.",
-  },
-
-  {
-    icon: UserRoundCheck,
-    title: "Acompanhamento Personalizado",
-    description:
-      "Orientação individual, aulas de reforço e apoio contínuo ao longo de toda a tua preparação.",
-  },
-
-  {
-    icon: HeartHandshake,
-    title: "Conexões Além do Académico",
-    description:
-      "Na ABC encontrarás uma verdadeira família, com professores abertos a orientar-te para a vida.",
-  },
+  { icon: HandshakeIcon, title: "Comprometimento" },
+  { icon: BookOpenCheck, title: "Excelência no Ensino" },
+  { icon: CalendarClock, title: "Horários Flexíveis" },
+  { icon: Crosshair, title: "Orientação Precisa" },
+  { icon: UserRoundCheck, title: "Acompanhamento Personalizado" },
+  { icon: HeartHandshake, title: "Conexões Além do Académico" },
 ];
 
 export default function WhyChoose() {
-
   return (
-
-    <section className="w-full bg-[#FAFBFD] pt-14 pb-24 lg:pt-16 lg:pb-24">
-
+    <section className="w-full bg-[#FAFBFD] pt-10 pb-12 lg:pt-16 lg:pb-16">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ───────────────── HEADER ───────────────── */}
         <div className="text-center max-w-3xl mx-auto">
-
-          {/* ───────────────── TITLE ───────────────── */}
-          <h2 className="text-[32px] sm:text-[46px] lg:text-[56px] leading-[1.1] font-extrabold text-[#071C35]">
+          <h2 className="text-[24px] sm:text-[36px] lg:text-[42px] leading-[1.15] font-extrabold text-[#071C35]">
             Por que escolher a{" "}
             <span className="text-[#1565A8]">ABC?</span>
           </h2>
 
-          {/* ───────────────── SUBTITLE ───────────────── */}
-          <p className="mt-6 text-[16px] sm:text-[18px] leading-7 sm:leading-8 text-slate-500 mx-auto">
-
-            {/* desktop */}
+          <p className="mt-4 text-[16px] sm:text-[17px] leading-7 text-slate-500 mx-auto">
             <span className="hidden sm:inline whitespace-nowrap">
-              Mais do que um centro preparatório, somos parceiros na construção do teu futuro académico.
+              Mais do que um centro preparatório, somos parceiros na construção
+              do teu futuro académico.
             </span>
-
-            {/* mobile */}
             <span className="sm:hidden">
-              Mais do que um centro preparatório, somos parceiros na construção do teu futuro académico.
+              Mais do que um centro preparatório, somos parceiros na construção
+              do teu futuro académico.
             </span>
 
             <br className="hidden sm:block" />
 
-            {/* desktop */}
             <span className="hidden sm:inline whitespace-nowrap">
-              Descobre os diferenciais que fazem da ABC a escolha certa para o teu sucesso.
+              Descobre os diferenciais que fazem da ABC a escolha certa para o
+              teu sucesso.
             </span>
-
-            {/* mobile */}
             <span className="sm:hidden">
-              Descobre os diferenciais que fazem da ABC a escolha certa para o teu sucesso.
+              Descobre os diferenciais que fazem da ABC a escolha certa para o
+              teu sucesso.
             </span>
-
           </p>
-
         </div>
 
         {/* ───────────────── CONTENT ───────────────── */}
-        <div className="mt-16 lg:mt-20 grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-10 items-stretch">
+        <div className="mt-8 lg:mt-14 grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-12 items-start">
 
           {/* ───────────────── IMAGE ───────────────── */}
-          <div className="relative min-h-[320px] sm:min-h-[420px] lg:min-h-[500px]">
-
+          <div className="relative min-h-[260px] sm:min-h-[380px] lg:min-h-[420px]">
             <img
               src={whyChooseImage}
               alt="Estudantes do ABC Centro Preparatório"
@@ -113,9 +66,8 @@ export default function WhyChoose() {
                 h-full
                 object-cover
                 object-center
-                rounded-[24px]
-                lg:rounded-[32px]
-                shadow-[0_10px_40px_rgba(0,0,0,0.06)]
+                rounded-[8px]
+                shadow-[0_16px_48px_rgba(0,0,0,0.15)]
               "
             />
 
@@ -136,79 +88,37 @@ export default function WhyChoose() {
                 -z-10
               "
             />
-
           </div>
 
-          {/* ───────────────── CARDS ───────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-
+          {/* ───────────────── BENEFITS ───────────────── */}
+          <div className="grid grid-cols-2 lg:grid-cols-3">
             {benefits.map((item, index) => {
-
               const Icon = item.icon;
+              const col = index % 3;
+              const row = Math.floor(index / 3);
+              const totalRows = Math.ceil(benefits.length / 3);
 
               return (
-
-                <article
+                <div
                   key={index}
-                  className="
-                    group
-                    bg-white
-                    border
-                    border-[#EEF2F7]
-                    rounded-[20px]
-                    lg:rounded-[24px]
-                    p-5
-                    sm:p-6
-                    transition-all
-                    duration-300
-                    hover:-translate-y-1.5
-                    hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]
-                    hover:border-blue-100
-                  "
+                  className="flex flex-col items-center text-center px-4 py-6 lg:py-7"
+                  style={{
+                    borderRight: col < 2 ? "1px solid #E6EBF2" : "none",
+                    borderBottom: row < totalRows - 1 ? "1px solid #E6EBF2" : "none",
+                  }}
                 >
-
-                  {/* ───────────────── ICON ───────────────── */}
-                  <div
-                    className="
-                      w-11
-                      h-11
-                      sm:w-12
-                      sm:h-12
-                      rounded-2xl
-                      bg-[#F3F8FD]
-                      flex
-                      items-center
-                      justify-center
-                      mb-4
-                      sm:mb-5
-                      transition-all
-                      duration-300
-                      group-hover:scale-110
-                    "
-                  >
-
-                    <Icon
-                      size={22}
-                      strokeWidth={2.1}
-                      className="text-[#1565A8]"
-                    />
-
+                  {/* ICON */}
+                  <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-[#F3F7FD] flex items-center justify-center mb-4">
+                    <Icon size={26} strokeWidth={2} className="text-[#1565A8]" />
                   </div>
 
-                  {/* ───────────────── TITLE ───────────────── */}
-                  <h3 className="text-[15px] sm:text-[16px] font-bold leading-snug text-[#071C35] mb-3">
+                  {/* TITLE */}
+                  <h3 className="text-[15px] sm:text-[16px] lg:text-[17px] font-semibold leading-tight text-[#071C35] max-w-[160px]">
                     {item.title}
                   </h3>
-
-                  {/* ───────────────── DESCRIPTION ───────────────── */}
-                  <p className="text-[14px] sm:text-[13px] lg:text-[14px] leading-6 text-slate-500">
-                    {item.description}
-                  </p>
-
-                </article>
+                </div>
               );
             })}
-
           </div>
 
         </div>

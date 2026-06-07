@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users, TrendingUp, Clock, CheckCircle,
   AlertCircle, RefreshCw, BarChart2, BookOpen,
-  Award, GraduationCap
+  Award, GraduationCap, Download, Filter,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -123,9 +123,11 @@ function CustomTooltip({ active, payload, label, prefix = '', suffix = '' }) {
 export default function Analytics() {
   const navigate = useNavigate();
 
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
-  const [data, setData]         = useState({
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
+  const [period, setPeriod]         = useState('all');   // 'week' | 'month' | 'year' | 'all'
+  const [uniFilter, setUniFilter]   = useState('');      // '' = todas
+  const [data, setData]             = useState({
     overview:          null,
     enrollByMonth:     [],
     enrollByUni:       [],
@@ -142,6 +144,30 @@ export default function Analytics() {
     setLoading(true);
     setError(null);
     try {
+      // Calcular startDate / endDate com base no período seleccionado
+      const now = new Date();
+      let startDate = '';
+      const endDate = now.toISOString().slice(0, 10);
+
+      if (period === 'week') {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 7);
+        startDate = d.toISOString().slice(0, 10);
+      } else if (period === 'month') {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() - 1);
+        startDate = d.toISOString().slice(0, 10);
+      } else if (period === 'year') {
+        const d = new Date(now);
+        d.setFullYear(d.getFullYear() - 1);
+        startDate = d.toISOString().slice(0, 10);
+      }
+
+      // Montar params — só inclui chaves com valor
+      const params = {};
+      if (startDate)  { params.startDate = startDate; params.endDate = endDate; }
+      if (uniFilter)  params.universityId = uniFilter;
+
       const [
         overview,
         enrollByMonth,
@@ -154,29 +180,29 @@ export default function Analytics() {
         scoreDist,
         mostTaken,
       ] = await Promise.all([
-        api.get('/admin/analytics/overview'),
-        api.get('/admin/analytics/enrollments/by-month'),
-        api.get('/admin/analytics/enrollments/by-university'),
-        api.get('/admin/analytics/enrollments/by-course'),
-        api.get('/admin/analytics/revenue/by-month'),
-        api.get('/admin/analytics/payments/by-status'),
-        api.get('/admin/analytics/students/top-debtors'),
-        api.get('/admin/analytics/exams/average-scores'),
-        api.get('/admin/analytics/exams/score-distribution'),
-        api.get('/admin/analytics/exams/most-taken'),
+        api.get('/admin/analytics/overview',                  { params }),
+        api.get('/admin/analytics/enrollments/by-month',      { params }),
+        api.get('/admin/analytics/enrollments/by-university', { params }),
+        api.get('/admin/analytics/enrollments/by-course',     { params }),
+        api.get('/admin/analytics/revenue/by-month',          { params }),
+        api.get('/admin/analytics/payments/by-status',        { params }),
+        api.get('/admin/analytics/students/top-debtors',      { params }),
+        api.get('/admin/analytics/exams/average-scores',      { params }),
+        api.get('/admin/analytics/exams/score-distribution',  { params }),
+        api.get('/admin/analytics/exams/most-taken',          { params }),
       ]);
 
       setData({
-        overview:         overview.data?.data ?? overview.data,
-        enrollByMonth:    enrollByMonth.data?.data ?? enrollByMonth.data ?? [],
-        enrollByUni:      enrollByUni.data?.data ?? enrollByUni.data ?? [],
-        enrollByCourse:   enrollByCourse.data?.data ?? enrollByCourse.data ?? [],
-        revenueByMonth:   revenueByMonth.data?.data ?? revenueByMonth.data ?? [],
-        paymentsByStatus: paymentsByStatus.data?.data ?? paymentsByStatus.data ?? [],
-        topDebtors:       topDebtors.data?.data ?? topDebtors.data ?? [],
-        avgScores:        avgScores.data?.data ?? avgScores.data ?? [],
-        scoreDist:        scoreDist.data?.data ?? scoreDist.data ?? [],
-        mostTaken:        mostTaken.data?.data ?? mostTaken.data ?? [],
+        overview:         overview.data?.data         ?? overview.data,
+        enrollByMonth:    enrollByMonth.data?.data     ?? enrollByMonth.data     ?? [],
+        enrollByUni:      enrollByUni.data?.data       ?? enrollByUni.data       ?? [],
+        enrollByCourse:   enrollByCourse.data?.data    ?? enrollByCourse.data    ?? [],
+        revenueByMonth:   revenueByMonth.data?.data    ?? revenueByMonth.data    ?? [],
+        paymentsByStatus: paymentsByStatus.data?.data  ?? paymentsByStatus.data  ?? [],
+        topDebtors:       topDebtors.data?.data        ?? topDebtors.data        ?? [],
+        avgScores:        avgScores.data?.data         ?? avgScores.data         ?? [],
+        scoreDist:        scoreDist.data?.data         ?? scoreDist.data         ?? [],
+        mostTaken:        mostTaken.data?.data         ?? mostTaken.data         ?? [],
       });
     } catch (err) {
       if (err.response?.status === 401) { navigate('/portal/acesso'); return; }
@@ -184,9 +210,30 @@ export default function Analytics() {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, period, uniFilter]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
+
+  // ── Exportar CSV Simulações ───────────────────────────────────────────────
+  const handleExportSimulacoesCsv = async () => {
+    try {
+      const token = localStorage.getItem('abc_token');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/admin/reports/simulations/csv`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `simulacoes_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Não foi possível exportar o CSV de simulações. Tenta novamente.');
+    }
+  };
 
   // ── Erro ──────────────────────────────────────────────────────────────────
   if (error) {
@@ -248,6 +295,15 @@ export default function Analytics() {
     total: Number(d.count || d.total || 0),
   }));
 
+  const scoreDistData = data.scoreDist.map(d => ({
+    label: d.range || d.label || `${d.min ?? ''}–${d.max ?? ''}`,
+    total: Number(d.count || d.total || 0),
+  }));
+
+  // ── Labels de filtro activo (para exibição) ───────────────────────────────
+  const PERIOD_LABELS = { week: 'Semana', month: 'Mês', year: 'Ano', all: 'Tudo' };
+  const hasActiveFilters = period !== 'all' || uniFilter !== '';
+
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen">
       <div className="max-w-[1200px] mx-auto">
@@ -258,15 +314,79 @@ export default function Analytics() {
             <h1 className="text-2xl font-bold text-[#0A3956]">Analytics</h1>
             <p className="text-sm text-[#6C757D] mt-0.5">Visão geral do centro — dados em tempo real</p>
           </div>
-          <button
-            onClick={loadAll}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-60"
-            style={{ backgroundColor: COLORS.primary }}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportSimulacoesCsv}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: COLORS.orange }}
+            >
+              <Download size={14} />
+              Exportar Simulações
+            </button>
+            <button
+              onClick={loadAll}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-60"
+              style={{ backgroundColor: COLORS.primary }}
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              Actualizar
+            </button>
+          </div>
+        </div>
+
+        {/* ── FILTROS ── */}
+        <div className="flex flex-wrap items-center gap-3 mb-6 p-4 bg-white rounded-xl shadow-sm">
+          <Filter size={15} style={{ color: COLORS.muted }} />
+
+          {/* Botões de período */}
+          <div className="flex items-center gap-1">
+            {[
+              { key: 'week',  label: 'Semana' },
+              { key: 'month', label: 'Mês'    },
+              { key: 'year',  label: 'Ano'    },
+              { key: 'all',   label: 'Tudo'   },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setPeriod(key)}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                style={period === key
+                  ? { backgroundColor: COLORS.primary, color: '#fff' }
+                  : { backgroundColor: COLORS.bg, color: COLORS.muted }
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="w-px h-6 bg-[#DEE2E6]" />
+
+          {/* Dropdown de universidade */}
+          <select
+            value={uniFilter}
+            onChange={e => setUniFilter(e.target.value)}
+            className="text-sm px-3 py-1.5 rounded-lg border border-[#DEE2E6] text-[#0A3956] bg-white focus:outline-none focus:ring-2 focus:ring-[#0A3956]/20"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Actualizar
-          </button>
+            <option value="">Todas as universidades</option>
+            {data.enrollByUni.map((u, i) => (
+              <option key={i} value={u.universityId || u.id || u.university || u.name}>
+                {u.university || u.name || '—'}
+              </option>
+            ))}
+          </select>
+
+          {/* Limpar filtros — só aparece quando há filtros activos */}
+          {hasActiveFilters && (
+            <button
+              onClick={() => { setPeriod('all'); setUniFilter(''); }}
+              className="text-xs ml-auto hover:underline"
+              style={{ color: COLORS.danger }}
+            >
+              Limpar filtros
+            </button>
+          )}
         </div>
 
         {/* ── SECÇÃO 1 — KPIs ── */}
@@ -475,6 +595,7 @@ export default function Analytics() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ChartSkeleton height="h-72" />
               <ChartSkeleton height="h-72" />
+              <ChartSkeleton height="h-72" />
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -510,6 +631,24 @@ export default function Analytics() {
                       <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: COLORS.muted }} width={120} />
                       <Tooltip content={<CustomTooltip suffix=" tentativas" />} />
                       <Bar dataKey="total" name="Tentativas" fill={COLORS.orange} radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+
+              {/* Distribuição de notas (scoreDist) */}
+              <div className="bg-white rounded-xl shadow-sm p-5 lg:col-span-2">
+                <p className="text-sm font-semibold text-[#0A3956] mb-4">Distribuição de Notas</p>
+                {scoreDistData.length === 0 ? (
+                  <EmptyChart />
+                ) : (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={scoreDistData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                      <XAxis dataKey="label" tick={{ fontSize: 11, fill: COLORS.muted }} />
+                      <YAxis tick={{ fontSize: 11, fill: COLORS.muted }} allowDecimals={false} />
+                      <Tooltip content={<CustomTooltip suffix=" estudantes" />} />
+                      <Bar dataKey="total" name="Estudantes" fill={COLORS.success} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}

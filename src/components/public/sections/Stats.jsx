@@ -6,78 +6,48 @@ import api from "../../../services/api";
 export default function Stats() {
 
   const [stats, setStats] = useState({
-    totalStudents: 5000,
-    approvalRate: 95,
+    totalStudents: 1800,
+    approvalRate: 60,
   });
 
-  // ── Busca dados reais do backend ─────────────────────────────────────────
   useEffect(() => {
     api.get("/public/stats")
       .then((res) => {
         setStats({
-          totalStudents: res.data.totalStudents ?? 5000,
-          approvalRate: res.data.approvalRate ?? 95,
+          totalStudents: res.data.totalEstudantes ?? 1800,
+          approvalRate: res.data.approvalRate ?? 60,
         });
       })
-      .catch(() => {
-        // fallback
-      });
+      .catch(() => {});
   }, []);
 
   const STATS = [
     {
-      icon: (
-        <Users
-          size={36}
-          strokeWidth={1.8}
-          className="text-[#F7941D]"
-        />
-      ),
+      icon: <Users size={28} strokeWidth={1.8} className="text-[#F7941D]" />,
       end: stats.totalStudents,
       prefix: "+",
       suffix: "",
       separator: ".",
       label: "Estudantes\nPreparados",
     },
-
     {
-      icon: (
-        <TrendingUp
-          size={36}
-          strokeWidth={1.8}
-          className="text-[#41B349]"
-        />
-      ),
+      icon: <TrendingUp size={28} strokeWidth={1.8} className="text-[#41B349]" />,
       end: stats.approvalRate,
       prefix: "",
       suffix: "%",
       separator: "",
       label: "Taxa de\nAprovação",
     },
-
     {
-      icon: (
-        <Calendar
-          size={36}
-          strokeWidth={1.8}
-          className="text-[#F7941D]"
-        />
-      ),
-      end: 10,
+      icon: <Calendar size={28} strokeWidth={1.8} className="text-[#F7941D]" />,
+      end: 8,
       prefix: "+",
       suffix: "",
       separator: "",
       label: "Anos de Experiência\nem Educação",
     },
-
     {
-      icon: (
-        <BookOpen
-          size={36}
-          strokeWidth={1.8}
-          className="text-[#F7941D]"
-        />
-      ),
+      icon: <BookOpen size={28} strokeWidth={1.8} className="text-[#F7941D]" />,
       end: 9,
       prefix: "",
       suffix: "",
@@ -87,8 +57,7 @@ export default function Stats() {
   ];
 
   return (
-
-    <section className="relative -mt-4 bg-[#F5F8FC] pb-16 lg:pb-24">
+    <section className="relative -mt-4 bg-[#F5F8FC] pb-16">
 
       {/* ───────────────── CONTAINER ───────────────── */}
       <div className="w-full max-w-[1150px] mx-auto px-4 sm:px-6">
@@ -97,8 +66,7 @@ export default function Stats() {
         <div
           className="
             bg-white
-            rounded-[24px]
-            lg:rounded-[32px]
+            rounded-[16px]
             border border-[#E7EDF5]
             shadow-[0_4px_20px_rgba(0,0,0,0.03)]
             overflow-hidden
@@ -110,13 +78,11 @@ export default function Stats() {
 
             {STATS.map((stat, index) => {
 
-              // ── Divisórias mobile ─────────────────────────
               const borderBottom =
                 index < STATS.length - 1
                   ? "border-b border-[#E7EDF5] sm:border-b-0"
                   : "";
 
-              // ── Divisórias tablet ─────────────────────────
               const borderRightTablet =
                 index % 2 === 0
                   ? "sm:border-r border-[#E7EDF5]"
@@ -127,24 +93,17 @@ export default function Stats() {
                   ? "sm:border-b border-[#E7EDF5] lg:border-b-0"
                   : "";
 
-              // ── Divisórias desktop ─────────────────────────
               const borderRightDesktop =
                 index < STATS.length - 1
                   ? "lg:border-r border-[#E7EDF5]"
                   : "";
 
               return (
-
                 <div
                   key={index}
                   className={`
-                    flex
-                    flex-col
-                    items-center
-                    justify-center
-                    px-6
-                    py-8
-                    lg:py-12
+                    flex flex-col items-center justify-center
+                    px-6 py-6 lg:py-8
                     text-center
                     ${borderBottom}
                     ${borderRightTablet}
@@ -154,21 +113,12 @@ export default function Stats() {
                 >
 
                   {/* ───────────────── ÍCONE ───────────────── */}
-                  <div className="mb-4 lg:mb-5">
+                  <div className="mb-3">
                     {stat.icon}
                   </div>
 
                   {/* ───────────────── NÚMERO ───────────────── */}
-                  <h3
-                    className="
-                      text-[32px]
-                      sm:text-[34px]
-                      lg:text-[38px]
-                      font-extrabold
-                      leading-none
-                      text-[#071C35]
-                    "
-                  >
+                  <h3 className="text-[28px] sm:text-[30px] lg:text-[34px] font-extrabold leading-none text-[#071C35]">
                     <CountUp
                       end={stat.end}
                       prefix={stat.prefix}
@@ -181,19 +131,7 @@ export default function Stats() {
                   </h3>
 
                   {/* ───────────────── TEXTO ───────────────── */}
-                  <p
-                    className="
-                      mt-3
-                      lg:mt-4
-                      whitespace-pre-line
-                      text-[15px]
-                      lg:text-[17px]
-                      font-medium
-                      leading-[28px]
-                      lg:leading-[32px]
-                      text-[#4E5D78]
-                    "
-                  >
+                  <p className="mt-2 whitespace-pre-line text-[14px] lg:text-[15px] font-medium leading-6 text-[#4E5D78]">
                     {stat.label}
                   </p>
 
