@@ -1,19 +1,18 @@
 import {
-  GraduationCap,
   MapPin,
   Phone,
   Mail,
   MessageCircle,
-  Facebook,
-  Instagram
+  Facebook
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import logoWhite from "../../assets/logo-white.svg";
 
 const NAV_LINKS = [
   { label: "Início",   to: "/" },
   { label: "Sobre",    to: "/sobre" },
-  { label: "Serviços", to: "/servicos" },
   { label: "Contacto", to: "/contacto" },
+  { label: "Simulações", to: "/simulacoes" },
 ];
 
 const DISCIPLINES = [
@@ -30,7 +29,6 @@ const DISCIPLINES = [
 
 const SOCIAL_LINKS = [
   { label: "Facebook",  href: "#",                          icon: Facebook },
-  { label: "Instagram", href: "#",                          icon: Instagram },
   { label: "WhatsApp",  href: "https://wa.me/244900000000", icon: MessageCircle },
 ];
 
@@ -55,14 +53,17 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <Link
               to="/"
-              className="flex items-center gap-2 font-bold text-xl tracking-tight text-white hover:opacity-80 transition-opacity duration-200"
+              className="flex items-center hover:opacity-80 transition-opacity duration-200"
             >
-              <GraduationCap size={26} strokeWidth={2.2} className="text-[#FFB347]" />
-              <span>ABC</span>
+              <img
+                src={logoWhite}
+                alt="ABC Centro Preparatório"
+                className="h-20 w-auto"
+              />
             </Link>
 
             <p className="mt-4 text-sm text-white/70 leading-relaxed">
-              Preparamos os melhores estudantes de Huambo para o sucesso nos exames e na vida.
+             Preparação intensiva e resultados comprovados para conquistar a sua vaga no ensino superior.
             </p>
 
             <div className="mt-6 flex items-center gap-3">

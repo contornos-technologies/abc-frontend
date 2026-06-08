@@ -1,12 +1,14 @@
-
 import { useState, useEffect } from "react";
-import { Menu, X, GraduationCap } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, X } from "lucide-react";
+import logoDark from "../../assets/logo-dark.svg";
+import logoWhite from "../../assets/logo-white.svg";
 
 const NAV_LINKS = [
-  { label: "Início", href: "/" },
-  { label: "Sobre", href: "/sobre" },
-  { label: "Serviços", href: "/servicos" },
-  { label: "Contacto", href: "/contacto" },
+  { label: "Início", to: "/" },
+  { label: "Sobre", to: "/sobre" },
+  { label: "Contacto", to: "/contacto" },
+  { label: "Simulações", to: "/simulacoes" },
 ];
 
 export default function Navbar({ darkHero = false, showBorder = false }) {
@@ -14,133 +16,70 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activePath, setActivePath] = useState("/");
 
-  // ── efeito de scroll ──────────────────────────────────────────────────────
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll);
-
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // ── detecta página activa ─────────────────────────────────────────────────
   useEffect(() => {
     setActivePath(window.location.pathname);
   }, []);
 
-  // ── fecha menu ao redimensionar para desktop ──────────────────────────────
   useEffect(() => {
     const onResize = () => {
       if (window.innerWidth >= 768) setMenuOpen(false);
     };
-
     window.addEventListener("resize", onResize);
-
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // ── estados ───────────────────────────────────────────────────────────────
   const isScrolled = scrolled || menuOpen;
 
-  // ── cores dinâmicas ───────────────────────────────────────────────────────
   const textColor = isScrolled
     ? "text-white"
     : darkHero
       ? "text-white"
       : "text-[#071C35]";
 
-  const iconColor = isScrolled
-    ? "#ffffff"
-    : darkHero
-      ? "#ffffff"
-      : "#071C35";
-
   return (
     <>
-      {/* ── navbar principal ─────────────────────────────────────────────── */}
       <header
         className={`
           fixed top-0 left-0 right-0 z-50 h-20
           transition-all duration-300 ease-in-out
           ${
             isScrolled
-  ? "bg-[#0A3956]/95 backdrop-blur-md"
-  : `bg-transparent ${showBorder ? "border-b border-gray-200 md:border-none" : ""}`
+              ? "bg-[#0A3956]/95 backdrop-blur-md"
+              : `bg-transparent ${showBorder ? "border-b border-gray-200 md:border-none" : ""}`
           }
         `}
       >
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
 
-          {/* ── logo ─────────────────────────────────────────────────────── */}
-          <a
-            href="/"
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity duration-200"
+          {/* logo */}
+          <Link
+            to="/"
+            className="flex items-center hover:opacity-80 transition-opacity duration-200"
           >
+            <img
+              src={isScrolled || darkHero ? logoWhite : logoDark}
+              alt="ABC Centro Preparatório"
+              className="h-20 w-auto"
+            />
+          </Link>
 
-            {/* ícone */}
-            <div
-              className={`
-                w-12 h-12 rounded-2xl
-                flex items-center justify-center
-                transition-all duration-300
-                ${
-                  isScrolled
-                    ? "bg-white/10 border border-white/20"
-                    : darkHero
-                      ? "bg-white/10 border border-white/20"
-                      : "bg-white border-2 border-[#0A3956]/20"
-                }
-              `}
-            >
-              <GraduationCap
-                size={24}
-                color={iconColor}
-                strokeWidth={2.2}
-              />
-            </div>
-
-            {/* nome */}
-            <div>
-              <p
-                className={`
-                  text-[18px] font-extrabold leading-none
-                  transition-colors duration-300
-                  ${textColor}
-                `}
-              >
-                ABC
-              </p>
-
-              <p
-                className={`
-                  text-[13px] mt-0.5
-                  transition-colors duration-300
-                  ${
-                    isScrolled
-                      ? "text-white/70"
-                      : darkHero
-                        ? "text-white/70"
-                        : "text-[#071C35]/60"
-                  }
-                `}
-              >
-                Centro Preparatório
-              </p>
-            </div>
-          </a>
-
-          {/* ── links desktop ────────────────────────────────────────────── */}
+          {/* links desktop */}
           <nav className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((link) => {
-              const isActive = activePath === link.href;
-
+              const isActive = activePath === link.to;
               return (
-                <a
-                  key={link.href}
-                  href={link.href}
+                <Link
+                  key={link.to}
+                  to={link.to}
                   className={`
                     text-sm font-semibold
                     transition-all duration-200
-
                     ${
                       isScrolled
                         ? isActive
@@ -157,17 +96,16 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
                   `}
                 >
                   {link.label}
-                </a>
+                </Link>
               );
             })}
           </nav>
 
-          {/* ── acções + hamburger ───────────────────────────────────────── */}
+          {/* acções + hamburger */}
           <div className="flex items-center gap-3">
 
-            {/* inscrição */}
-            <a
-              href="/signup"
+            <Link
+              to="/signup"
               className={`
                 hidden sm:inline-flex
                 text-sm font-medium
@@ -177,11 +115,10 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
               `}
             >
               Inscrição
-            </a>
+            </Link>
 
-            {/* portal */}
-            <a
-              href="/login"
+            <Link
+              to="/login"
               className="
                 hidden sm:inline-flex items-center gap-2
                 bg-[#F69220] hover:bg-[#e0821a]
@@ -191,33 +128,28 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
               "
             >
               Portal do Aluno
-            </a>
+            </Link>
 
-            {/* hamburger */}
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
               className={`
                 md:hidden p-2 rounded-lg
                 transition-colors duration-200
-                ${
-                  isScrolled || darkHero
-                    ? "hover:bg-white/10"
-                    : "hover:bg-black/5"
-                }
+                ${isScrolled || darkHero ? "hover:bg-white/10" : "hover:bg-black/5"}
               `}
               aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
             >
               {menuOpen ? (
-                <X size={22} color={iconColor} />
+                <X size={22} color={isScrolled || darkHero ? "#ffffff" : "#071C35"} />
               ) : (
-                <Menu size={22} color={iconColor} />
+                <Menu size={22} color={isScrolled || darkHero ? "#ffffff" : "#071C35"} />
               )}
             </button>
           </div>
         </div>
       </header>
 
-      {/* ── menu mobile ──────────────────────────────────────────────────── */}
+      {/* menu mobile */}
       <div
         className={`
           fixed top-20 left-0 right-0 z-40
@@ -232,20 +164,17 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
         `}
       >
         <nav className="max-w-[1200px] mx-auto px-4 py-4 flex flex-col gap-1">
-
           {NAV_LINKS.map((link) => {
-            const isActive = activePath === link.href;
-
+            const isActive = activePath === link.to;
             return (
-              <a
-                key={link.href}
-                href={link.href}
+              <Link
+                key={link.to}
+                to={link.to}
                 onClick={() => setMenuOpen(false)}
                 className={`
                   px-4 py-3 rounded-lg
                   text-sm font-medium
                   transition-colors duration-200
-
                   ${
                     isActive
                       ? "text-[#1565A8] bg-blue-50 font-semibold"
@@ -254,16 +183,13 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
                 `}
               >
                 {link.label}
-              </a>
+              </Link>
             );
           })}
 
-          {/* botões mobile */}
           <div className="pt-3 mt-2 border-t border-gray-100 flex flex-col gap-2">
-
-            {/* inscrição */}
-            <a
-              href="/signup"
+            <Link
+              to="/signup"
               onClick={() => setMenuOpen(false)}
               className="
                 flex items-center justify-center
@@ -276,11 +202,10 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
               "
             >
               Inscrição
-            </a>
+            </Link>
 
-            {/* portal */}
-            <a
-              href="/login"
+            <Link
+              to="/login"
               onClick={() => setMenuOpen(false)}
               className="
                 flex items-center justify-center
@@ -291,12 +216,12 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
               "
             >
               Portal do Aluno
-            </a>
+            </Link>
           </div>
         </nav>
       </div>
 
-      {/* ── overlay mobile ───────────────────────────────────────────────── */}
+      {/* overlay mobile */}
       {menuOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/20 md:hidden"
@@ -306,4 +231,3 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
     </>
   );
 }
-

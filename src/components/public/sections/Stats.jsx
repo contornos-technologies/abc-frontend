@@ -6,16 +6,18 @@ import api from "../../../services/api";
 export default function Stats() {
 
   const [stats, setStats] = useState({
-    totalStudents: 1800,
+    totalStudents: 1807,
     approvalRate: 60,
+    anosExperiencia: 9,
   });
 
   useEffect(() => {
     api.get("/public/stats")
       .then((res) => {
         setStats({
-          totalStudents: res.data.totalEstudantes ?? 1800,
+          totalStudents: res.data.totalEstudantes ?? 1807,
           approvalRate: res.data.approvalRate ?? 60,
+          anosExperiencia: res.data.anosExperiencia ?? 9,
         });
       })
       .catch(() => {});
@@ -40,7 +42,7 @@ export default function Stats() {
     },
     {
       icon: <Calendar size={28} strokeWidth={1.8} className="text-[#F7941D]" />,
-      end: 8,
+      end: stats.anosExperiencia,
       prefix: "+",
       suffix: "",
       separator: "",

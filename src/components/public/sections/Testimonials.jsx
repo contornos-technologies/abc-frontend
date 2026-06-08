@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { Quote, ChevronLeft, ChevronRight, Send, CheckCircle } from "lucide-react";
 import api from "../../../services/api";
 
 function getInitials(name = "") {
@@ -37,6 +37,13 @@ export default function Testimonials() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef(null);
 
+  // Form state
+  const [formOpen, setFormOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: "", university: "", text: "" });
+  const [formLoading, setFormLoading] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
+  const [formError, setFormError] = useState(false);
+
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
@@ -69,6 +76,31 @@ export default function Testimonials() {
   const handlePrev = () => setPage((p) => Math.max(0, p - 1));
   const handleNext = () => setPage((p) => Math.min(totalPages - 1, p + 1));
 
+  const handleFormChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleFormSubmit = async () => {
+    if (!formData.name.trim() || !formData.university.trim() || !formData.text.trim()) return;
+    try {
+      setFormLoading(true);
+      setFormError(false);
+      await api.post("/public/contact", {
+        name: formData.name,
+        email: "testemunho@abc.ao",
+        subject: `Testemunho de ${formData.name} — ${formData.university}`,
+        message: formData.text,
+      });
+      setFormSuccess(true);
+      setFormData({ name: "", university: "", text: "" });
+    } catch (err) {
+      console.error("Erro ao enviar testemunho:", err);
+      setFormError(true);
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   const TestimonialCard = ({ testimonial, className = "" }) => (
     <article
       className={`
@@ -79,12 +111,10 @@ export default function Testimonials() {
         ${className}
       `}
     >
-      {/* Aspas laranja */}
       <div className="absolute top-5 right-5">
         <Quote className="w-6 h-6 text-[#F7941D] opacity-90" strokeWidth={2.2} />
       </div>
 
-      {/* Avatar + nome + universidade */}
       <div className="flex items-center gap-4">
         <div
           className={`
@@ -105,7 +135,6 @@ export default function Testimonials() {
         </div>
       </div>
 
-      {/* Texto */}
       <p className="mt-5 text-[14px] sm:text-[15px] leading-7 text-slate-600">
         "{testimonial.text}"
       </p>
@@ -200,7 +229,6 @@ export default function Testimonials() {
                 ))}
               </div>
 
-              {/* Prev/Next */}
               {hasMultiplePages && (
                 <div className="flex items-center justify-center gap-4 mt-10">
                   <button
@@ -245,6 +273,141 @@ export default function Testimonials() {
           </p>
         )}
 
+        {/* ───────────────── CTA — DEIXAR TESTEMUNHO ───────────────── */}
+        <div className="text-center mt-10 lg:mt-14">
+
+          {!formOpen && !formSuccess && (
+            <>
+              <button
+                onClick={() => setFormOpen(true)}
+                className="inline-flex items-center justify-center px-8 sm:px-10 py-4 bg-[#F69220] hover:bg-[#e0821a] text-white text-[16px] font-bold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(246,146,32,0.18)]"
+              >
+                Deixar o meu testemunho
+              </button>
+              <p className="text-[14px] text-slate-500 mt-4">
+                Partilha a tua experiência e inspira outros estudantes
+              </p>
+            </>
+          )}
+
+          {/* ── FORMULÁRIO ── */}
+          {formOpen && !formSuccess && (
+            <div className="mt-2 max-w-xl mx-auto bg-white rounded-[16px] border border-[#E7EDF5] shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-6 sm:p-8 text-left">
+              <h3 className="text-[20px] sm:text-[22px] font-extrabold text-[#071C35] mb-1">
+                Deixa a tua mensagem
+              </h3>
+              <p className="text-[14px] text-slate-500 mb-6">
+                A tua mensagem será revista pela nossa equipa antes de ser publicada.
+              </p>
+
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
+                    Nome completo
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleFormChange}
+                    placeholder="Ex: João Silva"
+                    className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
+                    Escola / Faculdade
+                  </label>
+                  <input
+                    type="text"
+                    name="university"
+                    value={formData.university}
+                    onChange={handleFormChange}
+                    placeholder="Ex: Universidade Agostinho Neto"
+                    className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
+                    A tua mensagem
+                  </label>
+                  <textarea
+                    name="text"
+                    value={formData.text}
+                    onChange={handleFormChange}
+                    rows={4}
+                    placeholder="Conta a tua experiência no ABC..."
+                    className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200 resize-none"
+                  />
+                </div>
+
+                {formError && (
+                  <p className="text-[13px] text-red-500">
+                    Ocorreu um erro ao enviar. Tenta novamente.
+                  </p>
+                )}
+
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    onClick={handleFormSubmit}
+                    disabled={
+                      formLoading ||
+                      !formData.name.trim() ||
+                      !formData.university.trim() ||
+                      !formData.text.trim()
+                    }
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#F69220] hover:bg-[#e0821a] disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-[15px] font-bold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(246,146,32,0.18)] disabled:shadow-none"
+                  >
+                    {formLoading ? (
+                      <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" strokeWidth={2.2} />
+                    )}
+                    {formLoading ? "A enviar..." : "Enviar testemunho"}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setFormOpen(false);
+                      setFormError(false);
+                      setFormData({ name: "", university: "", text: "" });
+                    }}
+                    className="text-[14px] text-slate-400 hover:text-slate-600 transition-colors duration-200"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── SUCESSO ── */}
+          {formSuccess && (
+            <div className="mt-2 max-w-xl mx-auto bg-white rounded-[16px] border border-[#E7EDF5] shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-8 text-center">
+              <div className="w-14 h-14 bg-[#F0FBF1] rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-7 h-7 text-[#41B349]" strokeWidth={2} />
+              </div>
+              <h3 className="text-[20px] font-extrabold text-[#071C35] mb-2">
+                Obrigado pelo teu testemunho!
+              </h3>
+              <p className="text-[15px] text-slate-500 leading-7">
+                A tua mensagem foi recebida e será publicada após revisão pela nossa equipa.
+              </p>
+              <button
+                onClick={() => {
+                  setFormSuccess(false);
+                  setFormOpen(false);
+                }}
+                className="mt-6 text-[14px] text-[#1565A8] hover:underline transition-all duration-200"
+              >
+                Fechar
+              </button>
+            </div>
+          )}
+
+        </div>
       </div>
     </section>
   );
