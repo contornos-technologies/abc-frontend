@@ -78,6 +78,7 @@ export default function ExamDetail() {
   const [modalDelete, setModalDelete] = useState(null)
   const [modalImport, setModalImport] = useState(null)
   const [modalArchive, setModalArchive] = useState(false)
+  const [modalPublish, setModalPublish] = useState(false)  // ✅ NOVO
 
   // ─── Carregar dados ──────────────────────────────────────────────────────
 
@@ -187,6 +188,18 @@ export default function ExamDetail() {
     try {
       await api.patch(`/admin/exams/${id}/archive`)
       setModalArchive(false)
+      loadExam()
+    } catch (err) {
+      if (err.response?.status === 401) navigate('/portal/acesso')
+    }
+  }
+
+  // ─── Publicar ────────────────────────────────────────────────────────────  // ✅ NOVO
+
+  const handlePublish = async ({ scoringMode, isPublic }) => {
+    try {
+      await api.put(`/admin/exams/${id}`, { scoringMode, isPublic })
+      setModalPublish(false)
       loadExam()
     } catch (err) {
       if (err.response?.status === 401) navigate('/portal/acesso')
@@ -303,6 +316,7 @@ export default function ExamDetail() {
           disciplinas={disciplinas}
           onBack={() => navigate('/admin/exams')}
           onArchive={() => setModalArchive(true)}
+          onPublish={() => setModalPublish(true)}
         />
 
         {/* ── KPIs ── */}
@@ -452,13 +466,22 @@ export default function ExamDetail() {
           onCancel={() => setModalArchive(false)}
         />
       )}
+
+      {/* ✅ NOVO — Modal de publicação */}
+      {modalPublish && (
+        <PublishModal
+          exam={exam}
+          onConfirm={handlePublish}
+          onCancel={() => setModalPublish(false)}
+        />
+      )}
     </div>
   )
 }
 
 // ─── ExamHeader ───────────────────────────────────────────────────────────────
 
-function ExamHeader({ exam, totalQuestions, disciplinas, onBack, onArchive }) {
+function ExamHeader({ exam, totalQuestions, disciplinas, onBack, onArchive, onPublish }) {
   return (
     <div style={{ marginBottom: 24 }}>
       <div
@@ -575,7 +598,28 @@ function ExamHeader({ exam, totalQuestions, disciplinas, onBack, onArchive }) {
           </div>
         </div>
 
+        {/* ✅ ALTERADO — botões de acção */}
         <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+          {!exam?.isArchived && !exam?.isPublic && (
+            <button
+              onClick={onPublish}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 7,
+                background: '#28A745',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 16px',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <Eye size={14} /> Publicar Prova
+            </button>
+          )}
           {!exam?.isArchived && (
             <button
               onClick={onArchive}
@@ -2139,6 +2183,114 @@ function ConfirmModal({
             style={{ ...btnPrimary, background: confirmColor }}
           >
             {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </Overlay>
+  )
+}
+
+// ─── Modal: Publicar Prova ────────────────────────────────────────────────────  // ✅ NOVO
+
+function PublishModal({ exam, onConfirm, onCancel }) {
+  const isDraft = exam?.scoringMode === 'DRAFT'
+  const [scoringMode, setScoringMode] = useState(isDraft ? 'SIMPLE' : exam?.scoringMode)
+  const [saving, setSaving] = useState(false)
+
+  const handleConfirm = async () => {
+    setSaving(true)
+    await onConfirm({ scoringMode, isPublic: true })
+    setSaving(false)
+  }
+
+  return (
+    <Overlay onClose={onCancel}>
+      <div
+        style={{
+          width: '100%',
+          maxWidth: 460,
+          background: 'white',
+          borderRadius: 16,
+          padding: 28,
+        }}
+      >
+        {/* Cabeçalho */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: '#d1fae5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Eye size={18} color="#28A745" />
+          </div>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0A3956', margin: 0 }}>
+            Publicar Prova
+          </h2>
+        </div>
+
+        <p style={{ fontSize: 13, color: '#6C757D', marginBottom: 20, lineHeight: 1.6 }}>
+          A prova ficará visível e disponível para os estudantes fazerem simulações.
+          Esta acção pode ser revertida arquivando a prova.
+        </p>
+
+        {/* Escolha do modo de avaliação — só se ainda for DRAFT */}
+        {isDraft && (
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#0A3956', marginBottom: 10 }}>
+              Modo de Avaliação
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {[
+                { value: 'SIMPLE', label: 'Simples', desc: 'Todas as questões valem igual' },
+                { value: 'WEIGHTED', label: 'Por Secções', desc: 'Cada secção tem peso diferente' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setScoringMode(opt.value)}
+                  style={{
+                    flex: 1,
+                    padding: '12px 14px',
+                    border: `2px solid ${scoringMode === opt.value ? '#0A3956' : '#DEE2E6'}`,
+                    background: scoringMode === opt.value ? '#0A395608' : 'white',
+                    borderRadius: 10,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#0A3956', marginBottom: 2 }}>
+                    {scoringMode === opt.value && <Check size={12} style={{ marginRight: 4, display: 'inline' }} />}
+                    {opt.label}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6C757D' }}>{opt.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={onCancel} style={btnGhost}>
+            Cancelar
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={saving}
+            style={{
+              ...btnPrimary,
+              background: '#28A745',
+              opacity: saving ? 0.7 : 1,
+            }}
+          >
+            <Eye size={14} /> {saving ? 'A publicar...' : 'Publicar'}
           </button>
         </div>
       </div>

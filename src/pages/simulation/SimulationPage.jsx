@@ -1,717 +1,986 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import katex from 'katex';
-import 'katex/dist/katex.min.css';
-import api from '../../services/api';
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import {
+  Clock,
+  Send,
+  ChevronLeft,
+  ChevronRight,
+  Bookmark,
+  Check,
+  X,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  ArrowLeft,
+} from 'lucide-react'
+import api from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
+// ─── KaTeX helpers ────────────────────────────────────────────────────────────
 
-// ─── Utilidades ────────────────────────────────────────────────────────────────
+function renderLatex(text) {
+  if (!text) return ''
 
-function renderMath(text) {
-  if (!text) return '';
-  return text.replace(/\$(.+?)\$/g, (_, expr) => {
+  let result = text
+
+  // $$...$$ — display mode (bloco)
+  result = result.replace(/\$\$([\s\S]+?)\$\$/g, (_, expr) => {
     try {
-      return katex.renderToString(expr, { throwOnError: false });
+      return katex.renderToString(expr.trim(), {
+        displayMode: true,
+        throwOnError: false,
+        trust: true,
+      })
     } catch {
-      return expr;
+      return _
     }
-  });
+  })
+
+  // $...$ — inline mode
+  result = result.replace(/\$([^$\n]+?)\$/g, (_, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), {
+        displayMode: false,
+        throwOnError: false,
+        trust: true,
+      })
+    } catch {
+      return _
+    }
+  })
+
+  return result
 }
 
 function MathText({ text, className = '' }) {
-  if (!text) return null;
-  const html = renderMath(text);
   return (
     <span
       className={className}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: renderLatex(text) }}
     />
-  );
+  )
 }
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const ATTEMPT_KEY = 'abc_attempt_id'
+const OPTION_LABELS = ['A', 'B', 'C', 'D']
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTime(seconds) {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (h > 0) return `${h}h ${String(m).padStart(2, '0')}min`;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
-// ─── Ecrã 1: Entrada ───────────────────────────────────────────────────────────
+// ─── Loading Skeleton ─────────────────────────────────────────────────────────
 
-function IntroScreen({ exam, onStart, loading }) {
-  const disciplines = exam.disciplines || exam.subjects || [];
+function Shimmer({ className = '' }) {
+  return (
+    <div className={`animate-pulse bg-[#E7EDF5] rounded-lg ${className}`} />
+  )
+}
 
+function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-[#F4F8FC]">
-      <nav className="bg-white border-b border-[#E7EDF5] px-4 sm:px-6 lg:px-8 py-4">
-        <div className="max-w-[1200px] mx-auto flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#1565A8] flex items-center justify-center">
-              <span className="text-white font-extrabold text-sm">ABC</span>
-            </div>
-            <span className="font-extrabold text-[#071C35] text-lg hidden sm:block">ABC Simulações</span>
-          </a>
-          <a
-            href="/simulations"
-            className="text-sm text-[#1565A8] font-semibold hover:underline"
-          >
-            ← Ver todas as provas
-          </a>
-        </div>
-      </nav>
-
-      <div className="max-w-[760px] mx-auto px-4 sm:px-6 py-14 sm:py-16 lg:py-24">
-
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-[#1565A8]/10 text-[#1565A8] text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-5">
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.396 0 2.694.409 3.75 1.11A7.969 7.969 0 0112.75 14c1.037 0 2.026.22 2.925.604v-10A7.968 7.968 0 0012.75 4c-1.255 0-2.443.29-3.5.804z" />
-            </svg>
-            Simulação de Prova
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#E7EDF5] h-16 flex items-center px-6 gap-4 shadow-sm">
+        <Shimmer className="h-6 w-48 rounded-full" />
+        <div className="flex-1" />
+        <Shimmer className="h-10 w-28 rounded-xl" />
+        <div className="flex-1" />
+        <Shimmer className="h-9 w-28 rounded-full" />
+      </div>
+      <div className="fixed top-16 left-0 right-0 z-40 bg-white border-b border-[#E7EDF5] h-12 flex items-center px-6 gap-6">
+        {['w-20', 'w-16', 'w-16'].map((w, i) => (
+          <Shimmer key={i} className={`h-4 ${w}`} />
+        ))}
+      </div>
+      <div className="pt-28 pb-20 px-4 max-w-3xl mx-auto">
+        <div className="bg-white rounded-2xl border border-[#E7EDF5] p-6 sm:p-8 shadow-sm">
+          <div className="flex justify-between mb-5">
+            <Shimmer className="h-3 w-24" />
+            <Shimmer className="h-7 w-24 rounded-full" />
           </div>
+          <Shimmer className="h-5 w-full mb-2" />
+          <Shimmer className="h-5 w-3/4 mb-7" />
+          <div className="flex flex-col gap-3">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 p-4 rounded-xl border-2 border-[#E7EDF5]"
+              >
+                <Shimmer className="w-8 h-8 rounded-full flex-shrink-0" />
+                <Shimmer className="h-4 flex-1" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E7EDF5] h-16 flex items-center justify-between px-6">
+        <Shimmer className="h-8 w-24 rounded-full" />
+        <div className="flex gap-1.5">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Shimmer key={i} className="w-2.5 h-2.5 rounded-full" />
+          ))}
+        </div>
+        <Shimmer className="h-8 w-24 rounded-full" />
+      </div>
+    </div>
+  )
+}
 
-          <h1 className="text-[28px] sm:text-[40px] lg:text-[48px] font-extrabold text-[#071C35] leading-[1.1] mb-4">
-            {exam.title || exam.name}
-          </h1>
+// ─── Top Bar ──────────────────────────────────────────────────────────────────
 
-          {exam.description && (
-            <p className="text-slate-500 text-[16px] sm:text-[18px] max-w-xl mx-auto">
-              {exam.description}
-            </p>
+function TopBar({ simulation, timeLeft, answeredCount, totalCount, onSubmit }) {
+  const isUnderFiveMin = timeLeft < 300
+  const isUnderOneMin = timeLeft < 60
+
+  const timerColor = isUnderOneMin
+    ? 'text-[#DC3545]'
+    : isUnderFiveMin
+      ? 'text-[#F7941D]'
+      : 'text-[#071C35]'
+  const timerBg = isUnderOneMin
+    ? 'bg-red-50 border border-red-200'
+    : isUnderFiveMin
+      ? 'bg-orange-50 border border-orange-200'
+      : 'bg-[#F4F8FC] border border-[#E7EDF5]'
+
+  const canSubmit = answeredCount > 0
+  const facultyLabel =
+    simulation.targetFaculty?.name ?? simulation.targetFacultyName ?? null
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#E7EDF5] shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        {/* Título + badge */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {facultyLabel && (
+            <span className="hidden sm:inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#EEF4FF] text-[#1565A8] border border-blue-100 shrink-0">
+              {facultyLabel}
+            </span>
           )}
+          <h1 className="text-sm font-semibold text-[#071C35] truncate leading-tight">
+            {simulation.title}
+          </h1>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <InfoCard
-            icon={<ClockIcon />}
-            label="Duração"
-            value={exam.duration ? `${exam.duration} min` : '—'}
-          />
-          <InfoCard
-            icon={<QuestionIcon />}
-            label="Questões"
-            value={exam.questions?.length || exam.questionsCount || '—'}
-          />
-          <InfoCard
-            icon={<StarIcon />}
-            label="Pontuação"
-            value={exam.passingScore ? `${exam.passingScore}/20` : '20 val.'}
-          />
-          <InfoCard
-            icon={<BookIcon />}
-            label="Disciplinas"
-            value={disciplines.length > 0 ? disciplines.length : 'Mistas'}
-          />
+        {/* Timer */}
+        <div
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl ${timerBg} shrink-0`}
+        >
+          <Clock size={16} className={timerColor} />
+          <span
+            className={`text-xl font-bold tabular-nums tracking-wide ${timerColor}`}
+          >
+            {formatTime(timeLeft)}
+          </span>
         </div>
 
-        {disciplines.length > 0 && (
-          <div className="bg-white rounded-[24px] border border-[#E7EDF5] p-5 sm:p-6 mb-6">
-            <h3 className="text-sm font-bold text-[#071C35] mb-3 uppercase tracking-wide">
-              Disciplinas incluídas
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {disciplines.map((d, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1.5 bg-[#F4F8FC] border border-[#E7EDF5] rounded-full text-sm font-medium text-[#1565A8]"
-                >
-                  {typeof d === 'string' ? d : d.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Progresso + submeter */}
+        <div className="flex items-center gap-3 flex-1 justify-end">
+          <span className="text-sm text-[#5F6D7E] hidden sm:block whitespace-nowrap">
+            <span className="font-semibold text-[#071C35]">
+              {answeredCount}
+            </span>
+            {' / '}
+            <span>{totalCount}</span>
+            {' questões respondidas'}
+          </span>
+          <button
+            onClick={onSubmit}
+            disabled={!canSubmit}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 ${
+              canSubmit
+                ? 'bg-[#F7941D] text-white hover:bg-[#e5841a] active:scale-95 shadow-sm'
+                : 'bg-[#E7EDF5] text-[#A0AEC0] cursor-not-allowed'
+            }`}
+          >
+            <Send size={15} />
+            <span>Submeter</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  )
+}
 
-        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-[16px] p-4 mb-8">
-          <svg className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-sm text-amber-700">
-            <strong>Prova pública:</strong> Os resultados desta sessão não ficam guardados no teu perfil. Podes fazer a prova sem conta.
+// ─── Anonymous Banner ─────────────────────────────────────────────────────────
+
+function AnonymousBanner({ onDismiss }) {
+  return (
+    <div className="bg-blue-50 border-b border-blue-100 px-4 py-2.5">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Info size={15} className="text-[#1565A8] shrink-0" />
+          <p className="text-sm text-[#071C35]">
+            Estás a fazer esta prova sem conta. Regista-te para guardar os teus
+            resultados.{' '}
+            <Link
+              to="/signup"
+              className="font-semibold text-[#F7941D] hover:underline whitespace-nowrap"
+            >
+              Criar conta
+            </Link>
           </p>
         </div>
-
         <button
-          onClick={onStart}
-          disabled={loading}
-          className="w-full bg-[#1565A8] hover:bg-[#0d4f8a] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-lg py-4 rounded-full shadow-lg shadow-[#1565A8]/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#1565A8]/30"
+          onClick={onDismiss}
+          className="p-1 rounded-full text-[#A0AEC0] hover:text-[#5F6D7E] hover:bg-blue-100 transition-colors shrink-0"
         >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              A iniciar prova…
-            </span>
-          ) : (
-            'Iniciar Simulação →'
-          )}
+          <X size={15} />
         </button>
-
-        <p className="text-center text-xs text-slate-400 mt-4">
-          Ao iniciar, o temporizador começa imediatamente.
-        </p>
       </div>
     </div>
-  );
+  )
 }
 
-function InfoCard({ icon, label, value }) {
-  return (
-    <div className="bg-white rounded-[20px] border border-[#E7EDF5] p-4 text-center">
-      <div className="w-9 h-9 rounded-xl bg-[#F4F8FC] flex items-center justify-center text-[#1565A8] mx-auto mb-2">
-        {icon}
-      </div>
-      <div className="text-[18px] font-extrabold text-[#071C35]">{value}</div>
-      <div className="text-xs text-slate-400 mt-0.5">{label}</div>
-    </div>
-  );
-}
+// ─── Section Tabs ─────────────────────────────────────────────────────────────
 
-// ─── Ecrã 2: A Prova ───────────────────────────────────────────────────────────
-
-function ExamScreen({ exam, attemptId, onSubmit, submitting, submitError, onClearSubmitError }) {
-  const questions = exam.questions || [];
-  const durationSeconds = (exam.duration || 60) * 60;
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [flagged, setFlagged] = useState(new Set());
-  const [timeLeft, setTimeLeft] = useState(durationSeconds);
-  const [showNav, setShowNav] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  // FIX: guardar respostas numa ref para o timer ter sempre o valor mais recente
-  const answersRef = useRef({});
-
-  const timerRef = useRef(null);
-
-  // FIX: separar a lógica de build do payload da lógica de submissão
-  const buildAnswersArray = useCallback(() => {
-    return Object.entries(answersRef.current).map(([questionId, selectedOptionId]) => ({
-      questionId,
-      selectedOptionId,
-    }));
-  }, []);
-
-  // Timer — usa answersRef para evitar closure stale
-  useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current);
-          onSubmit(buildAnswersArray());
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // onSubmit e buildAnswersArray são estáveis via useCallback no pai
-
-  const currentQuestion = questions[currentIndex];
-  const totalQuestions = questions.length;
-  const answered = Object.keys(answers).length;
-  const isLowTime = timeLeft < 300;
-
-  // FIX: questões que têm resposta E estão marcadas contam como respondidas, não como "por responder"
-  const unansweredCount = questions.filter(q => !answers[q.id]).length;
-
-  function handleSelectOption(optionId) {
-    setAnswers(prev => {
-      const next = { ...prev, [currentQuestion.id]: optionId };
-      answersRef.current = next; // manter ref sincronizada
-      return next;
-    });
+function SectionTabs({
+  sections,
+  activeSectionId,
+  answers,
+  flagged,
+  onSelectSection,
+}) {
+  const getSectionStatus = (section) => {
+    const total = section.questions.length
+    const answered = section.questions.filter((q) => answers[q.id]).length
+    const hasFlagged = section.questions.some((q) => flagged.has(q.id))
+    if (hasFlagged) return 'flagged'
+    if (answered === total) return 'all-answered'
+    if (answered > 0) return 'some-answered'
+    return 'none'
   }
-
-  function handleToggleFlag() {
-    setFlagged(prev => {
-      const next = new Set(prev);
-      if (next.has(currentQuestion.id)) next.delete(currentQuestion.id);
-      else next.add(currentQuestion.id);
-      return next;
-    });
-  }
-
-  function handleSubmit() {
-    onSubmit(buildAnswersArray());
-  }
-
-  function getQuestionStatus(q) {
-    if (answers[q.id]) return 'answered';
-    if (flagged.has(q.id)) return 'flagged';
-    return 'unanswered';
-  }
-
-  const optionLabels = ['A', 'B', 'C', 'D', 'E'];
 
   return (
-    <div className="min-h-screen bg-[#F4F8FC] flex flex-col">
+    <div className="bg-white border-b border-[#E7EDF5] shadow-sm">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex overflow-x-auto scrollbar-hide gap-0">
+          {sections.map((section) => {
+            const isActive = section.id === activeSectionId
+            const status = getSectionStatus(section)
+            const dotColor =
+              status === 'flagged'
+                ? 'bg-[#F7941D]'
+                : status === 'all-answered'
+                  ? 'bg-[#1565A8]'
+                  : status === 'some-answered'
+                    ? 'bg-[#1565A8] opacity-50'
+                    : 'bg-[#A0AEC0]'
 
-      {/* ── Header fixo com timer ── */}
-      <header className={`sticky top-0 z-40 border-b transition-colors duration-300 ${isLowTime ? 'bg-red-50 border-red-200' : 'bg-white border-[#E7EDF5]'}`}>
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-sm font-bold text-[#071C35] whitespace-nowrap">
-              {currentIndex + 1} / {totalQuestions}
-            </span>
-            <div className="w-32 sm:w-48 h-2 bg-[#E7EDF5] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#1565A8] rounded-full transition-all duration-300"
-                style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }}
-              />
-            </div>
-            <span className="text-xs text-slate-400 hidden sm:block">
-              {answered} respondidas
-            </span>
-          </div>
-
-          <div className={`flex items-center gap-2 font-mono font-bold text-lg tabular-nums ${isLowTime ? 'text-red-600' : 'text-[#071C35]'}`}>
-            {isLowTime && (
-              <svg className="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-              </svg>
-            )}
-            {formatTime(timeLeft)}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowNav(!showNav)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-[#1565A8] border border-[#1565A8]/30 rounded-full hover:bg-[#1565A8]/5 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              Navegar
-            </button>
-            <button
-              onClick={() => setShowConfirm(true)}
-              disabled={answered === 0 || submitting}
-              className="px-4 py-1.5 text-sm font-bold text-white bg-[#F7941D] hover:bg-[#e07d0a] disabled:opacity-40 disabled:cursor-not-allowed rounded-full transition-colors"
-            >
-              Submeter
-            </button>
-          </div>
-        </div>
-
-        {/* FIX: toast de erro de submissão inline no header — não destrói o ecrã de prova */}
-        {submitError && (
-          <div className="bg-red-50 border-t border-red-200 px-4 py-2 flex items-center justify-between">
-            <p className="text-sm text-red-700">
-              <strong>Erro ao submeter:</strong> {submitError}. Tenta novamente.
-            </p>
-            <button
-              onClick={onClearSubmitError}
-              className="text-red-400 hover:text-red-600 ml-4 text-lg leading-none"
-            >
-              ×
-            </button>
-          </div>
-        )}
-      </header>
-
-      <div className="flex flex-1 max-w-[1200px] mx-auto w-full px-4 sm:px-6 py-8 gap-6">
-
-        {/* ── Coluna principal: questão ── */}
-        <main className="flex-1 min-w-0">
-
-          <div className="bg-white rounded-[24px] border border-[#E7EDF5] p-5 sm:p-8 mb-4 shadow-sm">
-
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-[#1565A8] text-white text-sm font-bold flex items-center justify-center">
-                  {currentIndex + 1}
-                </span>
-                {currentQuestion.discipline && (
-                  <span className="text-xs font-semibold text-[#1565A8] bg-[#F4F8FC] border border-[#E7EDF5] px-2.5 py-1 rounded-full">
-                    {currentQuestion.discipline}
-                  </span>
-                )}
-                {currentQuestion.year && (
-                  <span className="text-xs text-slate-400">{currentQuestion.year}</span>
-                )}
-              </div>
+            return (
               <button
-                onClick={handleToggleFlag}
-                className={`flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full transition-colors ${
-                  flagged.has(currentQuestion.id)
-                    ? 'bg-amber-100 text-amber-600 border border-amber-300'
-                    : 'bg-[#F4F8FC] text-slate-400 border border-[#E7EDF5] hover:text-amber-500'
+                key={section.id}
+                onClick={() => onSelectSection(section.id)}
+                className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-150 shrink-0 ${
+                  isActive
+                    ? 'border-[#1565A8] text-[#1565A8] font-semibold'
+                    : 'border-transparent text-[#5F6D7E] hover:text-[#071C35] hover:border-[#E7EDF5]'
                 }`}
               >
-                <svg className="w-3.5 h-3.5" fill={flagged.has(currentQuestion.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
-                </svg>
-                Marcar
-              </button>
-            </div>
-
-            <div className="text-[16px] sm:text-[17px] text-[#071C35] font-medium leading-relaxed mb-6">
-              <MathText text={currentQuestion.text || currentQuestion.statement} />
-            </div>
-
-            {currentQuestion.imageUrl && (
-              <div className="mb-6 rounded-[16px] overflow-hidden border border-[#E7EDF5]">
-                <img
-                  src={currentQuestion.imageUrl}
-                  alt="Imagem da questão"
-                  className="w-full max-h-64 object-contain bg-[#F4F8FC]"
+                <span
+                  className={`inline-block w-2 h-2 rounded-full shrink-0 ${dotColor}`}
                 />
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {(currentQuestion.options || []).map((option, i) => {
-                const isSelected = answers[currentQuestion.id] === option.id;
-                return (
-                  <button
-                    key={option.id}
-                    onClick={() => handleSelectOption(option.id)}
-                    className={`w-full text-left flex items-start gap-3 p-4 rounded-[16px] border-2 transition-all duration-150 ${
-                      isSelected
-                        ? 'border-[#1565A8] bg-[#1565A8]/5 shadow-sm'
-                        : 'border-[#E7EDF5] bg-white hover:border-[#1565A8]/40 hover:bg-[#F4F8FC]'
-                    }`}
-                  >
-                    <span className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold border-2 transition-colors ${
-                      isSelected
-                        ? 'bg-[#1565A8] border-[#1565A8] text-white'
-                        : 'border-[#E7EDF5] text-slate-400'
-                    }`}>
-                      {optionLabels[i] || i + 1}
-                    </span>
-                    <span className="text-[15px] text-[#071C35] leading-relaxed pt-0.5">
-                      <MathText text={option.text} />
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
-              disabled={currentIndex === 0}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#1565A8] border border-[#1565A8]/30 rounded-full hover:bg-[#1565A8]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              ← Anterior
-            </button>
-
-            <button
-              onClick={() => setShowNav(true)}
-              className="sm:hidden text-xs font-semibold text-[#1565A8] underline"
-            >
-              Ver todas ({answered}/{totalQuestions})
-            </button>
-
-            <button
-              onClick={() => setCurrentIndex(i => Math.min(totalQuestions - 1, i + 1))}
-              disabled={currentIndex === totalQuestions - 1}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#1565A8] rounded-full hover:bg-[#0d4f8a] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              Próxima →
-            </button>
-          </div>
-        </main>
-
-        {/* ── Painel de navegação rápida (desktop) ── */}
-        <aside className={`hidden sm:block w-64 flex-shrink-0 ${showNav ? 'block' : ''}`}>
-          <div className="bg-white rounded-[24px] border border-[#E7EDF5] p-5 sticky top-20">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
-              Navegação
-            </h3>
-            <div className="grid grid-cols-5 gap-1.5 mb-4">
-              {questions.map((q, i) => {
-                const status = getQuestionStatus(q);
-                return (
-                  <button
-                    key={q.id}
-                    onClick={() => setCurrentIndex(i)}
-                    className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
-                      i === currentIndex
-                        ? 'bg-[#1565A8] text-white ring-2 ring-[#1565A8]/30'
-                        : status === 'answered'
-                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                        : status === 'flagged'
-                        ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
-                        : 'bg-[#F4F8FC] text-slate-400 hover:bg-[#E7EDF5]'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                );
-              })}
-            </div>
-            {/* FIX: usar unansweredCount calculado correctamente */}
-            <div className="space-y-1.5 text-xs text-slate-500">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded bg-green-100 inline-block border border-green-200" />
-                Respondida ({answered})
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded bg-amber-100 inline-block border border-amber-200" />
-                Marcada ({flagged.size})
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded bg-[#F4F8FC] inline-block border border-[#E7EDF5]" />
-                Por responder ({unansweredCount})
-              </div>
-            </div>
-
-            {answered > 0 && (
-              <button
-                onClick={() => setShowConfirm(true)}
-                disabled={submitting}
-                className="w-full mt-5 py-2.5 text-sm font-bold text-white bg-[#F7941D] hover:bg-[#e07d0a] rounded-full transition-colors"
-              >
-                Submeter Prova
+                {section.subject?.name ??
+                  section.subject?.code ??
+                  section.subject ??
+                  '—'}
               </button>
-            )}
-          </div>
-        </aside>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Question Card ────────────────────────────────────────────────────────────
+
+function QuestionCard({
+  question,
+  questionNumber,
+  totalInSection,
+  selectedOptionId,
+  isFlagged,
+  onSelectOption,
+  onToggleFlag,
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-[#E7EDF5] p-6 sm:p-8 shadow-sm">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-5 gap-3">
+        <p className="text-xs font-medium text-[#A0AEC0] tracking-wide uppercase">
+          Questão {questionNumber} de {totalInSection}
+        </p>
+        <button
+          onClick={onToggleFlag}
+          title={isFlagged ? 'Remover marcação' : 'Marcar questão'}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 shrink-0 ${
+            isFlagged
+              ? 'bg-orange-50 text-[#F7941D] border border-orange-200'
+              : 'bg-[#F4F8FC] text-[#A0AEC0] border border-[#E7EDF5] hover:text-[#F7941D] hover:border-orange-200'
+          }`}
+        >
+          <Bookmark size={13} fill={isFlagged ? '#F7941D' : 'none'} />
+          <span>{isFlagged ? 'Marcada' : 'Marcar'}</span>
+        </button>
       </div>
 
-      {/* ── Modal navegação mobile ── */}
-      {showNav && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:hidden" onClick={() => setShowNav(false)}>
-          <div className="w-full bg-white rounded-t-[24px] p-6" onClick={e => e.stopPropagation()}>
-            <h3 className="text-sm font-bold text-[#071C35] mb-4">Questões</h3>
-            <div className="grid grid-cols-8 gap-2 mb-5">
-              {questions.map((q, i) => {
-                const status = getQuestionStatus(q);
-                return (
-                  <button
-                    key={q.id}
-                    onClick={() => { setCurrentIndex(i); setShowNav(false); }}
-                    className={`h-9 rounded-lg text-xs font-bold transition-all ${
-                      i === currentIndex
-                        ? 'bg-[#1565A8] text-white'
-                        : status === 'answered'
-                        ? 'bg-green-100 text-green-700'
-                        : status === 'flagged'
-                        ? 'bg-amber-100 text-amber-600'
-                        : 'bg-[#F4F8FC] text-slate-400'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                );
-              })}
-            </div>
-            {answered > 0 && (
+      {/* Enunciado com suporte KaTeX */}
+      <MathText
+        text={question.content}
+        className="block text-[#071C35] text-base sm:text-lg leading-relaxed mb-5 font-medium"
+      />
+
+      {/* Imagem da questão (se existir) */}
+      {question.imageUrl && (
+        <img
+          src={question.imageUrl}
+          alt="Imagem da questão"
+          className="rounded-xl border border-[#E7EDF5] max-h-64 w-auto object-contain mb-5"
+        />
+      )}
+
+      {/* MULTIPLE_CHOICE */}
+      {question.questionType === 'MULTIPLE_CHOICE' && question.options && (
+        <div className="flex flex-col gap-3">
+          {question.options.map((option, idx) => {
+            const isSelected = selectedOptionId === option.id
+            return (
               <button
-                onClick={() => { setShowNav(false); setShowConfirm(true); }}
-                className="w-full py-3 text-sm font-bold text-white bg-[#F7941D] rounded-full"
+                key={option.id}
+                onClick={() => onSelectOption(option.id)}
+                className={`flex items-center gap-4 w-full text-left px-4 py-4 rounded-xl border-2 transition-all duration-150 group ${
+                  isSelected
+                    ? 'border-[#1565A8] bg-blue-50'
+                    : 'border-[#E7EDF5] bg-white hover:border-[#1565A8]/40 hover:bg-blue-50/30'
+                }`}
               >
-                Submeter Prova ({answered}/{totalQuestions})
+                <span
+                  className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold shrink-0 transition-colors duration-150 ${
+                    isSelected
+                      ? 'bg-[#1565A8] text-white'
+                      : 'bg-[#F4F8FC] text-[#5F6D7E] group-hover:bg-[#1565A8]/10 group-hover:text-[#1565A8]'
+                  }`}
+                >
+                  {OPTION_LABELS[idx] ?? idx + 1}
+                </span>
+                <div className="flex-1 flex flex-col gap-1">
+                  <MathText
+                    text={option.content}
+                    className={`text-sm leading-relaxed ${isSelected ? 'text-[#1565A8] font-medium' : 'text-[#071C35]'}`}
+                  />
+                  {option.imageUrl && (
+                    <img
+                      src={option.imageUrl}
+                      alt=""
+                      className="mt-1 rounded-lg max-h-20 object-contain"
+                    />
+                  )}
+                </div>
+                {isSelected && (
+                  <Check
+                    size={18}
+                    className="text-[#1565A8] shrink-0"
+                    strokeWidth={2.5}
+                  />
+                )}
               </button>
-            )}
-          </div>
+            )
+          })}
         </div>
       )}
 
-      {/* ── Modal de confirmação de submissão ── */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
-          <div className="bg-white rounded-[24px] border border-[#E7EDF5] p-8 max-w-sm w-full shadow-2xl">
-            <div className="w-14 h-14 rounded-full bg-[#1565A8]/10 flex items-center justify-center mx-auto mb-5">
-              <svg className="w-7 h-7 text-[#1565A8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-extrabold text-[#071C35] text-center mb-2">
-              Submeter a prova?
-            </h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
-              Respondeste a <strong>{answered}</strong> de <strong>{totalQuestions}</strong> questões.
-              {unansweredCount > 0 && (
-                <span className="block mt-1 text-amber-600">
-                  {unansweredCount} questão(ões) por responder.
-                </span>
-              )}
-            </p>
-            <div className="flex gap-3">
+      {/* TRUE_FALSE — itera sobre options reais, usa option.id directamente */}
+      {question.questionType === 'TRUE_FALSE' && (
+        <div className="flex gap-4">
+          {question.options?.map((option) => {
+            const isSelected = selectedOptionId === option.id
+            const isTrue =
+              option.content?.toLowerCase().includes('verdad') ||
+              option.content?.toLowerCase().includes('true') ||
+              option.content === 'V'
+            return (
               <button
-                onClick={() => setShowConfirm(false)}
-                className="flex-1 py-3 text-sm font-bold text-[#1565A8] border border-[#1565A8]/30 rounded-full hover:bg-[#F4F8FC] transition-colors"
+                key={option.id}
+                onClick={() => onSelectOption(option.id)}
+                className={`flex-1 py-4 rounded-full border-2 text-sm font-semibold transition-all duration-150 ${
+                  isSelected
+                    ? isTrue
+                      ? 'bg-[#1565A8] border-[#1565A8] text-white'
+                      : 'bg-[#DC3545] border-[#DC3545] text-white'
+                    : isTrue
+                      ? 'bg-white border-[#E7EDF5] text-[#071C35] hover:border-[#1565A8]/40 hover:bg-blue-50/30'
+                      : 'bg-white border-[#E7EDF5] text-[#071C35] hover:border-red-200 hover:bg-red-50/30'
+                }`}
               >
-                Continuar
+                <MathText text={option.content} />
               </button>
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="flex-1 py-3 text-sm font-bold text-white bg-[#1565A8] hover:bg-[#0d4f8a] disabled:opacity-60 rounded-full transition-colors"
-              >
-                {submitting ? 'A submeter…' : 'Submeter'}
-              </button>
-            </div>
-          </div>
+            )
+          })}
         </div>
+      )}
+
+      {/* SHORT_ANSWER — suporte futuro */}
+      {question.questionType === 'SHORT_ANSWER' && (
+        <textarea
+          placeholder="Escreve a tua resposta..."
+          value={selectedOptionId ?? ''}
+          onChange={(e) => onSelectOption(e.target.value)}
+          rows={4}
+          className="w-full border border-[#E7EDF5] rounded-xl px-4 py-3 text-sm text-[#071C35] placeholder:text-[#A0AEC0] outline-none focus:border-[#1565A8] focus:ring-1 focus:ring-[#1565A8]/20 resize-none transition-all"
+        />
       )}
     </div>
-  );
+  )
 }
 
-// ─── Componente principal ───────────────────────────────────────────────────────
+// ─── Navigation Footer ────────────────────────────────────────────────────────
+
+function NavigationFooter({
+  section,
+  currentQuestionIndex,
+  answers,
+  flagged,
+  isFirstQuestion,
+  isLastQuestion,
+  onPrev,
+  onNext,
+  onJumpTo,
+}) {
+  return (
+    <footer className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E7EDF5]">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        {/* Anterior */}
+        <button
+          onClick={onPrev}
+          disabled={isFirstQuestion}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 shrink-0 ${
+            isFirstQuestion
+              ? 'text-[#A0AEC0] cursor-not-allowed'
+              : 'text-[#5F6D7E] hover:text-[#071C35] hover:bg-[#F4F8FC]'
+          }`}
+        >
+          <ChevronLeft size={16} />
+          <span className="hidden sm:inline">Anterior</span>
+        </button>
+
+        {/* Dot grid — clicável para saltar */}
+        <div className="flex-1 flex justify-center overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-1.5 flex-wrap justify-center max-w-full">
+            {section.questions.map((q, idx) => {
+              const isActive = idx === currentQuestionIndex
+              const isAnswered = !!answers[q.id]
+              const isFlagged = flagged.has(q.id)
+
+              let cls =
+                'rounded-full transition-all duration-150 cursor-pointer '
+              if (isActive)
+                cls += 'w-3 h-3 bg-[#1565A8] ring-2 ring-[#1565A8]/30'
+              else if (isFlagged)
+                cls += 'w-2.5 h-2.5 bg-[#F7941D] hover:scale-125'
+              else if (isAnswered)
+                cls += 'w-2.5 h-2.5 bg-[#1565A8] hover:scale-125'
+              else
+                cls +=
+                  'w-2.5 h-2.5 bg-[#E7EDF5] hover:bg-[#A0AEC0] hover:scale-125'
+
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => onJumpTo(idx)}
+                  title={`Questão ${idx + 1}`}
+                  className={cls}
+                />
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Seguinte */}
+        <button
+          onClick={onNext}
+          disabled={isLastQuestion}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 shrink-0 ${
+            isLastQuestion
+              ? 'bg-[#E7EDF5] text-[#A0AEC0] cursor-not-allowed'
+              : 'bg-[#1565A8] text-white hover:bg-[#1256a0] active:scale-95 shadow-sm'
+          }`}
+        >
+          <span className="hidden sm:inline">Seguinte</span>
+          <ChevronRight size={16} />
+        </button>
+      </div>
+    </footer>
+  )
+}
+
+// ─── Submit Modal ─────────────────────────────────────────────────────────────
+
+function SubmitModal({
+  sections,
+  answers,
+  flagged,
+  onClose,
+  onConfirm,
+  submitting,
+}) {
+  const allQuestions = sections.flatMap((s) => s.questions)
+  const totalCount = allQuestions.length
+  const answeredCount = allQuestions.filter((q) => answers[q.id]).length
+  const unansweredCount = totalCount - answeredCount
+  const flaggedCount = allQuestions.filter((q) => flagged.has(q.id)).length
+  const pct =
+    totalCount > 0 ? Math.round((answeredCount / totalCount) * 100) : 0
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-[#071C35]/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md border border-[#E7EDF5] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E7EDF5]">
+          <h2 className="text-base font-semibold text-[#071C35]">
+            Submeter prova
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-[#F4F8FC] text-[#A0AEC0] hover:text-[#5F6D7E] transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 flex flex-col gap-4">
+          {unansweredCount > 0 && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-50 border border-orange-200">
+              <AlertTriangle
+                size={18}
+                className="text-[#F7941D] shrink-0 mt-0.5"
+              />
+              <p className="text-sm text-[#071C35]">
+                Tens{' '}
+                <strong>
+                  {unansweredCount}{' '}
+                  {unansweredCount === 1 ? 'questão' : 'questões'} por responder
+                </strong>
+                . Podes continuar a resolver antes de submeter.
+              </p>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-0">
+            <div className="flex items-center justify-between py-3 border-b border-[#E7EDF5]">
+              <div className="flex items-center gap-2 text-sm text-[#5F6D7E]">
+                <CheckCircle size={16} className="text-[#15803D]" />
+                <span>Respondidas</span>
+              </div>
+              <span className="text-sm font-semibold text-[#071C35]">
+                {answeredCount} / {totalCount}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-[#E7EDF5]">
+              <div className="flex items-center gap-2 text-sm text-[#5F6D7E]">
+                <X size={16} className="text-[#DC3545]" />
+                <span>Por responder</span>
+              </div>
+              <span
+                className={`text-sm font-semibold ${unansweredCount > 0 ? 'text-[#DC3545]' : 'text-[#15803D]'}`}
+              >
+                {unansweredCount}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <div className="flex items-center gap-2 text-sm text-[#5F6D7E]">
+                <Bookmark size={16} className="text-[#F7941D]" />
+                <span>Marcadas para revisão</span>
+              </div>
+              <span className="text-sm font-semibold text-[#071C35]">
+                {flaggedCount}
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full h-2 bg-[#E7EDF5] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#15803D] transition-all duration-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="text-xs text-[#A0AEC0] text-center">{pct}% completo</p>
+        </div>
+
+        {/* Footer */}
+        <div className="flex gap-3 px-6 py-4 border-t border-[#E7EDF5] bg-[#F4F8FC]">
+          <button
+            onClick={onClose}
+            disabled={submitting}
+            className="flex-1 py-2.5 rounded-full border border-[#E7EDF5] bg-white text-sm font-medium text-[#5F6D7E] hover:bg-[#F4F8FC] hover:text-[#071C35] transition-colors disabled:opacity-50"
+          >
+            Continuar a responder
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={submitting}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full bg-[#F7941D] text-white text-sm font-semibold hover:bg-[#e5841a] active:scale-95 transition-all duration-150 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {submitting ? (
+              <span className="flex items-center gap-2">
+                <svg
+                  className="animate-spin w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                A submeter...
+              </span>
+            ) : (
+              <>
+                <Send size={15} />
+                Submeter prova
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Contornos Footer ─────────────────────────────────────────────────────────
+
+function ContornosFooter() {
+  return (
+    <div className="flex items-center justify-center py-3 pb-20">
+      <a
+        href="https://contornos.design"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1.5 text-[#C0CBD8] hover:text-[#8899aa] transition-colors"
+        style={{ fontSize: 10 }}
+      >
+        Desenvolvido por
+        <span className="font-semibold tracking-tight ml-0.5">
+          CONTORNOS Designs
+        </span>
+      </a>
+    </div>
+  )
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SimulationPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
 
-  const [screen, setScreen] = useState('loading'); // loading | intro | exam | error
-  const [exam, setExam] = useState(null);
-  const [attemptId, setAttemptId] = useState(null);
-  const [startLoading, setStartLoading] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [error, setError] = useState(null);
-  // FIX: erro de submissão separado — não destrói o ecrã de prova
-  const [submitError, setSubmitError] = useState(null);
+  const [simulation, setSimulation] = useState(null)
+  const [attemptId, setAttemptId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  // Carregar prova
+  const [activeSectionId, setActiveSectionId] = useState(null)
+  const [questionIndex, setQuestionIndex] = useState(0)
+  const [answers, setAnswers] = useState({})
+  const [flagged, setFlagged] = useState(new Set())
+  const [timeLeft, setTimeLeft] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const [bannerDismissed, setBannerDismissed] = useState(false)
+
+  const timerRef = useRef(null)
+  const isAnonymous = !user
+
+  // ── 1. Carregar prova e fazer start ────────────────────────────────────────
   useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadExam() {
+    const init = async () => {
       try {
-        // FIX: axios usa res.data, não res.ok / res.json()
-        const res = await api.get(`/simulations/${id}`, {
-          signal: controller.signal,
-        });
-        setExam(res.data);
-        setScreen('intro');
-      } catch (err) {
-        if (err.name === 'CanceledError') return; // navegação durante o fetch
-        const message = err.response?.data?.message || err.message || 'Erro ao carregar a prova.';
-        setError(message);
-        setScreen('error');
+        setLoading(true)
+
+        const simRes = await api.get(`/simulations/${id}`)
+        const simData = simRes.data?.data ?? simRes.data
+
+        // Normalizar secções
+        const normalized = {
+          ...simData,
+          sections:
+            simData.sections?.map((s) => {
+              const fromQBS = simData.questionsBySection?.find(
+                (q) => q.sectionId === s.id
+              )
+              return {
+                ...s,
+                questions: s.questions ?? fromQBS?.questions ?? [],
+              }
+            }) ?? [],
+        }
+
+        setSimulation(normalized)
+        setActiveSectionId(normalized.sections?.[0]?.id ?? null)
+
+        const startRes = await api.post(`/simulations/${id}/start`)
+        const startData = startRes.data?.data ?? startRes.data
+        const aId = startData.attemptId
+        setAttemptId(aId)
+        setTimeLeft((startData.duration ?? simData.duration) * 60)
+
+        if (!user) {
+          localStorage.setItem(ATTEMPT_KEY, aId)
+        }
+      } catch (e) {
+        setError(
+          e.response?.data?.message ?? 'Não foi possível carregar a simulação.'
+        )
+      } finally {
+        setLoading(false)
       }
     }
+    init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
 
-    loadExam();
+  // ── 2. Timer ───────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (timeLeft === null || loading) return
+    if (timeLeft <= 0) {
+      setShowModal(true)
+      return
+    }
+    timerRef.current = setInterval(() => setTimeLeft((t) => t - 1), 1000)
+    return () => clearInterval(timerRef.current)
+  }, [timeLeft, loading])
 
-    return () => controller.abort();
-  }, [id]);
+  // ── Dados derivados ────────────────────────────────────────────────────────
+  const allQuestions =
+    simulation?.sections?.flatMap((s) => s.questions ?? []) ?? []
+  const answeredCount = allQuestions.filter(
+    (q) => q?.id && answers[q.id]
+  ).length
 
-  // Iniciar prova
-  async function handleStart() {
-    setStartLoading(true);
+  const activeSection = simulation?.sections.find(
+    (s) => s.id === activeSectionId
+  )
+  const currentQuestion = activeSection?.questions[questionIndex]
+
+  const sectionIndex =
+    simulation?.sections.findIndex((s) => s.id === activeSectionId) ?? 0
+  const isFirstQuestion = sectionIndex === 0 && questionIndex === 0
+  const isLastSection = sectionIndex === (simulation?.sections.length ?? 1) - 1
+  const isLastQuestion =
+    isLastSection &&
+    questionIndex === (activeSection?.questions.length ?? 1) - 1
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+  const handlePrev = useCallback(() => {
+    if (questionIndex > 0) {
+      setQuestionIndex((i) => i - 1)
+    } else if (sectionIndex > 0) {
+      const prev = simulation.sections[sectionIndex - 1]
+      setActiveSectionId(prev.id)
+      setQuestionIndex(prev.questions.length - 1)
+    }
+  }, [questionIndex, sectionIndex, simulation])
+
+  const handleNext = useCallback(() => {
+    if (questionIndex < (activeSection?.questions.length ?? 0) - 1) {
+      setQuestionIndex((i) => i + 1)
+    } else if (!isLastSection) {
+      const next = simulation.sections[sectionIndex + 1]
+      setActiveSectionId(next.id)
+      setQuestionIndex(0)
+    }
+  }, [questionIndex, activeSection, sectionIndex, isLastSection, simulation])
+
+  const handleSelectSection = (sId) => {
+    setActiveSectionId(sId)
+    setQuestionIndex(0)
+  }
+
+  const handleSelectOption = (optionId) => {
+    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: optionId }))
+  }
+
+  const handleToggleFlag = () => {
+    setFlagged((prev) => {
+      const next = new Set(prev)
+      if (next.has(currentQuestion.id)) next.delete(currentQuestion.id)
+      else next.add(currentQuestion.id)
+      return next
+    })
+  }
+
+  const handleSubmitConfirm = async () => {
     try {
-      // FIX: axios — usar res.data directamente, sem res.ok / res.json()
-      const res = await api.post(`/simulations/${id}/start`, {});
-      const data = res.data;
-      const aid = data.attemptId || data.id || data._id;
-      if (!aid) throw new Error('Resposta inválida do servidor');
-      setAttemptId(aid);
-      setScreen('exam');
-    } catch (err) {
-      const message = err.response?.data?.message || err.message || 'Erro ao iniciar a prova.';
-      setError(message);
-      setScreen('error');
-    } finally {
-      setStartLoading(false);
+      setSubmitting(true)
+      clearInterval(timerRef.current)
+
+      const answersPayload = Object.entries(answers).map(
+        ([questionId, selectedOptionId]) => ({
+          questionId,
+          selectedOptionId,
+        })
+      )
+
+      await api.post(`/simulations/${attemptId}/submit`, {
+        answers: answersPayload,
+      })
+
+      setShowModal(false)
+      navigate(`/simulation/${id}/results?attemptId=${attemptId}`)
+    } catch (e) {
+      if (e.response?.status === 409) {
+        navigate(`/simulation/${id}/results?attemptId=${attemptId}`)
+        return
+      }
+      setError('Erro ao submeter a prova. Tenta novamente.')
+      setSubmitting(false)
     }
   }
 
-  // Submeter prova
-  // FIX: erro de submissão não muda o screen para 'error' — mostra toast no ExamScreen
-  const handleSubmit = useCallback(async (answersArray) => {
-    setSubmitLoading(true);
-    setSubmitError(null);
-    try {
-      // FIX: axios — res.data já é o body parseado; sem res.ok / res.json()
-      await api.post(`/simulations/${attemptId}/submit`, { answers: answersArray });
-      navigate(`/simulation/${id}/results`, { state: { attemptId } });
-    } catch (err) {
-      const message = err.response?.data?.message || err.message || 'Erro ao submeter. Tenta novamente.';
-      setSubmitError(message);
-      setSubmitLoading(false);
-    }
-  }, [attemptId, id, navigate]);
+  // ── Offsets para os elementos fixed ───────────────────────────────────────
+  const bannerHeight = isAnonymous && !bannerDismissed ? 44 : 0
+  const topOffset = 64 + bannerHeight + 48
 
-  if (screen === 'loading') {
-    return (
-      <div className="min-h-screen bg-[#F4F8FC] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#1565A8] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-500 font-medium">A carregar prova…</p>
-        </div>
-      </div>
-    );
-  }
+  // ── Estados de erro e loading ──────────────────────────────────────────────
+  if (loading) return <LoadingSkeleton />
 
-  if (screen === 'error') {
+  if (error) {
     return (
-      <div className="min-h-screen bg-[#F4F8FC] flex items-center justify-center px-4">
-        <div className="bg-white rounded-[24px] border border-[#E7EDF5] p-8 max-w-md text-center">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <div className="min-h-screen bg-[#F4F8FC] flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl border border-[#E7EDF5] p-8 max-w-sm w-full text-center shadow-sm">
+          <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X size={28} className="text-[#DC3545]" />
           </div>
-          <h2 className="text-xl font-extrabold text-[#071C35] mb-2">Algo correu mal</h2>
-          <p className="text-sm text-slate-500 mb-6">{error}</p>
-          <a href="/simulations" className="inline-block px-6 py-2.5 bg-[#1565A8] text-white font-bold rounded-full text-sm hover:bg-[#0d4f8a] transition-colors">
-            Ver todas as provas
-          </a>
+          <h2 className="text-base font-semibold text-[#071C35] mb-2">Erro</h2>
+          <p className="text-sm text-[#5F6D7E] mb-6">{error}</p>
+          <button
+            onClick={() => navigate('/simulations')}
+            className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-full bg-[#1565A8] text-white text-sm font-semibold hover:bg-[#1256a0] transition-colors"
+          >
+            <ArrowLeft size={15} />
+            Voltar às simulações
+          </button>
         </div>
       </div>
-    );
+    )
   }
 
-  if (screen === 'intro') {
-    return <IntroScreen exam={exam} onStart={handleStart} loading={startLoading} />;
-  }
-
-  if (screen === 'exam') {
-    return (
-      <ExamScreen
-        exam={exam}
-        attemptId={attemptId}
-        onSubmit={handleSubmit}
-        submitting={submitLoading}
-        submitError={submitError}
-        onClearSubmitError={() => setSubmitError(null)}
+  return (
+    <div
+      className="min-h-screen bg-[#F4F8FC]"
+      style={{ fontFamily: "'Inter', sans-serif" }}
+    >
+      {/* ── Top Bar (fixed) ── */}
+      <TopBar
+        simulation={simulation}
+        timeLeft={timeLeft ?? 0}
+        answeredCount={answeredCount}
+        totalCount={allQuestions.length}
+        onSubmit={() => setShowModal(true)}
       />
-    );
-  }
 
-  return null;
-}
+      {/* ── Banner anónimo (fixed, logo abaixo do topbar) ── */}
+      {isAnonymous && !bannerDismissed && (
+        <div className="fixed left-0 right-0 z-40" style={{ top: 64 }}>
+          <AnonymousBanner onDismiss={() => setBannerDismissed(true)} />
+        </div>
+      )}
 
-// ─── Ícones ────────────────────────────────────────────────────────────────────
+      {/* ── Section Tabs (fixed, logo abaixo do banner) ── */}
+      <div
+        className="fixed left-0 right-0 z-40"
+        style={{ top: 64 + bannerHeight }}
+      >
+        <SectionTabs
+          sections={simulation.sections}
+          activeSectionId={activeSectionId}
+          answers={answers}
+          flagged={flagged}
+          onSelectSection={handleSelectSection}
+        />
+      </div>
 
-function ClockIcon() {
-  return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  );
-}
-function QuestionIcon() {
-  return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  );
-}
-function StarIcon() {
-  return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-    </svg>
-  );
-}
-function BookIcon() {
-  return (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-    </svg>
-  );
+      {/* ── Conteúdo principal ── */}
+      <main className="px-4 pb-6" style={{ paddingTop: topOffset + 20 }}>
+        <div className="max-w-3xl mx-auto">
+          {currentQuestion ? (
+            <>
+              <QuestionCard
+                question={currentQuestion}
+                questionNumber={questionIndex + 1}
+                totalInSection={activeSection.questions.length}
+                selectedOptionId={answers[currentQuestion.id]}
+                isFlagged={flagged.has(currentQuestion.id)}
+                onSelectOption={handleSelectOption}
+                onToggleFlag={handleToggleFlag}
+              />
+              <p className="text-xs text-[#A0AEC0] text-center mt-3">
+                {activeSection.subject?.name ??
+                  activeSection.subject?.code ??
+                  'Secção'}{' '}
+                · {activeSection.questions.length} questões
+              </p>
+            </>
+          ) : (
+            <p className="text-center text-sm text-[#A0AEC0] py-12">
+              Sem questões nesta secção.
+            </p>
+          )}
+        </div>
+      </main>
+
+      {/* ── Footer Contornos ── */}
+      <ContornosFooter />
+
+      {/* ── Navigation Footer (fixed, bottom) ── */}
+      {activeSection && (
+        <NavigationFooter
+          section={activeSection}
+          currentQuestionIndex={questionIndex}
+          answers={answers}
+          flagged={flagged}
+          isFirstQuestion={isFirstQuestion}
+          isLastQuestion={isLastQuestion}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          onJumpTo={setQuestionIndex}
+        />
+      )}
+
+      {/* ── Submit Modal ── */}
+      {showModal && (
+        <SubmitModal
+          sections={simulation.sections}
+          answers={answers}
+          flagged={flagged}
+          onClose={() => !submitting && setShowModal(false)}
+          onConfirm={handleSubmitConfirm}
+          submitting={submitting}
+        />
+      )}
+    </div>
+  )
 }

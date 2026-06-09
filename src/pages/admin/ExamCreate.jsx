@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Check, BookOpen, Clock, Settings,
   Plus, Trash2, GripVertical, ChevronDown, AlertCircle,
-  FileText, Eye, EyeOff, Layers, BarChart2, Pencil, X
+  FileText, Eye, EyeOff, Layers, BarChart2, Pencil, X,
+  Building2, GraduationCap,
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -59,6 +60,11 @@ export default function ExamCreate() {
   const [error, setError] = useState('');
   const [subjects, setSubjects] = useState([]);
 
+  // ✅ V13.4 — universidades e faculdades para os dropdowns
+  const [universities, setUniversities] = useState([]);
+  const [faculties, setFaculties] = useState([]);       // faculdades da universidade seleccionada
+  const [loadingFaculties, setLoadingFaculties] = useState(false);
+
   // Step 1 — Informações gerais
   const [form, setForm] = useState({
     title: '',
@@ -67,6 +73,8 @@ export default function ExamCreate() {
     scoringMode: '',
     weightType: 'PERCENTAGE',
     isPublic: false,
+    targetUniversityId: '',  // ✅ V13.4
+    targetFacultyId: '',     // ✅ V13.4
   });
 
   // Step 2 — Secções
@@ -81,6 +89,35 @@ export default function ExamCreate() {
       })
       .catch(() => setSubjects([]));
   }, []);
+
+  // ✅ V13.4 — Carregar universidades
+  useEffect(() => {
+    api.get('/enrollment/universities')
+      .then(res => {
+        const data = res.data?.data ?? res.data;
+        setUniversities(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setUniversities([]));
+  }, []);
+
+  // ✅ V13.4 — Carregar faculdades quando universidade muda
+  useEffect(() => {
+    if (!form.targetUniversityId) {
+      setFaculties([]);
+      setForm(f => ({ ...f, targetFacultyId: '' }));
+      return;
+    }
+    setLoadingFaculties(true);
+    api.get('/enrollment/faculties', { params: { universityId: form.targetUniversityId } })
+      .then(res => {
+        const data = res.data?.data ?? res.data;
+        setFaculties(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setFaculties([]))
+      .finally(() => setLoadingFaculties(false));
+    // Limpar faculdade seleccionada quando universidade muda
+    setForm(f => ({ ...f, targetFacultyId: '' }));
+  }, [form.targetUniversityId]);
 
   // ─── Handlers Step 1 ───────────────────────────────────────────────────────
 
@@ -147,6 +184,9 @@ export default function ExamCreate() {
         scoringMode: form.scoringMode,
         weightType: form.scoringMode === 'WEIGHTED' ? form.weightType : undefined,
         isPublic: form.isPublic,
+        // ✅ V13.4 — enviar apenas se preenchidos
+        targetUniversityId: form.targetUniversityId || undefined,
+        targetFacultyId:    form.targetFacultyId    || undefined,
         sections: sections.map(sec => ({
           name: sec.name.trim(),
           subjectId: sec.subjectId,
@@ -235,7 +275,15 @@ export default function ExamCreate() {
           border: '1px solid #DEE2E6', boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
           padding: 32, marginBottom: 24,
         }}>
-          {step === 1 && <Step1 form={form} setField={setField} />}
+          {step === 1 && (
+            <Step1
+              form={form}
+              setField={setField}
+              universities={universities}
+              faculties={faculties}
+              loadingFaculties={loadingFaculties}
+            />
+          )}
           {step === 2 && (
             <Step2
               sections={sections}
@@ -254,6 +302,8 @@ export default function ExamCreate() {
               form={form}
               sections={sections}
               subjects={subjects}
+              universities={universities}
+              faculties={faculties}
             />
           )}
         </div>
@@ -348,11 +398,11 @@ function StepBar({ step }) {
 
 // ─── Step 1 — Informações Gerais ──────────────────────────────────────────────
 
-function Step1({ form, setField }) {
+function Step1({ form, setField, universities, faculties, loadingFaculties }) {
   return (
     <div>
       <SectionTitle icon={FileText} title="Informações da Prova"
-        subtitle="Define o título, duração e modo de avaliação desta prova." />
+        subtitle="Define o título, duração, modo de avaliação e a faculdade alvo desta prova." />
 
       <div style={{ display: 'grid', gap: 20 }}>
 
@@ -376,6 +426,83 @@ function Step1({ form, setField }) {
             style={{ ...inputStyle, resize: 'vertical' }}
           />
         </Field>
+
+        {/* ✅ V13.4 — Universidade + Faculdade em cascata */}
+        <div style={{
+          background: '#F8FBFF', border: '1px solid #E0ECF8',
+          borderRadius: 10, padding: '16px 18px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <Building2 size={15} color="#0A3956" />
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#0A3956' }}>
+              Universidade / Faculdade Alvo
+            </span>
+            <span style={{ fontSize: 12, color: '#6C757D' }}>— Opcional</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {/* Universidade */}
+            <div>
+              <label style={labelStyle}>Universidade / Instituto</label>
+              <div style={{ position: 'relative', marginTop: 6 }}>
+                <select
+                  value={form.targetUniversityId}
+                  onChange={e => setField('targetUniversityId', e.target.value)}
+                  style={{ ...inputStyle, appearance: 'none', paddingRight: 32 }}
+                >
+                  <option value="">Nenhuma (prova geral)</option>
+                  {universities.map(u => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#6C757D', pointerEvents: 'none' }} />
+              </div>
+            </div>
+
+            {/* Faculdade — só activo após universidade seleccionada */}
+            <div>
+              <label style={{
+                ...labelStyle,
+                color: !form.targetUniversityId ? '#ADB5BD' : '#0A3956',
+              }}>
+                Faculdade / Curso
+              </label>
+              <div style={{ position: 'relative', marginTop: 6 }}>
+                <select
+                  value={form.targetFacultyId}
+                  onChange={e => setField('targetFacultyId', e.target.value)}
+                  disabled={!form.targetUniversityId || loadingFaculties}
+                  style={{
+                    ...inputStyle,
+                    appearance: 'none', paddingRight: 32,
+                    background: !form.targetUniversityId ? '#F8F9FA' : 'white',
+                    color: !form.targetUniversityId ? '#ADB5BD' : '#374151',
+                    cursor: !form.targetUniversityId ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <option value="">
+                    {loadingFaculties
+                      ? 'A carregar...'
+                      : !form.targetUniversityId
+                        ? 'Selecciona uma universidade primeiro'
+                        : faculties.length === 0
+                          ? 'Nenhuma faculdade disponível'
+                          : 'Seleccionar faculdade...'}
+                  </option>
+                  {faculties.map(f => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#ADB5BD', pointerEvents: 'none' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Nota informativa */}
+          <div style={{ fontSize: 12, color: '#6C757D', marginTop: 10, paddingTop: 10, borderTop: '1px solid #E0ECF8' }}>
+            Esta informação aparece no card da simulação e permite filtrar por faculdade na página pública.
+          </div>
+        </div>
 
         {/* Duração */}
         <Field label="Duração" required hint="Tempo total em minutos que o estudante tem para fazer a prova">
@@ -497,7 +624,6 @@ function Step2({ sections, subjects, scoringMode, weightType, setWeightType, tot
       <SectionTitle icon={Layers} title="Secções & Disciplinas"
         subtitle="Cada secção agrupa questões de uma disciplina. Podes ter múltiplas disciplinas numa só prova." />
 
-      {/* Tipo de peso — só se WEIGHTED */}
       {scoringMode === 'WEIGHTED' && (
         <div style={{
           background: '#FFF8EC', border: '1px solid #F69220',
@@ -531,7 +657,6 @@ function Step2({ sections, subjects, scoringMode, weightType, setWeightType, tot
         </div>
       )}
 
-      {/* Lista de Secções */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {sections.length === 0 && (
           <div style={{
@@ -559,12 +684,10 @@ function Step2({ sections, subjects, scoringMode, weightType, setWeightType, tot
         ))}
       </div>
 
-      {/* Barra de progresso (WEIGHTED + PERCENTAGE) */}
       {scoringMode === 'WEIGHTED' && weightType === 'PERCENTAGE' && sections.length > 0 && (
         <WeightBar sections={sections} totalPct={totalPct} />
       )}
 
-      {/* Botão Adicionar */}
       <button
         type="button"
         onClick={addSection}
@@ -601,7 +724,6 @@ function SectionRow({ sec, idx, subjects, scoringMode, weightType, totalPct, onR
 
         <div style={{ flex: 1, display: 'grid', gap: 12 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            {/* Nome da secção */}
             <div>
               <label style={labelStyle}>Nome da Secção</label>
               <input
@@ -611,7 +733,6 @@ function SectionRow({ sec, idx, subjects, scoringMode, weightType, totalPct, onR
                 style={inputStyle}
               />
             </div>
-            {/* Disciplina */}
             <div>
               <label style={labelStyle}>Disciplina</label>
               <div style={{ position: 'relative' }}>
@@ -630,7 +751,6 @@ function SectionRow({ sec, idx, subjects, scoringMode, weightType, totalPct, onR
             </div>
           </div>
 
-          {/* Peso — só se WEIGHTED */}
           {scoringMode === 'WEIGHTED' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 160 }}>
@@ -661,7 +781,6 @@ function SectionRow({ sec, idx, subjects, scoringMode, weightType, totalPct, onR
           )}
         </div>
 
-        {/* Apagar */}
         <button
           type="button"
           onClick={onRemove}
@@ -721,16 +840,19 @@ function WeightBar({ sections, totalPct }) {
 
 // ─── Step 3 — Revisão ─────────────────────────────────────────────────────────
 
-function Step3({ form, sections, subjects }) {
+function Step3({ form, sections, subjects, universities, faculties }) {
   const scoreLabel = { SIMPLE: 'Simples', WEIGHTED: 'Por Secções', DRAFT: 'Rascunho' };
   const getSubjectName = id => subjects.find(s => s.id === id)?.name ?? '—';
+
+  // ✅ V13.4 — nomes para mostrar na revisão
+  const universityName = universities.find(u => u.id === form.targetUniversityId)?.name;
+  const facultyName    = faculties.find(f => f.id === form.targetFacultyId)?.name;
 
   return (
     <div>
       <SectionTitle icon={Eye} title="Revisão Final"
         subtitle="Confirma os detalhes antes de criar a prova. Poderás editá-la depois em qualquer altura." />
 
-      {/* Card de resumo */}
       <div style={{
         background: '#F8F9FA', borderRadius: 12,
         border: '1px solid #DEE2E6', padding: 24, marginBottom: 24,
@@ -740,6 +862,16 @@ function Step3({ form, sections, subjects }) {
           <ReviewItem label="Duração" value={`${form.duration} min`} />
           <ReviewItem label="Modo de Avaliação" value={scoreLabel[form.scoringMode]} />
           <ReviewItem label="Visibilidade" value={form.isPublic ? 'Pública' : 'Privada'} />
+          {/* ✅ V13.4 */}
+          {universityName && (
+            <ReviewItem label="Universidade / Instituto" value={universityName} />
+          )}
+          {facultyName && (
+            <ReviewItem label="Faculdade" value={facultyName} />
+          )}
+          {!universityName && (
+            <ReviewItem label="Universidade / Faculdade" value="Prova Geral (sem faculdade específica)" />
+          )}
           {form.description && (
             <div style={{ gridColumn: '1 / -1' }}>
               <ReviewItem label="Descrição" value={form.description} />
@@ -748,12 +880,11 @@ function Step3({ form, sections, subjects }) {
         </div>
       </div>
 
-      {/* Secções */}
       <div style={{ fontSize: 13, fontWeight: 700, color: '#0A3956', marginBottom: 12 }}>
         Secções ({sections.length})
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {sections.map((sec, i) => (
+        {sections.map((sec) => (
           <div key={sec.id} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             background: 'white', border: `1px solid ${sec.color}30`,
@@ -777,7 +908,6 @@ function Step3({ form, sections, subjects }) {
         ))}
       </div>
 
-      {/* Nota */}
       <div style={{
         display: 'flex', alignItems: 'flex-start', gap: 10,
         background: '#EFF6FF', border: '1px solid #BFDBFE',
