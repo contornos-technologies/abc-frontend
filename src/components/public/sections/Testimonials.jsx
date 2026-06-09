@@ -7,6 +7,7 @@ import {
   CheckCircle,
   X
 } from "lucide-react";
+import api from "../../../services/api";
 
 function getInitials(name = "") {
   return name
@@ -91,12 +92,11 @@ export default function Testimonials() {
     try {
       setFormLoading(true);
       setFormError(false);
-      await api.post("/public/contact", {
-        name: formData.name,
-        email: "testemunho@abc.ao",
-        subject: `Testemunho de ${formData.name} — ${formData.university}`,
-        message: formData.text,
-      });
+      await api.post("/public/testimonials", {
+  name: formData.name,
+  university: formData.university,
+  text: formData.text,
+});
       setFormSuccess(true);
       setFormData({ name: "", university: "", text: "" });
     } catch (err) {
