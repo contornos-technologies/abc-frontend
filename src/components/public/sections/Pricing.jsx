@@ -153,9 +153,7 @@ export default function Pricing() {
           >
             Começar Inscrição 
           </Link>
-          <p className="text-[14px] text-slate-500 mt-4">
-            Dúvidas? Entre em contacto connosco pelo WhatsApp
-          </p>
+         
         </div>
       </div>
     </section>
