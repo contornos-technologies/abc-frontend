@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Quote, ChevronLeft, ChevronRight, Send, CheckCircle } from "lucide-react";
-import api from "../../../services/api";
+import {
+  Quote,
+  ChevronLeft,
+  ChevronRight,
+  Send,
+  CheckCircle,
+  X
+} from "lucide-react";
 
 function getInitials(name = "") {
   return name
@@ -142,7 +148,7 @@ export default function Testimonials() {
   );
 
   return (
-    <section className="w-full bg-[#F4F8FC] pt-10 pb-12 lg:pt-20 lg:pb-8">
+    <section className="w-full bg-[#F4F8FC] pt-10 pb-12 lg:pt-20 lg:pb-4">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ───────────────── HEADER ───────────────── */}
@@ -152,8 +158,7 @@ export default function Testimonials() {
             <span className="text-[#1565A8]">estudantes dizem</span>
           </h2>
           <p className="mt-4 text-[16px] sm:text-[17px] leading-7 text-slate-500 max-w-2xl mx-auto">
-            Histórias reais de estudantes que conquistaram a sua vaga
-            universitária com a preparação da ABC.
+            Histórias reais de estudantes que confiaram na ABC para alcançar os seus objectivos académicos.
           </p>
         </div>
 
@@ -274,7 +279,7 @@ export default function Testimonials() {
         )}
 
         {/* ───────────────── CTA — DEIXAR TESTEMUNHO ───────────────── */}
-        <div className="text-center mt-10 lg:mt-14">
+        <div className="text-center mt-10 lg:mt-10">
 
           {!formOpen && !formSuccess && (
             <>
@@ -282,23 +287,38 @@ export default function Testimonials() {
                 onClick={() => setFormOpen(true)}
                 className="inline-flex items-center justify-center px-8 sm:px-10 py-4 bg-[#F69220] hover:bg-[#e0821a] text-white text-[16px] font-bold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(246,146,32,0.18)]"
               >
-                Deixar o meu testemunho
+                Partilha a tua experiência
               </button>
               <p className="text-[14px] text-slate-500 mt-4">
-                Partilha a tua experiência e inspira outros estudantes
+                Conta como a Academia Berço do Conhecimento contribuiu para o teu percurso académico.
               </p>
             </>
           )}
 
           {/* ── FORMULÁRIO ── */}
           {formOpen && !formSuccess && (
-            <div className="mt-2 max-w-xl mx-auto bg-white rounded-[16px] border border-[#E7EDF5] shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-6 sm:p-8 text-left">
-              <h3 className="text-[20px] sm:text-[22px] font-extrabold text-[#071C35] mb-1">
-                Deixa a tua mensagem
+            <div className="relative mt-2 max-w-xl mx-auto bg-white rounded-[16px] border border-[#E7EDF5] shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-6 sm:p-8 text-left">
+              
+              <button
+  onClick={() => {
+    setFormOpen(false);
+    setFormError(false);
+    setFormData({
+      name: "",
+      university: "",
+      text: "",
+    });
+  }}
+  className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors duration-200"
+  aria-label="Fechar formulário"
+>
+  <X className="w-5 h-5" />
+</button>
+              
+              
+              <h3 className="text-[20px] sm:text-[22px] font-extrabold text-[#071C35] mb-6">
+                 Deixa o teu testemunho
               </h3>
-              <p className="text-[14px] text-slate-500 mb-6">
-                A tua mensagem será revista pela nossa equipa antes de ser publicada.
-              </p>
 
               <div className="flex flex-col gap-4">
                 <div>
@@ -338,7 +358,7 @@ export default function Testimonials() {
                     value={formData.text}
                     onChange={handleFormChange}
                     rows={4}
-                    placeholder="Conta a tua experiência no ABC..."
+                    placeholder="Conta a tua experiência na ABC..."
                     className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200 resize-none"
                   />
                 </div>
