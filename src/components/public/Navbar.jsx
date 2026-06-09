@@ -65,7 +65,7 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
             <img
               src={isScrolled || darkHero ? logoWhite : logoDark}
               alt="ABC Centro Preparatório"
-              className="h-20 w-auto"
+              className="h-12 w-auto"
             />
           </Link>
 
