@@ -6,7 +6,7 @@ import api from "../../../services/api";
 export default function Stats() {
 
   const [stats, setStats] = useState({
-    totalStudents: 1807,
+    totalStudents: 1800,
     approvalRate: 60,
     anosExperiencia: 9,
   });
@@ -15,7 +15,7 @@ export default function Stats() {
     api.get("/public/stats")
       .then((res) => {
         setStats({
-          totalStudents: res.data.totalEstudantes ?? 1807,
+          totalStudents: res.data.totalEstudantes ?? 1800,
           approvalRate: res.data.approvalRate ?? 60,
           anosExperiencia: res.data.anosExperiencia ?? 9,
         });
