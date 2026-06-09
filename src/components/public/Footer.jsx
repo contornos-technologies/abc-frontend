@@ -9,9 +9,9 @@ import { Link } from "react-router-dom";
 import logoWhite from "../../assets/logo-white.svg";
 
 const NAV_LINKS = [
-  { label: "Início",   to: "/" },
-  { label: "Sobre",    to: "/sobre" },
-  { label: "Contacto", to: "/contacto" },
+  { label: "Início",     to: "/",           scrollTo: "top" },
+  { label: "Sobre",      to: "/sobre" },
+  { label: "Contacto",   to: "/contacto" },
   { label: "Simulações", to: "/simulacoes" },
 ];
 
@@ -42,6 +42,19 @@ const CONTACT_INFO = [
 export default function Footer() {
   const year = new Date().getFullYear();
 
+  const handleNavClick = (scrollTo) => {
+    if (scrollTo === "top") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleDisciplineClick = () => {
+    const section = document.getElementById("cursos");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <footer className="bg-[#0A3956] text-white">
 
@@ -53,6 +66,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <Link
               to="/"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               className="flex items-center hover:opacity-80 transition-opacity duration-200"
             >
               <img
@@ -100,6 +114,7 @@ export default function Footer() {
                 <li key={link.to}>
                   <Link
                     to={link.to}
+                    onClick={() => handleNavClick(link.scrollTo)}
                     className="text-sm text-white/70 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
                   >
                     {link.label}
@@ -126,7 +141,8 @@ export default function Footer() {
               {DISCIPLINES.map((disc) => (
                 <li key={disc}>
                   <Link
-                    to="/servicos"
+                    to="/"
+                    onClick={handleDisciplineClick}
                     className="text-sm text-white/70 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
                   >
                     {disc}
