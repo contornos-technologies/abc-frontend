@@ -1,17 +1,12 @@
 import { useState } from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
+import { AdminNotificationsProvider } from '../../context/AdminNotificationsContext';
+import { useAdminNotifications } from '../../context/AdminNotificationsContext';
+import logoWhite from '../../assets/logo-white.svg';
 import {
-  LayoutDashboard,
-  Users,
-  CreditCard,
-  Bell,
-  FileText,
-  BarChart3,
-  LogOut,
-  Menu,
-  X,IdCard
+  LayoutDashboard, Users, CreditCard, Bell, FileText,
+  BarChart3, LogOut, Menu, X, IdCard, MessageSquareQuote
 } from 'lucide-react';
 
 const IconDashboard     = () => <LayoutDashboard className="w-5 h-5" />;
@@ -21,23 +16,26 @@ const IconCards         = () => <IdCard className="w-5 h-5" />;
 const IconNotifications = () => <Bell className="w-5 h-5" />;
 const IconExams         = () => <FileText className="w-5 h-5" />;
 const IconAnalytics     = () => <BarChart3 className="w-5 h-5" />;
+const IconTestimonials  = () => <MessageSquareQuote className="w-5 h-5" />;
 const IconLogout        = () => <LogOut className="w-5 h-5" />;
 const IconMenu          = () => <Menu className="w-6 h-6" />;
 const IconClose         = () => <X className="w-6 h-6" />;
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',    to: '/admin',               icon: <IconDashboard />,    end: true },
-  { label: 'Estudantes',   to: '/admin/students',      icon: <IconStudents /> },
-  { label: 'Pagamentos',   to: '/admin/payments',      icon: <IconPayments /> },
-  { label: 'Cartões',      to: '/admin/cards',         icon: <IconCards /> },
-  { label: 'Notificações', to: '/admin/notifications', icon: <IconNotifications /> },
-  { label: 'Provas',       to: '/admin/exams',         icon: <IconExams /> },
-  { label: 'Analytics',    to: '/admin/analytics',     icon: <IconAnalytics /> },
+  { label: 'Dashboard',    to: '/admin',                icon: <IconDashboard />,    end: true },
+  { label: 'Estudantes',   to: '/admin/students',       icon: <IconStudents /> },
+  { label: 'Pagamentos',   to: '/admin/payments',       icon: <IconPayments /> },
+  { label: 'Cartões',      to: '/admin/cards',          icon: <IconCards /> },
+  { label: 'Notificações', to: '/admin/notifications',  icon: <IconNotifications /> },
+  { label: 'Provas',       to: '/admin/exams',          icon: <IconExams /> },
+  { label: 'Testemunhos',  to: '/admin/testemunhos',    icon: <IconTestimonials /> },
+  { label: 'Analytics',    to: '/admin/analytics',      icon: <IconAnalytics /> },
 ];
 
 function SidebarContent({ adminName, adminInitial, onClose }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { pendingTestimonials } = useAdminNotifications();
 
   function handleLogout() {
     logout();
@@ -46,24 +44,19 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
 
   return (
     <div className="flex flex-col h-full bg-[#0A3956]">
-
-      {/* Logo */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#F69220] flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-base leading-none">A</span>
-          </div>
-          <div>
-            <p className="text-white font-bold text-sm leading-tight">ABC Centro</p>
-            <p className="text-white/50 text-xs leading-tight">Preparação</p>
-          </div>
-        </div>
-        {onClose && (
-          <button onClick={onClose} className="text-white/60 hover:text-white md:hidden transition-colors">
-            <IconClose />
-          </button>
-        )}
-      </div>
+{/* Logo */}
+<div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+  <img
+    src={logoWhite}
+    alt="ABC Centro Preparatório"
+    className="h-10 w-auto"
+  />
+  {onClose && (
+    <button onClick={onClose} className="text-white/60 hover:text-white md:hidden transition-colors">
+      <IconClose />
+    </button>
+  )}
+</div>
 
       {/* Admin info */}
       <div className="px-5 py-4 border-b border-white/10">
@@ -100,6 +93,11 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
               >
                 {item.icon}
                 {item.label}
+                {item.to === '/admin/testemunhos' && pendingTestimonials > 0 && (
+                  <span className="ml-auto bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                    {pendingTestimonials}
+                  </span>
+                )}
               </NavLink>
             </li>
           ))}
@@ -116,6 +114,7 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
           Terminar Sessão
         </button>
       </div>
+
     </div>
   );
 }
@@ -124,60 +123,62 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
 
-  // Usa o email do contexto como nome — ex: "admin@abc.com" → "admin"
   const adminName    = user?.email?.split('@')[0] || 'Administrador';
   const adminInitial = adminName.charAt(0).toUpperCase();
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <AdminNotificationsProvider>
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
 
-      <aside className="hidden md:flex md:flex-shrink-0 w-60">
-        <div className="flex flex-col w-full">
-          <SidebarContent adminName={adminName} adminInitial={adminInitial} />
-        </div>
-      </aside>
+        <aside className="hidden md:flex md:flex-shrink-0 w-60">
+          <div className="flex flex-col w-full">
+            <SidebarContent adminName={adminName} adminInitial={adminInitial} />
+          </div>
+        </aside>
 
-      {sidebarOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-          <div className="fixed inset-y-0 left-0 w-64 z-50 md:hidden shadow-2xl">
-            <SidebarContent
-              adminName={adminName}
-              adminInitial={adminInitial}
-              onClose={() => setSidebarOpen(false)}
+        {sidebarOpen && (
+          <>
+            <div
+              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              onClick={() => setSidebarOpen(false)}
             />
-          </div>
-        </>
-      )}
-
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-
-        <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[#0A3956] border-b border-white/10 shadow-md flex-shrink-0">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-white hover:text-[#F69220] transition-colors"
-            aria-label="Abrir menu"
-          >
-            <IconMenu />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-[#F69220] flex items-center justify-center">
-              <span className="text-white font-bold text-xs">A</span>
+            <div className="fixed inset-y-0 left-0 w-64 z-50 md:hidden shadow-2xl">
+              <SidebarContent
+                adminName={adminName}
+                adminInitial={adminInitial}
+                onClose={() => setSidebarOpen(false)}
+              />
             </div>
-            <span className="text-white font-bold text-sm">ABC Centro</span>
-          </div>
-          <div className="w-7 h-7 rounded-full bg-[#F69220] flex items-center justify-center">
-            <span className="text-white font-bold text-xs">{adminInitial}</span>
-          </div>
-        </header>
+          </>
+        )}
 
-        <main className="flex-1 overflow-y-auto">
-          <Outlet />
-        </main>
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+
+      <header className="md:hidden relative flex items-center justify-between px-4 py-3 bg-[#0A3956] border-b border-white/10 shadow-md flex-shrink-0">
+  <button
+    onClick={() => setSidebarOpen(true)}
+    className="text-white hover:text-[#F69220] transition-colors z-10"
+    aria-label="Abrir menu"
+  >
+    <IconMenu />
+  </button>
+
+  <img
+    src={logoWhite}
+    alt="ABC Centro Preparatório"
+    className="h-8 w-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+  />
+
+  <div className="w-6 h-6 rounded-full bg-[#F69220] flex items-center justify-center z-10">
+    <span className="text-white font-bold text-xs">{adminInitial}</span>
+  </div>
+</header>
+
+          <main className="flex-1 overflow-y-auto">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </AdminNotificationsProvider>
   );
 }

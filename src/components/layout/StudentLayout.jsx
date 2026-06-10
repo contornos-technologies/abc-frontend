@@ -4,6 +4,7 @@ import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, ClipboardList, CreditCard, Lock, LogOut, Menu, X } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
+import logoWhite from '../../assets/logo-white.svg';
 
 const menuItems = [
   { id: 'perfil',     label: 'Perfil',     icon: User },
@@ -35,24 +36,44 @@ export default function StudentLayout({ children, activeTab, onTabChange }) {
     <div className="min-h-screen bg-[#F4F6F9] font-sans">
 
       {/* Mobile Top Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0A3956] text-white px-4 py-3 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-          <span className="font-bold text-lg tracking-wide">ABC</span>
-        </div>
-      </div>
+<div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0A3956] text-white px-4 py-3 flex items-center justify-between shadow-md">
+
+  <button onClick={() => setIsMobileMenuOpen(true)} className="hover:bg-white/10 rounded-lg transition-colors">
+    <Menu size={24} />
+  </button>
+
+  <img
+    src={logoWhite}
+    alt="ABC Centro Preparatório"
+    className="h-8 w-auto absolute left-1/2 -translate-x-1/2"
+  />
+
+  <div className="w-7 h-7 rounded-full bg-[#F69220] flex items-center justify-center flex-shrink-0">
+    <span className="text-white font-bold text-xs">{initials}</span>
+  </div>
+
+</div>
+
+ 
 
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-40 w-60 bg-[#0A3956] text-white flex flex-col transition-transform duration-200 ease-in-out ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0`}>
-
-        <div className="p-6 border-b border-white/10">
-          <div className="font-bold text-xl tracking-wide">ABC</div>
-          <div className="text-xs text-white/60 mt-1">Centro de Preparação</div>
-        </div>
+      {/* logo */}
+       <div className="flex items-center justify-between p-6 border-b border-white/10">
+  <img
+    src={logoWhite}
+    alt="ABC Centro Preparatório"
+    className="h-10 w-auto"
+  />
+  <button
+    onClick={() => setIsMobileMenuOpen(false)}
+    className="lg:hidden text-white/60 hover:text-white transition-colors"
+  >
+    <X size={20} />
+  </button>
+</div>
 
         <div className="p-6 border-b border-white/10">
           <div className="w-12 h-12 rounded-full bg-[#F69220] flex items-center justify-center text-white mb-3 font-bold text-lg">
