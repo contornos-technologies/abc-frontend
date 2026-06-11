@@ -59,7 +59,7 @@ export default function Stats() {
   ];
 
   return (
-    <section className="relative -mt-4 bg-[#F5F8FC] pb-16">
+   <section className="relative lg:-mt-4 md:-mt-32 bg-[#F4F8FC] pb-16">
 
       {/* ───────────────── CONTAINER ───────────────── */}
       <div className="w-full max-w-[1150px] mx-auto px-4 sm:px-6">

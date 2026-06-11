@@ -65,132 +65,151 @@ export default function Login() {
   };
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white">
       <Navbar darkHero={false} showBorder={true} />
 
       {/* ── MOBILE E TABLET (abaixo de lg) ─────────────────────────── */}
-      {/* paddingTop: 80px = altura real da Navbar (h-20) */}
       <div className="lg:hidden" style={{ paddingTop: '80px' }}>
-        <div className="px-6 pt-8 pb-10 max-w-md mx-auto w-full">
 
-          {/* TÍTULO */}
-          <div className="text-center mb-8">
-            <h2 className="font-bold text-[22px] mb-1" style={{ color: '#0A3956' }}>
-              Bem-vindo de volta
-            </h2>
-            <p className="text-[14px]" style={{ color: '#6C757D' }}>
-              Acede à tua conta para continuar
-            </p>
-          </div>
+        <div className="px-6 pt-10 pb-10 w-full max-w-sm mx-auto">
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-
-            {/* EMAIL */}
-            <div>
-              <label htmlFor="identifier-mobile" className="block mb-1.5 text-[13px] font-medium" style={{ color: '#0A3956' }}>
-                Email ou Telefone
-              </label>
-              <input
-                type="text"
-                id="identifier-mobile"
-                value={identifier}
-                onChange={(e) => {
-                  setIdentifier(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, identifier: '' }));
-                }}
-                placeholder="seu@email.com ou 923 456 789"
-                autoComplete="username"
-                className={`w-full px-4 py-3 text-[14px] border rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1E90FF]/40 focus:border-[#1E90FF] ${
-                  fieldErrors.identifier ? 'border-red-400' : 'border-gray-300'
-                }`}
-              />
-              {fieldErrors.identifier && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.identifier}</p>
-              )}
+            {/* TÍTULO */}
+            <div className="mb-7">
+              <h2 className="font-bold text-[24px] mb-1.5" style={{ color: '#0A3956' }}>
+                Bem-vindo de volta
+              </h2>
+              <p className="text-[14px]" style={{ color: '#6C757D' }}>
+                Acede à tua conta para continuar
+              </p>
             </div>
 
-            {/* PASSWORD */}
-            <div>
-              <label htmlFor="password-mobile" className="block mb-1.5 text-[13px] font-medium" style={{ color: '#0A3956' }}>
-                Senha
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password-mobile"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setFieldErrors((prev) => ({ ...prev, password: '' }));
-                  }}
-                  placeholder="........"
-                  className={`w-full px-4 pr-12 py-3 text-[14px] border rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1E90FF]/40 focus:border-[#1E90FF] ${
-                    fieldErrors.password ? 'border-red-400' : 'border-gray-300'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+            <form onSubmit={handleSubmit} className="space-y-5">
+
+              {/* EMAIL */}
+              <div>
+                <label
+                  htmlFor="identifier-mobile"
+                  className="block mb-1.5 text-[13px] font-medium"
+                  style={{ color: '#0A3956' }}
                 >
-                  {showPassword
-                    ? <EyeOff size={18} style={{ color: '#6C757D' }} />
-                    : <Eye size={18} style={{ color: '#6C757D' }} />
-                  }
-                </button>
+                  Email ou Telefone
+                </label>
+                <input
+                  type="text"
+                  id="identifier-mobile"
+                  value={identifier}
+                  onChange={(e) => {
+                    setIdentifier(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, identifier: '' }));
+                  }}
+                  placeholder="seu@email.com ou 923 456 789"
+                  autoComplete="username"
+                  className={`w-full px-4 py-3.5 text-[14px] border rounded-2xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1E90FF]/30 focus:border-[#1E90FF] ${
+                    fieldErrors.identifier ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                  }`}
+                  style={{ fontSize: '16px' /* evita zoom automático no iOS */ }}
+                />
+                {fieldErrors.identifier && (
+                  <p className="text-red-500 text-xs mt-1.5">{fieldErrors.identifier}</p>
+                )}
               </div>
-              {fieldErrors.password && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
+
+              {/* PASSWORD */}
+              <div>
+                <label
+                  htmlFor="password-mobile"
+                  className="block mb-1.5 text-[13px] font-medium"
+                  style={{ color: '#0A3956' }}
+                >
+                  Senha
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password-mobile"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, password: '' }));
+                    }}
+                    placeholder="••••••••"
+                    className={`w-full px-4 pr-12 py-3.5 text-[14px] border rounded-2xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1E90FF]/30 focus:border-[#1E90FF] ${
+                      fieldErrors.password ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50'
+                    }`}
+                    style={{ fontSize: '16px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 touch-manipulation"
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    {showPassword
+                      ? <EyeOff size={20} style={{ color: '#9CA3AF' }} />
+                      : <Eye size={20} style={{ color: '#9CA3AF' }} />
+                    }
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="text-red-500 text-xs mt-1.5">{fieldErrors.password}</p>
+                )}
+              </div>
+
+              {/* LEMBRAR */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="remember-mobile"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded"
+                  style={{ accentColor: '#F69220' }}
+                />
+                <label
+                  htmlFor="remember-mobile"
+                  className="ml-2 text-[13px] select-none"
+                  style={{ color: '#6C757D' }}
+                >
+                  Lembrar-me
+                </label>
+              </div>
+
+              {/* BOTÃO */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 rounded-2xl font-bold text-[16px] text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-60 touch-manipulation"
+                style={{ backgroundColor: '#F69220' }}
+              >
+                {loading ? 'A entrar...' : 'Entrar'}
+              </button>
+
+              {/* ERRO GLOBAL */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3.5 text-[13px] text-center leading-relaxed">
+                  {error}
+                </div>
               )}
+
+            </form>
+
+            {/* LINK CRIAR CONTA */}
+            <div className="text-center mt-7">
+              <span className="text-[13px]" style={{ color: '#6C757D' }}>Não tens conta?</span>
+              <Link
+                to="/signup"
+                className="ml-1 text-[13px] font-semibold hover:underline"
+                style={{ color: '#F69220' }}
+              >
+                Criar conta
+              </Link>
             </div>
-
-            {/* LEMBRAR */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="remember-mobile"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4"
-                style={{ accentColor: '#F69220' }}
-              />
-              <label htmlFor="remember-mobile" className="ml-2 text-[13px]" style={{ color: '#6C757D' }}>
-                Lembrar-me
-              </label>
-            </div>
-
-            {/* BOTÃO */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl font-bold text-[15px] text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
-              style={{ backgroundColor: '#F69220' }}
-            >
-              {loading ? 'A entrar...' : 'Entrar'}
-            </button>
-
-            {/* ERRO */}
-            {error && (
-              <div className="bg-red-50 border border-red-300 text-red-600 rounded-lg p-3 text-[13px] text-center">
-                {error}
-              </div>
-            )}
-
-          </form>
-
-          {/* LINK CRIAR CONTA */}
-          <div className="text-center mt-6">
-            <span className="text-[13px]" style={{ color: '#6C757D' }}>Não tens conta?</span>
-            <Link to="/signup" className="ml-1 text-[13px] font-medium hover:underline" style={{ color: '#F69220' }}>
-              Criar conta
-            </Link>
-          </div>
 
         </div>
       </div>
 
       {/* ── DESKTOP (lg para cima) ──────────────────────────────────── */}
-      <div className="hidden lg:flex relative items-center justify-center overflow-hidden bg-[#E8EDF5] px-4 pt-20 animate-fadeInUp lg:min-h-screen">
+      <div className="hidden lg:flex lg:min-h-screen relative items-center justify-center overflow-hidden bg-[#E8EDF5] px-4 pt-20 animate-fadeInUp">
 
         {/* FUNDO DECORATIVO */}
         <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#1E90FF]/10" />
