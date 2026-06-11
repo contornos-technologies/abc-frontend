@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import PublicLayout from '../../components/public/PublicLayout'
 import {
   Zap,
   Search,
@@ -18,122 +19,7 @@ import {
 } from 'lucide-react'
 import api from '../../services/api'
 
-// ─── Navbar inline ─────────────────────────────────────────────────────────────
-// Usa o Navbar existente do projecto se preferires — este é um fallback standalone
-function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false)
 
-  return (
-    <header className="fixed top-0 w-full h-20 z-50 bg-white/95 backdrop-blur-md border-b border-[#E7EDF5] shadow-[0_2px_16px_rgba(21,101,168,0.06)]">
-      <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-[#1565A8] flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-            <GraduationCap size={20} className="text-white" />
-          </div>
-          <span className="text-[15px] font-bold text-[#071C35] leading-tight">
-            ABC
-            <br />
-            <span className="text-[11px] font-medium text-[#5F6D7E] leading-none">
-              Centro Preparatório
-            </span>
-          </span>
-        </Link>
-
-        {/* Nav desktop */}
-        <nav className="hidden md:flex items-center gap-1 h-full">
-          {[
-            { label: 'Início', to: '/' },
-            { label: 'Simulações', to: '/simulations', active: true },
-            { label: 'Contacto', to: '/contacto' },
-          ].map(({ label, to, active }) => (
-            <Link
-              key={label}
-              to={to}
-              className={`text-sm font-semibold h-full flex items-center px-4 border-b-2 transition-all duration-200 ${
-                active
-                  ? 'border-[#1565A8] text-[#1565A8]'
-                  : 'border-transparent text-[#5F6D7E] hover:text-[#071C35] hover:border-[#E7EDF5]'
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* CTAs desktop */}
-        <div className="hidden md:flex items-center gap-3">
-          <Link
-            to="/login"
-            className="text-sm font-semibold text-[#1565A8] px-5 py-2.5 rounded-full border border-[#E3EAF2] hover:bg-[#F4F8FC] hover:border-[#1565A8] transition-all duration-200"
-          >
-            Entrar
-          </Link>
-          <Link
-            to="/signup"
-            className="text-sm font-semibold text-white bg-[#F7941D] hover:bg-[#ea860f] px-5 py-2.5 rounded-full shadow-md shadow-orange-200/60 transition-all duration-200 hover:-translate-y-0.5"
-          >
-            Inscrever-se
-          </Link>
-        </div>
-
-        {/* Hamburger mobile */}
-        <button
-          className="md:hidden p-2 rounded-lg hover:bg-[#F4F8FC] transition-colors"
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          {menuOpen ? (
-            <X size={22} className="text-[#1565A8]" />
-          ) : (
-            <Menu size={22} className="text-[#1565A8]" />
-          )}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-white border-t border-[#E7EDF5] px-6 py-5 flex flex-col gap-4 shadow-lg">
-          <Link
-            to="/"
-            className="text-sm font-semibold text-[#5F6D7E]"
-            onClick={() => setMenuOpen(false)}
-          >
-            Início
-          </Link>
-          <Link
-            to="/simulations"
-            className="text-sm font-semibold text-[#1565A8]"
-            onClick={() => setMenuOpen(false)}
-          >
-            Simulações
-          </Link>
-          <Link
-            to="/contacto"
-            className="text-sm font-semibold text-[#5F6D7E]"
-            onClick={() => setMenuOpen(false)}
-          >
-            Contacto
-          </Link>
-          <hr className="border-[#E7EDF5]" />
-          <Link
-            to="/login"
-            className="text-sm font-semibold text-[#1565A8] text-center py-2.5 rounded-full border border-[#E3EAF2]"
-            onClick={() => setMenuOpen(false)}
-          >
-            Entrar
-          </Link>
-          <Link
-            to="/signup"
-            className="text-sm font-semibold text-white bg-[#F7941D] px-5 py-2.5 rounded-full text-center"
-            onClick={() => setMenuOpen(false)}
-          >
-            Inscrever-se
-          </Link>
-        </div>
-      )}
-    </header>
-  )
-}
 
 // ─── Skeleton Card ─────────────────────────────────────────────────────────────
 function SkeletonCard() {
@@ -544,8 +430,9 @@ export default function SimulationsList() {
   )
 
   return (
+    <PublicLayout solidWhite>
     <div className="bg-[#F4F8FC] min-h-screen font-sans">
-      <Navbar />
+     
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section
@@ -622,10 +509,11 @@ export default function SimulationsList() {
         </div>
 
         <HeroWave />
+        
       </section>
 
       {/* ── FILTER BAR ───────────────────────────────────────────────────── */}
-      <div className="sticky top-20 z-40 bg-white border-b border-[#E7EDF5] shadow-sm">
+   <div className="bg-white border-b border-[#E7EDF5] shadow-sm">
         <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-3">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             {/* Search */}
@@ -760,44 +648,8 @@ export default function SimulationsList() {
         </div>
       </section>
 
-      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer className="bg-[#071C35] py-10">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <GraduationCap size={20} className="text-[#a0caff]" />
-              <span className="font-bold text-[#a0caff] text-sm">
-                ABC Centro Preparatório
-              </span>
-            </div>
-            <p className="text-[#8899aa] text-xs max-w-xs leading-relaxed">
-              Liderando a preparação académica no Huambo com excelência e
-              compromisso desde 2017.
-            </p>
-          </div>
-          <nav className="flex flex-wrap justify-center gap-6">
-            {[
-              { label: 'Simulações', to: '/simulations' },
-              { label: 'Preçário', to: '/#precos' },
-              { label: 'Sobre Nós', to: '/sobre' },
-              { label: 'Contacto', to: '/contacto' },
-            ].map(({ label, to }) => (
-              <Link
-                key={label}
-                to={to}
-                className="text-[#8899aa] text-sm hover:text-[#a0caff] transition-colors"
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
-          <p className="text-[#8899aa] text-xs text-center md:text-right">
-            © {new Date().getFullYear()} ABC Centro Preparatório
-            <br />
-            Huambo, Angola.
-          </p>
-        </div>
-      </footer>
+    
     </div>
+    </PublicLayout>
   )
 }

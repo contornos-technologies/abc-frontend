@@ -8,10 +8,10 @@ const NAV_LINKS = [
   { label: "Início", to: "/" },
   { label: "Sobre", to: "/sobre" },
   { label: "Contacto", to: "/contacto" },
-  { label: "Simulações", to: "/simulacoes" },
+  { label: "Simulações", to: "/simulations" },
 ];
 
-export default function Navbar({ darkHero = false, showBorder = false }) {
+export default function Navbar({ darkHero = false, showBorder = false, solidWhite = false }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activePath, setActivePath] = useState("/");
@@ -36,7 +36,9 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
 
   const isScrolled = scrolled || menuOpen;
 
-  const textColor = isScrolled
+  const textColor = solidWhite
+  ? "text-[#071C35]"
+  : isScrolled
     ? "text-white"
     : darkHero
       ? "text-white"
@@ -48,11 +50,13 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
         className={`
           fixed top-0 left-0 right-0 z-50 h-20
           transition-all duration-300 ease-in-out
-          ${
-            isScrolled
-              ? "bg-[#0A3956]/95 backdrop-blur-md"
-              : `bg-transparent ${showBorder ? "border-b border-gray-200 md:border-none" : ""}`
-          }
+        ${
+  solidWhite
+    ? "bg-white border-b border-gray-200"
+    : isScrolled
+      ? "bg-[#0A3956]/95 backdrop-blur-md"
+      : `bg-transparent ${showBorder ? "border-b border-gray-200 md:border-none" : ""}`
+}
         `}
       >
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
@@ -63,7 +67,7 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
             className="flex items-center hover:opacity-80 transition-opacity duration-200"
           >
             <img
-              src={isScrolled || darkHero ? logoWhite : logoDark}
+             src={solidWhite ? logoDark : isScrolled || darkHero ? logoWhite : logoDark}
               alt="ABC Centro Preparatório"
               className="h-12 w-auto"
             />
@@ -80,19 +84,23 @@ export default function Navbar({ darkHero = false, showBorder = false }) {
                   className={`
                     text-sm font-semibold
                     transition-all duration-200
-                    ${
-                      isScrolled
-                        ? isActive
-                          ? "text-white font-bold"
-                          : "text-white hover:text-[#F69220]"
-                        : darkHero
-                          ? isActive
-                            ? "text-white font-bold"
-                            : "text-white/90 hover:text-[#F69220]"
-                          : isActive
-                            ? "text-[#1565A8]"
-                            : "text-[#071C35] hover:text-[#1565A8]"
-                    }
+                   ${
+  solidWhite
+    ? isActive
+      ? "text-[#1565A8] font-bold"
+      : "text-[#071C35] hover:text-[#1565A8]"
+    : isScrolled
+      ? isActive
+        ? "text-white font-bold"
+        : "text-white hover:text-[#F69220]"
+      : darkHero
+        ? isActive
+          ? "text-white font-bold"
+          : "text-white/90 hover:text-[#F69220]"
+        : isActive
+          ? "text-[#1565A8]"
+          : "text-[#071C35] hover:text-[#1565A8]"
+}
                   `}
                 >
                   {link.label}
