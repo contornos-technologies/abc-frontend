@@ -35,14 +35,14 @@ import Contact from './pages/public/Contact';
 // Simulation 
 import SimulationPage from './pages/simulation/SimulationPage';   
 import ResultsPage from './pages/simulation/ResultsPage'; 
-import SimulationsList from './pages/simulation/SimulationsList';        
+import SimulationsList from './pages/simulation/SimulationsList';
+import SimulationIntro from './pages/simulation/SimulationIntro';        
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-
           {/* ──────────────── */}
           {/* PÚBLICAS         */}
           {/* ──────────────── */}
@@ -53,38 +53,48 @@ function App() {
           <Route path="/sobre" element={<div>Sobre (em breve)</div>} />
           <Route path="/servicos" element={<div>Serviços (em breve)</div>} />
           <Route path="/contacto" element={<Contact />} />
-          <Route path="/simulation/:id" element={<SimulationPage />} />         {/* ← NOVO */}
-          <Route path="/simulation/:id/results" element={<ResultsPage />} />
           <Route path="/simulations" element={<SimulationsList />} />
-              {/* ← NOVO */}
-
+          <Route path="/simulation/:id" element={<SimulationIntro />} />
+          <Route path="/simulation/:id/exam" element={<SimulationPage />} />
+          <Route path="/simulation/:id/results" element={<ResultsPage />} />
           {/* ──────────────── */}
           {/* ESTUDANTE        */}
           {/* ──────────────── */}
-          <Route path="/student/profile" element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          } />
-          <Route path="/student/enrollment/new" element={
-            <PrivateRoute>
-              <EnrollmentCreate />
-            </PrivateRoute>
-          } />
-          <Route path="/student/enrollment/success" element={
-            <PrivateRoute>
-              <EnrollmentSuccess />
-            </PrivateRoute>
-          } />
-
+          <Route
+            path="/student/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/student/enrollment/new"
+            element={
+              <PrivateRoute>
+                <EnrollmentCreate />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/student/enrollment/success"
+            element={
+              <PrivateRoute>
+                <EnrollmentSuccess />
+              </PrivateRoute>
+            }
+          />
           {/* ──────────────── */}
           {/* ADMIN            */}
           {/* ──────────────── */}
-          <Route path="/admin" element={
-            <PrivateRoute adminOnly>
-              <AdminLayout />
-            </PrivateRoute>
-          }>
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute adminOnly>
+                <AdminLayout />
+              </PrivateRoute>
+            }
+          >
             <Route index element={<Dashboard />} />
             <Route path="students" element={<Students />} />
             <Route path="students/:id" element={<StudentDetail />} />
@@ -97,11 +107,10 @@ function App() {
             <Route path="analytics" element={<Analytics />} />
             <Route path="testemunhos" element={<AdminTestemunhos />} /> 
           </Route>
-
         </Routes>
       </AuthProvider>
     </BrowserRouter>
-  );
+  )
 }
 
 export default App;

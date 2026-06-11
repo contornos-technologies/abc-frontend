@@ -1,322 +1,855 @@
-import { useState, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { useEffect, useRef, useState } from 'react'
+import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom'
+import {
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  ClipboardList,
+  UserCircle,
+} from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import api from '../../services/api'
 
-function formatTime(seconds) {
-  if (!seconds) return '—';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (h > 0) return `${h}h ${String(m).padStart(2, '0')}min`;
-  if (m > 0) return `${m}min ${String(s).padStart(2, '0')}s`;
-  return `${s}s`;
+// ─── Score helpers ────────────────────────────────────────────────────────────
+
+function getScoreColor(score) {
+  if (score >= 10) return 'blue'
+  if (score >= 7) return 'amber'
+  return 'red'
 }
 
-// Anel animado com a nota
-function ScoreRing({ score, maxScore = 20 }) {
-  const [animated, setAnimated] = useState(false);
-  const percentage = Math.min(100, Math.max(0, (score / maxScore) * 100));
-  const radius = 64;
-  const circumference = 2 * Math.PI * radius;
-  const dash = animated ? (circumference * percentage) / 100 : 0;
+function getScoreHex(color) {
+  if (color === 'blue') return '#1565A8'
+  if (color === 'amber') return '#E67E22'
+  return '#C0392B'
+}
+
+function getClassification(score) {
+  if (score >= 17) return 'Excelente'
+  if (score >= 14) return 'Muito Bom'
+  if (score >= 10) return 'Suficiente'
+  if (score >= 7) return 'Fraco'
+  return 'Insuficiente'
+}
+
+function getClassificationPillStyle(color) {
+  if (color === 'blue') return { backgroundColor: '#EEF4FF', color: '#1565A8' }
+  if (color === 'amber') return { backgroundColor: '#FEF3E2', color: '#E67E22' }
+  return { backgroundColor: '#FDECEA', color: '#C0392B' }
+}
+
+// ─── Score circle with animated arc + count-up ───────────────────────────────
+
+function ScoreCircle({ score, maxScore, animated }) {
+  const size = 160
+  const strokeWidth = 10
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const offset = animated
+    ? circumference - (score / maxScore) * circumference
+    : circumference
+
+  const color = getScoreColor(score)
+  const hex = getScoreHex(color)
+  const [displayScore, setDisplayScore] = useState(0)
 
   useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 200);
-    return () => clearTimeout(t);
-  }, []);
-
-  const ringColor =
-    percentage >= 60
-      ? '#1565A8'
-      : percentage >= 40
-      ? '#F7941D'
-      : '#ef4444';
-
-  const passed = percentage >= 50;
+    if (!animated) return
+    const duration = 600
+    const start = performance.now()
+    const raf = (now) => {
+      const t = Math.min((now - start) / duration, 1)
+      setDisplayScore(Math.round(t * score))
+      if (t < 1) requestAnimationFrame(raf)
+    }
+    requestAnimationFrame(raf)
+  }, [animated, score])
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative w-40 h-40">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
-          <circle
-            cx="80" cy="80" r={radius}
-            fill="none"
-            stroke="#E7EDF5"
-            strokeWidth="14"
-          />
-          <circle
-            cx="80" cy="80" r={radius}
-            fill="none"
-            stroke={ringColor}
-            strokeWidth="14"
-            strokeLinecap="round"
-            strokeDasharray={`${dash} ${circumference}`}
-            style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[36px] font-extrabold text-[#071C35] leading-none">
-            {typeof score === 'number' ? score.toFixed(1) : score}
-          </span>
-          <span className="text-sm text-slate-400 font-medium">/ {maxScore}</span>
-        </div>
-      </div>
-      <div className={`mt-3 px-4 py-1.5 rounded-full text-sm font-bold ${
-        passed
-          ? 'bg-green-100 text-green-700'
-          : 'bg-red-100 text-red-600'
-      }`}>
-        {passed ? '✓ Aprovado' : '✗ Não aprovado'}
-      </div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 12,
+      }}
+    >
+      <svg
+        width={size}
+        height={size}
+        style={{ width: 'clamp(120px, 20vw, 160px)', height: 'auto' }}
+      >
+        {/* Background ring */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#E7EDF5"
+          strokeWidth={strokeWidth}
+        />
+        {/* Animated progress arc */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={hex}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{
+            transition: animated ? 'stroke-dashoffset 0.8s ease-out' : 'none',
+          }}
+        />
+        {/* Score number */}
+        <text
+          x={size / 2}
+          y={size / 2 - 8}
+          textAnchor="middle"
+          fill={hex}
+          fontSize="36"
+          fontWeight="500"
+          fontFamily="Inter, sans-serif"
+        >
+          {displayScore}
+        </text>
+        {/* "val" label */}
+        <text
+          x={size / 2}
+          y={size / 2 + 4}
+          textAnchor="middle"
+          fill={hex}
+          fontSize="11"
+          fontFamily="Inter, sans-serif"
+        >
+          val
+        </text>
+        {/* /20 denominator */}
+        <text
+          x={size / 2}
+          y={size / 2 + 22}
+          textAnchor="middle"
+          fill="#5F6D7E"
+          fontSize="14"
+          fontFamily="Inter, sans-serif"
+        >
+          /{maxScore}
+        </text>
+      </svg>
+
+      {/* Classification pill */}
+      <span
+        style={{
+          ...getClassificationPillStyle(color),
+          padding: '4px 16px',
+          borderRadius: 999,
+          fontSize: 13,
+          fontWeight: 500,
+        }}
+      >
+        {getClassification(score)}
+      </span>
     </div>
-  );
+  )
 }
 
-function StatCard({ icon, label, value, sub, color = 'blue' }) {
-  const colors = {
-    blue: 'bg-[#F4F8FC] text-[#1565A8]',
-    green: 'bg-green-50 text-green-600',
-    red: 'bg-red-50 text-red-500',
-    amber: 'bg-amber-50 text-amber-500',
-    slate: 'bg-slate-50 text-slate-500',
-  };
+// ─── Per-section progress bar ─────────────────────────────────────────────────
+
+function SubjectBar({ subject, visible }) {
+  const color = getScoreColor(subject.score)
+  const hex = getScoreHex(color)
+  const pct = (subject.score / subject.maxScore) * 100
+
   return (
-    <div className="bg-white rounded-[20px] border border-[#E7EDF5] p-5">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${colors[color]}`}>
-        {icon}
+    <div style={{ paddingTop: 16, paddingBottom: 16 }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          marginBottom: 8,
+        }}
+      >
+        <span style={{ color: '#071C35', fontSize: 14, fontWeight: 500 }}>
+          {subject.name}
+        </span>
+        <span style={{ color: hex, fontSize: 13, fontWeight: 500 }}>
+          {subject.score} val/{subject.maxScore}
+        </span>
       </div>
-      <div className="text-[22px] font-extrabold text-[#071C35]">{value}</div>
-      <div className="text-sm font-medium text-slate-600">{label}</div>
-      {sub && <div className="text-xs text-slate-400 mt-0.5">{sub}</div>}
+      <div
+        style={{
+          height: 6,
+          borderRadius: 999,
+          backgroundColor: '#F0F4F8',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            height: '100%',
+            borderRadius: 999,
+            backgroundColor: hex,
+            width: visible ? `${pct}%` : '0%',
+            transition: visible ? 'width 0.5s ease-out' : 'none',
+          }}
+        />
+      </div>
+      <p style={{ color: '#A0AEC0', fontSize: 12, marginTop: 4 }}>
+        {subject.correct} correctas de {subject.total} questões
+      </p>
     </div>
-  );
+  )
 }
+
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+
+function Skeleton({ width = '100%', height = 16, radius = 8, style = {} }) {
+  return (
+    <div
+      style={{
+        width,
+        height,
+        borderRadius: radius,
+        backgroundColor: '#F0F4F8',
+        animation: 'pulse 1.5s ease-in-out infinite',
+        ...style,
+      }}
+    />
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ResultsPage() {
-  const { id } = useParams(); // id do exame (usado para "Refazer")
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
 
-  const attemptId = location.state?.attemptId;
+  const attemptId = searchParams.get('attemptId')
 
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [attempt, setAttempt] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
+  const [arcAnimated, setArcAnimated] = useState(false)
+  const [barsVisible, setBarsVisible] = useState(false)
+  const barsRef = useRef(null)
+
+  // Fetch attempt results
   useEffect(() => {
     if (!attemptId) {
-      setError('Não foi possível encontrar os resultados desta tentativa.');
-      setLoading(false);
-      return;
+      setError('ID de tentativa em falta.')
+      setLoading(false)
+      return
     }
-
-    async function loadResults() {
+    ;(async () => {
       try {
-        // ✅ Usa api (axios) em vez de fetch directo — envia token automaticamente
-        const res = await api.get(`/simulations/attempts/${attemptId}`);
-        setResults(res.data);
+        const res = await api.get(`/simulations/attempts/${attemptId}`)
+        const data = res.data?.data ?? res.data
+        setAttempt(data)
       } catch (err) {
-        // ✅ Axios lança erro em respostas 4xx/5xx — mensagem mais clara
-        const message =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          `Erro ao carregar resultados (${err.response?.status ?? 'rede'})`;
-        setError(message);
+        setError('Não foi possível carregar os resultados.')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    }
+    })()
+  }, [attemptId])
 
-    loadResults();
-  }, [attemptId]);
+  // Trigger arc animation after data loads
+  useEffect(() => {
+    if (!attempt) return
+    const t = setTimeout(() => setArcAnimated(true), 120)
+    return () => clearTimeout(t)
+  }, [attempt])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F4F8FC] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#1565A8] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-500 font-medium">A calcular resultados…</p>
-        </div>
-      </div>
-    );
-  }
+  // Intersection observer for bar animations
+  useEffect(() => {
+    const el = barsRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setBarsVisible(true)
+      },
+      { threshold: 0.2 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [attempt])
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#F4F8FC] flex items-center justify-center px-4">
-        <div className="bg-white rounded-[24px] border border-[#E7EDF5] p-8 max-w-md text-center">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-extrabold text-[#071C35] mb-2">Sem resultados</h2>
-          <p className="text-sm text-slate-500 mb-6">{error}</p>
-          <a href="/simulations" className="inline-block px-6 py-2.5 bg-[#1565A8] text-white font-bold rounded-full text-sm hover:bg-[#0d4f8a] transition-colors">
-            Ver todas as provas
-          </a>
-        </div>
-      </div>
-    );
-  }
+  // ── Derived values ────────────────────────────────────────────────────────
 
-  // ✅ Campos confirmados pelo backend (Postman): score, completedAt, results[]
-  // results[] contém { isCorrect, selectedOptionId, ... } por questão
-  const score    = results?.score ?? 0;
-  const maxScore = results?.maxScore ?? 20; // pede ao backend para incluir este campo se não vier
+  const isLoggedIn = !!user
 
-  // ✅ Derivar correct/wrong/blank dos results[] que o backend confirma retornar
-  const allResults = Array.isArray(results?.results) ? results.results : [];
-  const correct    = allResults.filter(r => r.isCorrect === true).length;
-  const wrong      = allResults.filter(r => r.isCorrect === false && r.selectedOptionId).length;
-  const blank      = allResults.filter(r => !r.selectedOptionId).length;
-  const total      = allResults.length;
+  // Student first name for personalised greeting
+  const firstName =
+    user?.studentData?.fullName?.split(' ')[0] ??
+    user?.fullName?.split(' ')[0] ??
+    null
 
-  // ✅ Campos opcionais — mostrar '—' se não vierem
-  const timeSpent = results?.timeSpent ?? results?.duration ?? results?.elapsed ?? null;
+  // Normalise attempt data into display shape
+  const score = attempt ? Math.round((attempt.score ?? 0) * 10) / 10 : 0
+  const maxScore = 20
+  const correct = attempt?.correctAnswers ?? 0
+  const total = attempt?.totalQuestions ?? 0
+  const wrong = total - correct
+  const examTitle = attempt?.exam?.title ?? 'Simulação'
+  const isPass = score >= 10
 
-  // ✅ Título: tenta vários campos comuns, fallback limpo
-  const examTitle =
-    results?.examTitle ??
-    results?.simulation?.title ??
-    results?.exam?.title ??
-    results?.title ??
-    'Simulação';
+  // Build per-section results array
+  const sections = (attempt?.sectionResults ?? []).map((s) => ({
+    name: s.subject?.name ?? s.subjectName ?? 'Disciplina',
+    score: Math.round((s.score ?? 0) * 10) / 10,
+    maxScore: 20,
+    correct: s.correctAnswers ?? 0,
+    total: s.totalQuestions ?? 0,
+  }))
 
-  const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
-
-  // ✅ Detectar sessão anónima (sem token guardado)
-  const isAnonymous = !localStorage.getItem('abc_token');
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#F4F8FC]">
+    <div
+      style={{
+        fontFamily: 'Inter, sans-serif',
+        backgroundColor: '#FFFFFF',
+        minHeight: '100vh',
+      }}
+    >
+      {/* Pulse animation keyframe */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
 
-      {/* Navbar */}
-      <nav className="bg-white border-b border-[#E7EDF5] px-4 sm:px-6 lg:px-8 py-4">
-        <div className="max-w-[1200px] mx-auto flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#1565A8] flex items-center justify-center">
-              <span className="text-white font-extrabold text-sm">ABC</span>
-            </div>
-            <span className="font-extrabold text-[#071C35] text-lg hidden sm:block">ABC Simulações</span>
-          </a>
-          <a href="/simulations" className="text-sm text-[#1565A8] font-semibold hover:underline">
-            Ver todas as provas
-          </a>
-        </div>
-      </nav>
+      {/* ── Top bar ──────────────────────────────────────────────────────── */}
+      <header
+        style={{
+          height: 64,
+          backgroundColor: '#FFFFFF',
+          borderBottom: '1px solid #E7EDF5',
+          boxShadow: '0 1px 6px rgba(0,0,0,0.04)',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 24px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          gap: 12,
+        }}
+      >
+        <Link
+          to="/simulations"
+          style={{
+            color: '#1565A8',
+            fontSize: 14,
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            textDecoration: 'none',
+            flexShrink: 0,
+          }}
+        >
+          <ArrowLeft size={16} />
+          Simulações
+        </Link>
+        <span
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            color: '#071C35',
+            fontSize: 15,
+            fontWeight: 500,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            padding: '0 12px',
+          }}
+        >
+          {loading ? '' : examTitle}
+        </span>
+        <div style={{ width: 80, flexShrink: 0 }} />
+      </header>
 
-      <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-14 sm:py-16 lg:py-20">
-
-        {/* Cabeçalho */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-[#1565A8]/10 text-[#1565A8] text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-5">
-            Resultado Final
-          </div>
-          <h1 className="text-[26px] sm:text-[38px] font-extrabold text-[#071C35] leading-[1.1] mb-2">
-            {examTitle}
-          </h1>
-          <p className="text-slate-400 text-sm">
-            Aqui está o teu desempenho nesta simulação
-          </p>
-        </div>
-
-        {/* Nota principal */}
-        <div className="bg-white rounded-[28px] border border-[#E7EDF5] shadow-sm p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8 mb-6">
-          <ScoreRing score={score} maxScore={maxScore} />
-
-          <div className="flex-1 w-full">
-            {/* Barra de percentagem de acertos */}
-            <div className="mb-5">
-              <div className="flex justify-between text-sm font-semibold text-slate-600 mb-2">
-                <span>Taxa de acerto</span>
-                <span className="text-[#1565A8] font-bold">{percentage}%</span>
-              </div>
-              <div className="w-full h-3 bg-[#E7EDF5] rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-[#1565A8] transition-all duration-1000"
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Mini stats inline */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center bg-green-50 border border-green-100 rounded-[16px] py-3">
-                <div className="text-xl font-extrabold text-green-600">{correct}</div>
-                <div className="text-xs text-green-500 font-medium">Certas</div>
-              </div>
-              <div className="text-center bg-red-50 border border-red-100 rounded-[16px] py-3">
-                <div className="text-xl font-extrabold text-red-500">{wrong}</div>
-                <div className="text-xs text-red-400 font-medium">Erradas</div>
-              </div>
-              <div className="text-center bg-slate-50 border border-slate-200 rounded-[16px] py-3">
-                <div className="text-xl font-extrabold text-slate-400">{blank}</div>
-                <div className="text-xs text-slate-400 font-medium">Em branco</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Cards de detalhe */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            color="blue"
-            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
-            label="Total de questões"
-            value={total || '—'}
-          />
-          <StatCard
-            color="green"
-            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
-            label="Respostas certas"
-            value={correct}
-            sub={total > 0 ? `${percentage}% de acerto` : undefined}
-          />
-          <StatCard
-            color="red"
-            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>}
-            label="Respostas erradas"
-            value={wrong}
-          />
-          <StatCard
-            color="amber"
-            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-            label="Tempo gasto"
-            value={formatTime(timeSpent)}
-          />
-        </div>
-
-        {/* ✅ Aviso apenas se sessão anónima */}
-        {isAnonymous && (
-          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-[16px] p-4 mb-8">
-            <svg className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-sm text-amber-700">
-              Esta prova foi feita em modo anónimo — os resultados não ficam guardados no teu perfil.
-              <a href="/signup" className="ml-1 font-bold underline hover:text-amber-800">Cria uma conta</a> para guardar o histórico de simulações.
+      {/* ── Main content ─────────────────────────────────────────────────── */}
+      <main style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px 48px' }}>
+        {/* ── Error state ──────────────────────────────────────────────── */}
+        {error && (
+          <div
+            style={{
+              marginTop: 48,
+              textAlign: 'center',
+              border: '1px solid #FDECEA',
+              borderRadius: 16,
+              padding: '32px 24px',
+              backgroundColor: '#FFF8F8',
+            }}
+          >
+            <p
+              style={{
+                color: '#C0392B',
+                fontSize: 15,
+                fontWeight: 500,
+                marginBottom: 8,
+              }}
+            >
+              {error}
             </p>
+            <button
+              onClick={() => navigate('/simulations')}
+              style={{
+                marginTop: 12,
+                backgroundColor: '#1565A8',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 999,
+                padding: '10px 24px',
+                fontSize: 14,
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              Ver simulações
+            </button>
           </div>
         )}
 
-        {/* Botões de acção */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={() => navigate(`/simulation/${id}`)}
-            className="flex-1 py-3.5 text-sm font-bold text-[#1565A8] border-2 border-[#1565A8]/30 rounded-full hover:bg-[#1565A8]/5 transition-colors"
-          >
-            🔁 Refazer esta prova
-          </button>
-          <a
-            href="/simulations"
-            className="flex-1 py-3.5 text-sm font-bold text-white bg-[#1565A8] hover:bg-[#0d4f8a] rounded-full text-center transition-colors"
-          >
-            Ver todas as provas →
-          </a>
-        </div>
+        {/* ── Loading skeleton ─────────────────────────────────────────── */}
+        {loading && !error && (
+          <div style={{ paddingTop: 48 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 16,
+                marginBottom: 40,
+              }}
+            >
+              <Skeleton width={160} height={160} radius={999} />
+              <Skeleton width={100} height={28} radius={999} />
+              <Skeleton width={280} height={24} radius={8} />
+              <Skeleton width={200} height={16} radius={8} />
+            </div>
+            <div
+              style={{
+                border: '1px solid #E7EDF5',
+                borderRadius: 16,
+                padding: 24,
+                marginBottom: 20,
+              }}
+            >
+              {[1, 2, 3].map((i) => (
+                <div key={i} style={{ marginBottom: 20 }}>
+                  <Skeleton
+                    width="100%"
+                    height={14}
+                    radius={6}
+                    style={{ marginBottom: 8 }}
+                  />
+                  <Skeleton width="100%" height={6} radius={999} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-      </div>
+        {/* ── Results ──────────────────────────────────────────────────── */}
+        {!loading && !error && attempt && (
+          <>
+            {/* Hero score section */}
+            <section
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                paddingTop: 48,
+                paddingBottom: 40,
+              }}
+            >
+              <ScoreCircle
+                score={score}
+                maxScore={maxScore}
+                animated={arcAnimated}
+              />
+
+              {/* Personalised headline */}
+              <h1
+                style={{
+                  color: '#071C35',
+                  fontSize: 22,
+                  fontWeight: 500,
+                  marginTop: 24,
+                  marginBottom: 6,
+                  textAlign: 'center',
+                  lineHeight: 1.3,
+                }}
+              >
+                {isPass
+                  ? firstName
+                    ? `Parabéns, ${firstName}!`
+                    : 'Parabéns — passaste na simulação!'
+                  : firstName
+                    ? `${firstName}, continua a praticar!`
+                    : 'Continua a praticar — cada tentativa conta'}
+              </h1>
+
+              <p
+                style={{
+                  color: '#5F6D7E',
+                  fontSize: 14,
+                  textAlign: 'center',
+                  lineHeight: 1.5,
+                }}
+              >
+                {isPass
+                  ? `Respondeste correctamente a ${correct} de ${total} questões. Continua assim!`
+                  : `Respondeste correctamente a ${correct} de ${total} questões. Não desistas — a persistência é o caminho.`}
+              </p>
+
+              {/* Stats row: correct / wrong / total */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: 12,
+                  width: '100%',
+                  maxWidth: 500,
+                  marginTop: 32,
+                }}
+              >
+                {[
+                  {
+                    icon: <CheckCircle size={16} color="#1565A8" />,
+                    label: 'Correctas',
+                    value: correct,
+                    color: '#1565A8',
+                  },
+                  {
+                    icon: <XCircle size={16} color="#C0392B" />,
+                    label: 'Erradas',
+                    value: wrong,
+                    color: '#C0392B',
+                  },
+                  {
+                    icon: <ClipboardList size={16} color="#071C35" />,
+                    label: 'Total',
+                    value: total,
+                    color: '#071C35',
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    style={{
+                      border: '1px solid #E7EDF5',
+                      borderRadius: 16,
+                      padding: '20px 12px',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    {stat.icon}
+                    <span
+                      style={{
+                        color: stat.color,
+                        fontSize: 24,
+                        fontWeight: 500,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {stat.value}
+                    </span>
+                    <span style={{ color: '#5F6D7E', fontSize: 12 }}>
+                      {stat.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Section breakdown */}
+            {sections.length > 0 && (
+              <section
+                ref={barsRef}
+                style={{
+                  border: '1px solid #E7EDF5',
+                  borderRadius: 16,
+                  padding: 24,
+                  marginBottom: 20,
+                }}
+              >
+                <h2
+                  style={{
+                    color: '#071C35',
+                    fontSize: 15,
+                    fontWeight: 500,
+                    marginBottom: 4,
+                  }}
+                >
+                  Desempenho por disciplina
+                </h2>
+                {sections.map((section, i) => (
+                  <div key={section.name}>
+                    <SubjectBar subject={section} visible={barsVisible} />
+                    {i < sections.length - 1 && (
+                      <div style={{ height: 1, backgroundColor: '#F4F8FC' }} />
+                    )}
+                  </div>
+                ))}
+              </section>
+            )}
+
+            {/* Scale legend */}
+            <section
+              style={{
+                backgroundColor: '#F8FAFC',
+                border: '1px solid #E7EDF5',
+                borderRadius: 12,
+                padding: '16px 20px',
+                marginBottom: 20,
+              }}
+            >
+              <p
+                style={{
+                  color: '#5F6D7E',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  marginBottom: 10,
+                }}
+              >
+                Escala de classificação:
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {[
+                  {
+                    range: '17–20',
+                    label: 'Excelente',
+                    bg: '#EEF4FF',
+                    color: '#1565A8',
+                  },
+                  {
+                    range: '14–16',
+                    label: 'Muito Bom',
+                    bg: '#E6F7F5',
+                    color: '#0D9488',
+                  },
+                  {
+                    range: '10–13',
+                    label: 'Suficiente',
+                    bg: '#EDFAF1',
+                    color: '#16A34A',
+                  },
+                  {
+                    range: '7–9',
+                    label: 'Fraco',
+                    bg: '#FEF3E2',
+                    color: '#E67E22',
+                  },
+                  {
+                    range: '0–6',
+                    label: 'Insuficiente',
+                    bg: '#FDECEA',
+                    color: '#C0392B',
+                  },
+                ].map((item) => (
+                  <span
+                    key={item.label}
+                    style={{
+                      backgroundColor: item.bg,
+                      color: item.color,
+                      borderRadius: 999,
+                      padding: '4px 12px',
+                      fontSize: 12,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {item.range} · {item.label}
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            {/* Anonymous banner — only if not logged in */}
+            {!isLoggedIn && (
+              <section
+                style={{
+                  backgroundColor: '#EEF4FF',
+                  border: '1.5px solid #B8D3F5',
+                  borderRadius: 16,
+                  padding: '28px 28px',
+                  marginBottom: 28,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 20,
+                  }}
+                >
+                  {/* Icon + text block */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 16,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        backgroundColor: '#D6E8FA',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <UserCircle size={28} color="#1565A8" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <p
+                        style={{
+                          color: '#071C35',
+                          fontSize: 16,
+                          fontWeight: 500,
+                          marginBottom: 6,
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        Os teus resultados vão desaparecer
+                      </p>
+                      <p
+                        style={{
+                          color: '#5F6D7E',
+                          fontSize: 13,
+                          lineHeight: 1.6,
+                          marginBottom: 6,
+                        }}
+                      >
+                        Cria uma conta gratuita para guardar este resultado,
+                        acompanhar a tua evolução ao longo do tempo e receber
+                        recomendações personalizadas para melhorar.
+                      </p>
+                      <p style={{ color: '#A0AEC0', fontSize: 11 }}>
+                        Já fizeste outras simulações? Os resultados são
+                        automaticamente associados à tua conta após o registo.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* CTA buttons */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 10,
+                    }}
+                  >
+                    <Link
+                      to="/signup"
+                      style={{
+                        backgroundColor: '#1565A8',
+                        color: '#FFFFFF',
+                        borderRadius: 999,
+                        padding: '13px 24px',
+                        fontWeight: 500,
+                        fontSize: 14,
+                        textDecoration: 'none',
+                        textAlign: 'center',
+                        display: 'block',
+                      }}
+                    >
+                      Criar conta gratuita
+                    </Link>
+                    <Link
+                      to="/login"
+                      style={{
+                        color: '#1565A8',
+                        fontSize: 13,
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        padding: '8px 0',
+                      }}
+                    >
+                      Já tenho conta — entrar
+                    </Link>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Action buttons */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                alignItems: 'stretch',
+                maxWidth: 400,
+                margin: '0 auto',
+              }}
+            >
+              <Link
+                to={`/simulation/${id}`}
+                style={{
+                  border: '1.5px solid #1565A8',
+                  color: '#1565A8',
+                  borderRadius: 999,
+                  padding: '12px 28px',
+                  fontWeight: 500,
+                  fontSize: 14,
+                  backgroundColor: '#FFFFFF',
+                  textDecoration: 'none',
+                  textAlign: 'center',
+                  display: 'block',
+                }}
+              >
+                Tentar novamente
+              </Link>
+              <Link
+                to="/simulations"
+                style={{
+                  backgroundColor: '#1565A8',
+                  color: '#FFFFFF',
+                  borderRadius: 999,
+                  padding: '12px 28px',
+                  fontWeight: 500,
+                  fontSize: 14,
+                  textDecoration: 'none',
+                  textAlign: 'center',
+                  display: 'block',
+                }}
+              >
+                Ver todas as simulações
+              </Link>
+            </div>
+          </>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer style={{ textAlign: 'center', padding: '24px 0 32px' }}>
+        <a
+          href="https://contornos.design"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontSize: 10, color: '#C0CBD8', textDecoration: 'none' }}
+        >
+          Desenvolvido por <strong>CONTORNOS Designs</strong>
+        </a>
+      </footer>
     </div>
-  );
+  )
 }

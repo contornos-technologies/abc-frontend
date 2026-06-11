@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import {
   Clock,
   Send,
@@ -71,6 +71,12 @@ const OPTION_LABELS = ['A', 'B', 'C', 'D']
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTime(seconds) {
+  if (seconds >= 3600) {
+    const h = Math.floor(seconds / 3600)
+    const m = Math.floor((seconds % 3600) / 60)
+    const s = seconds % 60
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
@@ -340,11 +346,13 @@ function QuestionCard({
 
       {/* Imagem da questão (se existir) */}
       {question.imageUrl && (
-        <img
-          src={question.imageUrl}
-          alt="Imagem da questão"
-          className="rounded-xl border border-[#E7EDF5] max-h-64 w-auto object-contain mb-5"
-        />
+        <div className="flex justify-center mb-5">
+          <img
+            src={question.imageUrl}
+            alt="Imagem da questão"
+            className="rounded-xl border border-[#E7EDF5] max-h-64 w-auto object-contain"
+          />
+        </div>
       )}
 
       {/* MULTIPLE_CHOICE */}
@@ -695,6 +703,7 @@ function ContornosFooter() {
 export default function SimulationPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
 
   const [simulation, setSimulation] = useState(null)
@@ -714,7 +723,7 @@ export default function SimulationPage() {
   const timerRef = useRef(null)
   const isAnonymous = !user
 
-  // ── 1. Carregar prova e fazer start ────────────────────────────────────────
+  // ── 1. Carregar prova ────────────────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       try {
@@ -741,15 +750,11 @@ export default function SimulationPage() {
         setSimulation(normalized)
         setActiveSectionId(normalized.sections?.[0]?.id ?? null)
 
-        const startRes = await api.post(`/simulations/${id}/start`)
-        const startData = startRes.data?.data ?? startRes.data
-        const aId = startData.attemptId
+        // attemptId vem da SimulationIntro — via router state ou localStorage
+        const aId =
+          location.state?.attemptId ?? localStorage.getItem(ATTEMPT_KEY)
         setAttemptId(aId)
-        setTimeLeft((startData.duration ?? simData.duration) * 60)
-
-        if (!user) {
-          localStorage.setItem(ATTEMPT_KEY, aId)
-        }
+        setTimeLeft(simData.duration * 60)
       } catch (e) {
         setError(
           e.response?.data?.message ?? 'Não foi possível carregar a simulação.'
