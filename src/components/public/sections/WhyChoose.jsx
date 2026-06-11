@@ -30,27 +30,17 @@ export default function WhyChoose() {
             <span className="text-[#1565A8]">ABC?</span>
           </h2>
 
-          <p className="mt-4 text-[16px] sm:text-[17px] leading-7 text-slate-500 mx-auto">
-            <span className="hidden sm:inline whitespace-nowrap">
-              Mais do que um centro preparatório, somos parceiros na construção
-              do teu futuro académico.
-            </span>
-            <span className="sm:hidden">
-              Mais do que um centro preparatório, somos parceiros na construção
-              do teu futuro académico.
-            </span>
+         <p className="mt-4 text-[16px] sm:text-[17px] leading-7 text-slate-500 mx-auto">
+  Mais do que um centro preparatório, somos parceiros na construção do teu futuro académico.
+</p>
 
-            <br className="hidden sm:block" />
+<p className="mt-2 text-[16px] sm:text-[17px] leading-7 text-slate-500 mx-auto sm:hidden">
+  Descobre os diferenciais que fazem da ABC a escolha certa para o teu sucesso.
+</p>
 
-            <span className="hidden sm:inline whitespace-nowrap">
-              Descobre os diferenciais que fazem da ABC a escolha certa para o
-              teu sucesso.
-            </span>
-            <span className="sm:hidden">
-              Descobre os diferenciais que fazem da ABC a escolha certa para o
-              teu sucesso.
-            </span>
-          </p>
+<p className="hidden sm:block mt-1 text-[17px] leading-7 text-slate-500 mx-auto">
+  Descobre os diferenciais que fazem da ABC a escolha certa para o teu sucesso.
+</p>
         </div>
 
         {/* ───────────────── CONTENT ───────────────── */}
