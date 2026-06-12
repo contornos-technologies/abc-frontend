@@ -1,4 +1,3 @@
-
 // ============================================================================
 // SECTION: CONTACT INFO + FORM
 // FILE: src/components/public/sections/ContactInfoSection.jsx
@@ -55,6 +54,7 @@ export default function ContactInfoSection() {
       }
 
       setSuccess(true);
+      setTimeout(() => setSuccess(false), 4000);
 
       setForm({
         name: "",
@@ -73,6 +73,7 @@ export default function ContactInfoSection() {
 
   return (
     <section
+      id="formulario"
       className="
         relative
         z-20
@@ -106,26 +107,25 @@ export default function ContactInfoSection() {
           lg:rounded-[36px]
         "
       >
-        {/* LEFT SIDE */}
+        {/* ── LEFT SIDE ── */}
         <div
           className="
             bg-[#F8FAFD]
-
             px-6
             py-10
-
             md:px-12
             md:py-12
           "
         >
+          {/* Título */}
           <h2
             className="
-              text-[28px]
+              text-[24px]
+              sm:text-[28px]
+              lg:text-[30px]
               font-bold
+              leading-[1.15]
               text-[#021B4E]
-
-              sm:text-[32px]
-              lg:text-[34px]
             "
           >
             Entre em contacto
@@ -135,8 +135,7 @@ export default function ContactInfoSection() {
             className="
               mt-4
               max-w-md
-
-              text-[16px]
+              text-[15px]
               leading-relaxed
               text-[#6B7280]
             "
@@ -147,34 +146,25 @@ export default function ContactInfoSection() {
 
           {/* CONTACT ITEMS */}
           <div className="mt-10 space-y-6 md:space-y-8">
+
             {/* ADDRESS */}
             <div className="flex items-start gap-4">
               <div
                 className="
-                  flex
-                  h-14
-                  w-14
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-full
-                  bg-[#1565A8]
-                  text-white
+                  flex h-14 w-14 shrink-0
+                  items-center justify-center
+                  rounded-full bg-[#1565A8] text-white
                 "
               >
-                <MapPin size={24} />
+                <MapPin size={22} />
               </div>
-
               <div>
-                <h3 className="text-lg font-semibold text-[#021B4E]">
+                <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#021B4E]">
                   Localização
                 </h3>
-
-                <p className="mt-1 text-[#6B7280]">
+                <p className="mt-1 text-[15px] leading-relaxed text-[#6B7280]">
                   Cidade Alta,{" "}
-                  <strong>
-                    Escola do Ensino Especial
-                  </strong>{" "}
+                  <strong>Escola do Ensino Especial</strong>{" "}
                   (próximo à Mediateca)
                 </p>
               </div>
@@ -184,34 +174,18 @@ export default function ContactInfoSection() {
             <div className="flex items-start gap-4">
               <div
                 className="
-                  flex
-                  h-14
-                  w-14
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-full
-                  bg-[#1565A8]
-                  text-white
+                  flex h-14 w-14 shrink-0
+                  items-center justify-center
+                  rounded-full bg-[#1565A8] text-white
                 "
               >
-                <Mail size={24} />
+                <Mail size={22} />
               </div>
-
               <div>
-                <h3 className="text-lg font-semibold text-[#021B4E]">
+                <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#021B4E]">
                   Email
                 </h3>
-
-                <p
-                  className="
-                    mt-1
-                    break-words
-                    text-[15px]
-                    leading-relaxed
-                    text-[#6B7280]
-                  "
-                >
+                <p className="mt-1 text-[15px] leading-relaxed text-[#6B7280]">
                   abc@gmail.com
                 </p>
               </div>
@@ -221,32 +195,25 @@ export default function ContactInfoSection() {
             <div className="flex items-start gap-4">
               <div
                 className="
-                  flex
-                  h-14
-                  w-14
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-full
-                  bg-[#1565A8]
-                  text-white
+                  flex h-14 w-14 shrink-0
+                  items-center justify-center
+                  rounded-full bg-[#1565A8] text-white
                 "
               >
-                <Phone size={24} />
+                <Phone size={22} />
               </div>
-
               <div>
-                <h3 className="text-lg font-semibold text-[#021B4E]">
+                <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#021B4E]">
                   Telefone
                 </h3>
-
-                <p className="mt-1 text-[#6B7280]">
+                <p className="mt-1 text-[15px] leading-relaxed text-[#6B7280]">
                   +244 923 111 222
                   <br />
                   +244 923 111 333
                 </p>
               </div>
             </div>
+
           </div>
 
           {/* DIVIDER */}
@@ -254,25 +221,19 @@ export default function ContactInfoSection() {
 
           {/* SOCIAL */}
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-[#021B4E]">
+            <h3 className="text-[15px] sm:text-[16px] font-semibold text-[#021B4E]">
               Siga-nos nas redes sociais
             </h3>
 
-            <div className="mt-6 flex items-center justify-center gap-4">
+            <div className="mt-5 flex items-center justify-center gap-4">
               {[Facebook, Instagram].map((Icon, index) => (
                 <button
                   key={index}
                   className="
-                    flex
-                    h-12
-                    w-12
-                    items-center
-                    justify-center
-                    rounded-full
-                    bg-[#1565A8]
-                    text-white
-                    transition-all
-                    duration-300
+                    flex h-12 w-12
+                    items-center justify-center
+                    rounded-full bg-[#1565A8] text-white
+                    transition-all duration-300
                     hover:scale-105
                   "
                 >
@@ -283,41 +244,39 @@ export default function ContactInfoSection() {
           </div>
         </div>
 
-        {/* RIGHT SIDE */}
+        {/* ── RIGHT SIDE ── */}
         <div
           className="
             px-6
             py-10
-
             md:px-12
             md:py-12
           "
         >
+          {/* Título */}
           <h2
             className="
-              text-[28px]
+              text-[24px]
+              sm:text-[28px]
+              lg:text-[30px]
               font-bold
+              leading-[1.15]
               text-[#021B4E]
-
-              sm:text-[32px]
-              lg:text-[34px]
             "
           >
-            Envie-nos uma mensagem
+            Como podemos ajudar?
           </h2>
 
-          <form
-            className="mt-10"
-            onSubmit={handleSubmit}
-          >
+          <form className="mt-10" onSubmit={handleSubmit}>
+
             {/* INPUT GRID */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
               {/* NAME */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#021B4E]">
                   Nome
                 </label>
-
                 <input
                   type="text"
                   name="name"
@@ -326,16 +285,14 @@ export default function ContactInfoSection() {
                   placeholder="O seu nome"
                   required
                   className="
-                    h-14
-                    w-full
+                    h-14 w-full
                     rounded-2xl
-                    border
-                    border-transparent
+                    border border-transparent
                     bg-[#F5F8FC]
                     px-5
+                    text-[15px]
                     outline-none
-                    transition-all
-                    duration-300
+                    transition-all duration-300
                     focus:border-[#1565A8]
                     focus:bg-white
                   "
@@ -347,7 +304,6 @@ export default function ContactInfoSection() {
                 <label className="mb-2 block text-sm font-medium text-[#021B4E]">
                   Email
                 </label>
-
                 <input
                   type="email"
                   name="email"
@@ -356,16 +312,14 @@ export default function ContactInfoSection() {
                   placeholder="O seu email"
                   required
                   className="
-                    h-14
-                    w-full
+                    h-14 w-full
                     rounded-2xl
-                    border
-                    border-transparent
+                    border border-transparent
                     bg-[#F5F8FC]
                     px-5
+                    text-[15px]
                     outline-none
-                    transition-all
-                    duration-300
+                    transition-all duration-300
                     focus:border-[#1565A8]
                     focus:bg-white
                   "
@@ -378,7 +332,6 @@ export default function ContactInfoSection() {
               <label className="mb-2 block text-sm font-medium text-[#021B4E]">
                 Assunto
               </label>
-
               <input
                 type="text"
                 name="subject"
@@ -387,16 +340,14 @@ export default function ContactInfoSection() {
                 placeholder="Assunto da mensagem"
                 required
                 className="
-                  h-14
-                  w-full
+                  h-14 w-full
                   rounded-2xl
-                  border
-                  border-transparent
+                  border border-transparent
                   bg-[#F5F8FC]
                   px-5
+                  text-[15px]
                   outline-none
-                  transition-all
-                  duration-300
+                  transition-all duration-300
                   focus:border-[#1565A8]
                   focus:bg-white
                 "
@@ -408,7 +359,6 @@ export default function ContactInfoSection() {
               <label className="mb-2 block text-sm font-medium text-[#021B4E]">
                 Mensagem
               </label>
-
               <textarea
                 rows="6"
                 name="message"
@@ -419,25 +369,22 @@ export default function ContactInfoSection() {
                 className="
                   w-full
                   rounded-2xl
-                  border
-                  border-transparent
+                  border border-transparent
                   bg-[#F5F8FC]
-                  px-5
-                  py-4
+                  px-5 py-4
+                  text-[15px]
                   outline-none
-                  transition-all
-                  duration-300
+                  transition-all duration-300
                   focus:border-[#1565A8]
                   focus:bg-white
                 "
-              ></textarea>
+              />
             </div>
 
             {/* FEEDBACK */}
             {success && (
               <p className="mt-4 text-sm font-medium text-green-600">
-                Mensagem enviada com sucesso.
-                Entraremos em contacto em breve.
+                Mensagem enviada com sucesso. Entraremos em contacto em breve.
               </p>
             )}
 
@@ -453,18 +400,14 @@ export default function ContactInfoSection() {
               disabled={loading}
               className="
                 mt-8
-                flex
-                h-14
-                w-full
-                items-center
-                justify-center
+                flex h-14 w-full
+                items-center justify-center
                 rounded-2xl
                 bg-[#F69220]
-                text-lg
+                text-[16px]
                 font-semibold
                 text-white
-                transition-all
-                duration-300
+                transition-all duration-300
                 hover:opacity-90
                 active:scale-[0.98]
                 disabled:cursor-not-allowed
@@ -473,10 +416,10 @@ export default function ContactInfoSection() {
             >
               {loading ? "A enviar..." : "Enviar mensagem"}
             </button>
+
           </form>
         </div>
       </div>
     </section>
   );
 }
-
