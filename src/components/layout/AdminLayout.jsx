@@ -6,7 +6,7 @@ import { useAdminNotifications } from '../../context/AdminNotificationsContext';
 import logoWhite from '../../assets/logo-white.svg';
 import {
   LayoutDashboard, Users, CreditCard, Bell, FileText,
-  BarChart3, LogOut, Menu, X, IdCard, MessageSquareQuote
+  BarChart3, LogOut, Menu, X, IdCard, MessageSquareQuote, Mail
 } from 'lucide-react';
 
 const IconDashboard     = () => <LayoutDashboard className="w-5 h-5" />;
@@ -17,46 +17,48 @@ const IconNotifications = () => <Bell className="w-5 h-5" />;
 const IconExams         = () => <FileText className="w-5 h-5" />;
 const IconAnalytics     = () => <BarChart3 className="w-5 h-5" />;
 const IconTestimonials  = () => <MessageSquareQuote className="w-5 h-5" />;
+const IconMessages      = () => <Mail className="w-5 h-5" />;
 const IconLogout        = () => <LogOut className="w-5 h-5" />;
 const IconMenu          = () => <Menu className="w-6 h-6" />;
 const IconClose         = () => <X className="w-6 h-6" />;
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',    to: '/admin',                icon: <IconDashboard />,    end: true },
-  { label: 'Estudantes',   to: '/admin/students',       icon: <IconStudents /> },
-  { label: 'Pagamentos',   to: '/admin/payments',       icon: <IconPayments /> },
-  { label: 'Cartões',      to: '/admin/cards',          icon: <IconCards /> },
-  { label: 'Notificações', to: '/admin/notifications',  icon: <IconNotifications /> },
-  { label: 'Provas',       to: '/admin/exams',          icon: <IconExams /> },
-  { label: 'Testemunhos',  to: '/admin/testemunhos',    icon: <IconTestimonials /> },
-  { label: 'Analytics',    to: '/admin/analytics',      icon: <IconAnalytics /> },
+  { label: 'Dashboard',    to: '/admin',                  icon: <IconDashboard />,    end: true },
+  { label: 'Estudantes',   to: '/admin/students',         icon: <IconStudents /> },
+  { label: 'Pagamentos',   to: '/admin/payments',         icon: <IconPayments /> },
+  { label: 'Cartões',      to: '/admin/cards',            icon: <IconCards /> },
+  { label: 'Notificações', to: '/admin/notifications',    icon: <IconNotifications /> },
+  { label: 'Provas',       to: '/admin/exams',            icon: <IconExams /> },
+  { label: 'Testemunhos',  to: '/admin/testemunhos',      icon: <IconTestimonials /> },
+  { label: 'Mensagens',    to: '/admin/contact-messages', icon: <IconMessages /> },
+  { label: 'Analytics',    to: '/admin/analytics',        icon: <IconAnalytics /> },
 ];
 
 function SidebarContent({ adminName, adminInitial, onClose }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const { pendingTestimonials } = useAdminNotifications();
+  const { pendingTestimonials, unreadMessages } = useAdminNotifications();
 
   function handleLogout() {
     logout();
-    navigate('/login');
+    navigate('/portal/acesso', { replace: true });
   }
 
   return (
     <div className="flex flex-col h-full bg-[#0A3956]">
-{/* Logo */}
-<div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-  <img
-    src={logoWhite}
-    alt="ABC Centro Preparatório"
-    className="h-10 w-auto"
-  />
-  {onClose && (
-    <button onClick={onClose} className="text-white/60 hover:text-white md:hidden transition-colors">
-      <IconClose />
-    </button>
-  )}
-</div>
+      {/* Logo */}
+      <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+        <img
+          src={logoWhite}
+          alt="ABC Centro Preparatório"
+          className="h-10 w-auto"
+        />
+        {onClose && (
+          <button onClick={onClose} className="text-white/60 hover:text-white md:hidden transition-colors">
+            <IconClose />
+          </button>
+        )}
+      </div>
 
       {/* Admin info */}
       <div className="px-5 py-4 border-b border-white/10">
@@ -98,6 +100,11 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
                     {pendingTestimonials}
                   </span>
                 )}
+                {item.to === '/admin/contact-messages' && unreadMessages > 0 && (
+                  <span className="ml-auto bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                    {unreadMessages}
+                  </span>
+                )}
               </NavLink>
             </li>
           ))}
@@ -114,7 +121,6 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
           Terminar Sessão
         </button>
       </div>
-
     </div>
   );
 }
@@ -153,26 +159,25 @@ export default function AdminLayout() {
         )}
 
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          <header className="md:hidden relative flex items-center justify-between px-4 py-3 bg-[#0A3956] border-b border-white/10 shadow-md flex-shrink-0">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="text-white hover:text-[#F69220] transition-colors z-10"
+              aria-label="Abrir menu"
+            >
+              <IconMenu />
+            </button>
 
-      <header className="md:hidden relative flex items-center justify-between px-4 py-3 bg-[#0A3956] border-b border-white/10 shadow-md flex-shrink-0">
-  <button
-    onClick={() => setSidebarOpen(true)}
-    className="text-white hover:text-[#F69220] transition-colors z-10"
-    aria-label="Abrir menu"
-  >
-    <IconMenu />
-  </button>
+            <img
+              src={logoWhite}
+              alt="ABC Centro Preparatório"
+              className="h-8 w-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            />
 
-  <img
-    src={logoWhite}
-    alt="ABC Centro Preparatório"
-    className="h-8 w-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-  />
-
-  <div className="w-6 h-6 rounded-full bg-[#F69220] flex items-center justify-center z-10">
-    <span className="text-white font-bold text-xs">{adminInitial}</span>
-  </div>
-</header>
+            <div className="w-6 h-6 rounded-full bg-[#F69220] flex items-center justify-center z-10">
+              <span className="text-white font-bold text-xs">{adminInitial}</span>
+            </div>
+          </header>
 
           <main className="flex-1 overflow-y-auto">
             <Outlet />
