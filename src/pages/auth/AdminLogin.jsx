@@ -35,20 +35,21 @@ export default function AdminLogin() {
 
     setIsLoading(true);
     try {
-      const data = await loginService({ email, password });
+      const data = await loginService({ email, password })
 
-      const payload = JSON.parse(atob(data.token.split('.')[1]));
-      const userInfo = data.user || payload;
+      const payload = JSON.parse(atob(data.token.split('.')[1]))
+      const userInfo = data.user || payload
 
-      // ✅ Bloquear se não for ADMIN
-      if (userInfo.role !== 'ADMIN') {
-        setError('Acesso restrito. Credenciais não autorizadas para este portal.');
-        return;
+      // ✅ Bloquear se não for ADMIN ou SUPER_ADMIN
+      if (!['ADMIN', 'SUPER_ADMIN'].includes(userInfo.role)) {
+        setError(
+          'Acesso restrito. Credenciais não autorizadas para este portal.'
+        )
+        return
       }
 
-      login(data.token, userInfo);
-      navigate('/admin');
-
+      login(data.token, userInfo)
+      navigate('/admin')
     } catch (err) {
       const status = err.response?.status;
       const msg    = err.response?.data?.error || err.response?.data?.message || '';
