@@ -20,27 +20,21 @@ const benefits = [
 
 export default function WhyChoose() {
   return (
-    <section className="w-full bg-[#FAFBFD] pt-10 pb-12 lg:pt-16 lg:pb-16">
+    <section className="w-full bg-[#FAFBFD] pt-10 pb-12 lg:pt-20 lg:pb-16">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ───────────────── HEADER ───────────────── */}
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-[24px] sm:text-[36px] lg:text-[42px] leading-[1.15] font-extrabold text-[#071C35]">
-            Por que escolher a{" "}
-            <span className="text-[#1565A8]">ABC?</span>
+            O que nos torna{" "}
+<span className="text-[#1565A8]">diferentes?</span>
           </h2>
 
          <p className="mt-4 text-[16px] sm:text-[17px] leading-7 text-slate-500 mx-auto">
   Mais do que um centro preparatório, somos parceiros na construção do teu futuro académico.
 </p>
 
-<p className="mt-2 text-[16px] sm:text-[17px] leading-7 text-slate-500 mx-auto sm:hidden">
-  Descobre os diferenciais que fazem da ABC a escolha certa para o teu sucesso.
-</p>
 
-<p className="hidden sm:block mt-1 text-[17px] leading-7 text-slate-500 mx-auto">
-  Descobre os diferenciais que fazem da ABC a escolha certa para o teu sucesso.
-</p>
         </div>
 
         {/* ───────────────── CONTENT ───────────────── */}

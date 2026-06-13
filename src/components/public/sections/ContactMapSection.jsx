@@ -28,16 +28,16 @@ export default function ContactMapSection() {
   return (
    <section className="pb-12 md:pb-16">
 
-      {/* TITLE */}
-    <div className="text-center mb-8 px-4 -mt-10 md:-mt-6">
-        <h2 className="text-2xl font-bold text-[#021B4E]">
-          Localização
-        </h2>
+    {/* TITLE */}
+<div className="text-center mb-8 px-4 -mt-10 md:-mt-6">
+  <h2 className="text-[22px] sm:text-[26px] lg:text-[28px] leading-[1.15] font-bold text-[#021B4E]">
+    Localização
+  </h2>
 
-        <p className="text-sm text-gray-500 mt-1">
-          Veja onde estamos no mapa
-        </p>
-      </div>
+  <p className="mt-2 text-[15px] sm:text-[16px] leading-7 text-slate-500">
+    Veja onde estamos no mapa
+  </p>
+</div>
 
       {/* MAP WRAPPER */}
       <div className="relative overflow-hidden w-full">

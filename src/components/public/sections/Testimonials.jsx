@@ -51,6 +51,27 @@ export default function Testimonials() {
   const [formSuccess, setFormSuccess] = useState(false);
   const [formError, setFormError] = useState(false);
 
+  // Bloqueia o scroll do body quando o modal está aberto
+  useEffect(() => {
+    if (formOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [formOpen]);
+
+  // Fecha o modal ao pressionar Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && formOpen) closeModal();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [formOpen]);
+
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
@@ -87,16 +108,23 @@ export default function Testimonials() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const closeModal = () => {
+    setFormOpen(false);
+    setFormError(false);
+    setFormSuccess(false);
+    setFormData({ name: "", university: "", text: "" });
+  };
+
   const handleFormSubmit = async () => {
     if (!formData.name.trim() || !formData.university.trim() || !formData.text.trim()) return;
     try {
       setFormLoading(true);
       setFormError(false);
       await api.post("/public/testimonials", {
-  name: formData.name,
-  university: formData.university,
-  text: formData.text,
-});
+        name: formData.name,
+        university: formData.university,
+        text: formData.text,
+      });
       setFormSuccess(true);
       setFormData({ name: "", university: "", text: "" });
     } catch (err) {
@@ -278,157 +306,160 @@ export default function Testimonials() {
           </p>
         )}
 
-        {/* ───────────────── CTA — DEIXAR TESTEMUNHO ───────────────── */}
+        {/* ───────────────── CTA ───────────────── */}
         <div className="text-center mt-10 lg:mt-10">
-
-          {!formOpen && !formSuccess && (
-            <>
-              <button
-                onClick={() => setFormOpen(true)}
-                className="inline-flex items-center justify-center px-8 sm:px-10 py-4 bg-[#F69220] hover:bg-[#e0821a] text-white text-[16px] font-bold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(246,146,32,0.18)]"
-              >
-                Partilha a tua experiência
-              </button>
-              <p className="text-[14px] text-slate-500 mt-4">
-                Conta como a Academia Berço do Conhecimento contribuiu para o teu percurso académico.
-              </p>
-            </>
-          )}
-
-          {/* ── FORMULÁRIO ── */}
-          {formOpen && !formSuccess && (
-            <div className="relative mt-2 max-w-xl mx-auto bg-white rounded-[16px] border border-[#E7EDF5] shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-6 sm:p-8 text-left">
-              
-              <button
-  onClick={() => {
-    setFormOpen(false);
-    setFormError(false);
-    setFormData({
-      name: "",
-      university: "",
-      text: "",
-    });
-  }}
-  className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors duration-200"
-  aria-label="Fechar formulário"
->
-  <X className="w-5 h-5" />
-</button>
-              
-              
-              <h3 className="text-[20px] sm:text-[22px] font-extrabold text-[#071C35] mb-6">
-                 Deixa o teu testemunho
-              </h3>
-
-              <div className="flex flex-col gap-4">
-                <div>
-                  <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
-                    Nome completo
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleFormChange}
-                    placeholder="Ex: João Silva"
-                    className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
-                    Escola / Faculdade
-                  </label>
-                  <input
-                    type="text"
-                    name="university"
-                    value={formData.university}
-                    onChange={handleFormChange}
-                    placeholder="Ex: Universidade Agostinho Neto"
-                    className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
-                    A tua mensagem
-                  </label>
-                  <textarea
-                    name="text"
-                    value={formData.text}
-                    onChange={handleFormChange}
-                    rows={4}
-                    placeholder="Conta a tua experiência na ABC..."
-                    className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200 resize-none"
-                  />
-                </div>
-
-                {formError && (
-                  <p className="text-[13px] text-red-500">
-                    Ocorreu um erro ao enviar. Tenta novamente.
-                  </p>
-                )}
-
-                <div className="flex items-center gap-3 pt-1">
-                  <button
-                    onClick={handleFormSubmit}
-                    disabled={
-                      formLoading ||
-                      !formData.name.trim() ||
-                      !formData.university.trim() ||
-                      !formData.text.trim()
-                    }
-                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#F69220] hover:bg-[#e0821a] disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-[15px] font-bold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(246,146,32,0.18)] disabled:shadow-none"
-                  >
-                    {formLoading ? (
-                      <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" strokeWidth={2.2} />
-                    )}
-                    {formLoading ? "A enviar..." : "Enviar testemunho"}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setFormOpen(false);
-                      setFormError(false);
-                      setFormData({ name: "", university: "", text: "" });
-                    }}
-                    className="text-[14px] text-slate-400 hover:text-slate-600 transition-colors duration-200"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── SUCESSO ── */}
-          {formSuccess && (
-            <div className="mt-2 max-w-xl mx-auto bg-white rounded-[16px] border border-[#E7EDF5] shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-8 text-center">
-              <div className="w-14 h-14 bg-[#F0FBF1] rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-7 h-7 text-[#41B349]" strokeWidth={2} />
-              </div>
-              <h3 className="text-[20px] font-extrabold text-[#071C35] mb-2">
-                Obrigado pelo teu testemunho!
-              </h3>
-              <p className="text-[15px] text-slate-500 leading-7">
-                A tua mensagem foi recebida e será publicada após revisão pela nossa equipa.
-              </p>
-              <button
-                onClick={() => {
-                  setFormSuccess(false);
-                  setFormOpen(false);
-                }}
-                className="mt-6 text-[14px] text-[#1565A8] hover:underline transition-all duration-200"
-              >
-                Fechar
-              </button>
-            </div>
-          )}
-
+          <button
+            onClick={() => setFormOpen(true)}
+            className="inline-flex items-center justify-center px-8 sm:px-10 py-4 bg-[#F69220] hover:bg-[#e0821a] text-white text-[16px] font-bold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(246,146,32,0.18)]"
+          >
+            Partilha a tua experiência
+          </button>
+          <p className="text-[14px] text-slate-500 mt-4">
+            Conta como a Academia Berço do Conhecimento contribuiu para o teu percurso académico.
+          </p>
         </div>
       </div>
+
+      {/* ───────────────── MODAL POPUP ───────────────── */}
+      {formOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          {/* Overlay / backdrop */}
+          <div
+            className="absolute inset-0 bg-[#071C35]/50 backdrop-blur-sm"
+            onClick={closeModal}
+          />
+
+          {/* Painel do modal */}
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.18)] p-6 sm:p-8 animate-[fadeInUp_0.22s_ease-out]">
+
+            {/* Botão fechar */}
+            <button
+              onClick={closeModal}
+              className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200"
+              aria-label="Fechar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* ── FORMULÁRIO ── */}
+            {!formSuccess && (
+              <>
+                <h3
+                  id="modal-title"
+                  className="text-[20px] sm:text-[22px] font-extrabold text-[#071C35] mb-6"
+                >
+                  Deixa o teu testemunho
+                </h3>
+                
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
+                      Nome completo
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleFormChange}
+                      placeholder="Ex: João Silva"
+                      className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
+                      Escola / Faculdade
+                    </label>
+                    <input
+                      type="text"
+                      name="university"
+                      value={formData.university}
+                      onChange={handleFormChange}
+                      placeholder="Ex: Universidade Agostinho Neto"
+                      className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
+                      A tua mensagem
+                    </label>
+                    <textarea
+                      name="text"
+                      value={formData.text}
+                      onChange={handleFormChange}
+                      rows={4}
+                      placeholder="Conta a tua experiência na ABC..."
+                      className="w-full border border-[#E7EDF5] rounded-[10px] px-4 py-3 text-[15px] text-[#071C35] placeholder:text-slate-400 focus:outline-none focus:border-[#1565A8] transition-colors duration-200 resize-none"
+                    />
+                  </div>
+
+                  {formError && (
+                    <p className="text-[13px] text-red-500">
+                      Ocorreu um erro ao enviar. Tenta novamente.
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      onClick={handleFormSubmit}
+                      disabled={
+                        formLoading ||
+                        !formData.name.trim() ||
+                        !formData.university.trim() ||
+                        !formData.text.trim()
+                      }
+                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#F69220] hover:bg-[#e0821a] disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-[15px] font-bold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(246,146,32,0.18)] disabled:shadow-none"
+                    >
+                      {formLoading ? (
+                        <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" strokeWidth={2.2} />
+                      )}
+                      {formLoading ? "A enviar..." : "Enviar testemunho"}
+                    </button>
+
+                    <button
+                      onClick={closeModal}
+                      className="text-[14px] text-slate-400 hover:text-slate-600 transition-colors duration-200"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── SUCESSO ── */}
+            {formSuccess && (
+              <div className="py-4 text-center">
+                <div className="w-14 h-14 bg-[#F0FBF1] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-7 h-7 text-[#41B349]" strokeWidth={2} />
+                </div>
+                <h3 className="text-[20px] font-extrabold text-[#071C35] mb-2">
+                  Obrigado pelo teu testemunho!
+                </h3>
+                <p className="text-[15px] text-slate-500 leading-7">
+                  A tua mensagem foi recebida e será publicada após revisão pela nossa equipa.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Animação de entrada do modal */}
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </section>
   );
 }

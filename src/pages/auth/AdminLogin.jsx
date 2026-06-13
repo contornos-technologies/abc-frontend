@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Shield, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { login as loginService } from '../../services/authService';
+import logoWhite from '../../assets/logo-white.svg';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -101,14 +102,14 @@ export default function AdminLogin() {
         <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center">
           <div className="mb-6">
             <div className="flex items-center justify-center gap-3 mb-3">
-              <Shield className="w-10 h-10 text-[#F69220]" strokeWidth={1.5} />
             </div>
-            <div className="text-white text-5xl lg:text-6xl tracking-tight mb-2" style={{ fontWeight: 700 }}>
-              ABC
-            </div>
-            <div className="text-white/90 text-xl lg:text-2xl mb-4" style={{ fontWeight: 300 }}>
-              Centro de Preparação
-            </div>
+
+            <img
+  src={logoWhite}
+  alt="ABC Centro Preparatório"
+  className="h-16 w-auto mx-auto mb-4"
+/>
+
             <div className="text-white/70 text-sm lg:text-base" style={{ fontWeight: 400 }}>
               Painel de Gestão Administrativa
             </div>
@@ -128,7 +129,6 @@ export default function AdminLogin() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <Shield className="w-6 h-6 text-[#0A3956]" strokeWidth={2} />
               <h1 className="text-[#0A3956] text-[22px]" style={{ fontWeight: 700 }}>
                 Portal Administrativo
               </h1>

@@ -27,6 +27,7 @@ import ExamCreate from './pages/admin/ExamCreate';
 import ExamDetail from './pages/admin/ExamDetail';
 import Analytics from './pages/admin/Analytics';
 import AdminTestemunhos from './pages/admin/AdminTestemunhos';
+import ContactMessages from './pages/admin/ContactMessages';
 
 // Publics
 import Home from './pages/public/Home';
@@ -105,7 +106,8 @@ function App() {
             <Route path="exams/new" element={<ExamCreate />} />
             <Route path="exams/:id" element={<ExamDetail />} />
             <Route path="analytics" element={<Analytics />} />
-            <Route path="testemunhos" element={<AdminTestemunhos />} /> 
+            <Route path="testemunhos" element={<AdminTestemunhos />} />
+            <Route path="contact-messages" element={<ContactMessages />} /> 
           </Route>
         </Routes>
       </AuthProvider>

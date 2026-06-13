@@ -372,7 +372,7 @@ export default function StudentDetail() {
                           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#28A745] hover:bg-[#218838] text-white text-sm font-semibold rounded-lg transition-colors shadow-sm w-full sm:w-auto"
                         >
                           <CheckCircle className="w-4 h-4" />
-                          Aprovar Pgto.
+                          Aprovar Pagamento
                         </button>
                       )}
                     </div>
