@@ -48,7 +48,7 @@ const formatDate = (dateStr) => {
   });
 };
 
-const getErrorMessage = (err) => {
+const getErrorMessage = (err, payment) => {
   if (!navigator.onLine || err.code === 'ERR_NETWORK') {
     return {
       title: 'Sem ligação à internet',
@@ -68,6 +68,18 @@ const getErrorMessage = (err) => {
   const serverMessage = err.response?.data?.error || err.response?.data?.message || '';
 
   if (serverMessage.includes('70%') || serverMessage.includes('Pagamento mínimo')) {
+    // ✅ FIX — Correcção 3 do relatório: a regra dos 70% no backend só se
+    // aplica quando status !== 'PARTIAL'. Se este erro aparecer com o
+    // pagamento já em PARTIAL, é sinal de uma regressão/bug, não de um
+    // valor insuficiente do utilizador — mensagem diferenciada.
+    if (payment?.status === 'PARTIAL') {
+      return {
+        title: 'Erro inesperado na 2ª prestação',
+        message:
+          'O sistema rejeitou este valor com base na regra dos 70%, que não devia aplicar-se a uma 2ª prestação (status PARTIAL). Não tentes novamente — contacta o suporte técnico e reporta este erro.',
+        icon: AlertTriangle,
+      };
+    }
     const match = serverMessage.match(/[\d.,]+\s*Kz/);
     const minValue = match ? match[0] : 'o mínimo exigido';
     return {
@@ -117,6 +129,15 @@ const getErrorMessage = (err) => {
     icon: AlertCircle,
   };
 };
+
+// NOTA: getErrorMessage(err) é chamado em mais sítios deste ficheiro além
+// do ApproveModal (ex: loadData/handleExportCsv não têm "payment" no contexto).
+// O segundo parâmetro é opcional — chamadas existentes como getErrorMessage(err)
+// continuam a funcionar (payment fica undefined, payment?.status é undefined,
+// cai no ramo "Valor insuficiente" genérico como antes). Só o ApproveModal
+// passa o segundo argumento.
+
+
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
 
@@ -199,79 +220,122 @@ function PageSkeleton() {
 // ─── Modal de Aprovação ───────────────────────────────────────────────────────
 
 function ApproveModal({ payment, onClose, onSuccess }) {
-  const target      = payment.studentTarget;
-  const student     = target?.student;
-  const isPartial   = payment.status === 'PARTIAL';
-  const minRequired = Math.ceil(Number(target?.finalAmount || 0) * 0.7);
+  const target = payment.studentTarget
+  const student = target?.student
+  const isPartial = payment.status === 'PARTIAL'
+  const finalAmount = Number(target?.finalAmount || 0)
+  const minRequired = Math.ceil(finalAmount * 0.7)
 
-  const [amountPaid, setAmountPaid] = useState(String(Number(payment.remainingBalance || 0)));
-  const [method, setMethod]         = useState(payment.method || 'CASH');
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState(null);
+  // ── ✅ FIX: saldo real em falta, calculado no frontend como fonte de
+  // verdade para validação (independente do que o backend devolver em
+  // remainingBalance, que devia já estar correcto, mas isto serve de rede
+  // de segurança extra — Correcção 1 do relatório).
+  const alreadyPaid = Number(payment.amountPaid || 0)
+  const realRemaining = Math.max(finalAmount - alreadyPaid, 0)
+
+  // ── ✅ FIX: pré-preenchimento usa declaredAmount (valor que o ESTUDANTE
+  // declarou ter pago nesta prestação) em vez de remainingBalance (saldo
+  // em falta). Eram conceitos diferentes — usar remainingBalance levava o
+  // admin a "corrigir" o campo para o valor real declarado, o que disparava
+  // o bug de duplicação no backend antigo.
+  const hasDeclaration =
+    payment.declaredAmount !== null && payment.declaredAmount !== undefined
+  const initialAmount = hasDeclaration
+    ? String(Number(payment.declaredAmount))
+    : String(realRemaining)
+
+  const [amountPaid, setAmountPaid] = useState(initialAmount)
+  const [method, setMethod] = useState(
+    payment.declaredMethod || payment.method || 'CASH'
+  )
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleSubmit = async () => {
-    setError(null);
-    const amount = Number(amountPaid);
+    setError(null)
+    const amount = Number(amountPaid)
 
     if (!amountPaid || isNaN(amount) || amount <= 0) {
       setError({
         title: 'Valor inválido',
         message: 'Insere um valor maior que zero para continuar.',
         icon: AlertTriangle,
-      });
-      return;
+      })
+      return
     }
     if (!method) {
       setError({
         title: 'Método em falta',
         message: 'Selecciona o método de pagamento utilizado pelo estudante.',
         icon: AlertTriangle,
-      });
-      return;
+      })
+      return
     }
 
-    setLoading(true);
+    // ── ✅ FIX — Correcção 2 do relatório: validar no frontend que o valor
+    // não excede o saldo real em falta, antes mesmo de chamar a API.
+    if (amount > realRemaining && realRemaining > 0) {
+      setError({
+        title: 'Valor superior ao saldo em falta',
+        message: `O saldo em falta é de ${formatCurrency(realRemaining)}. Não podes registar mais do que isso.`,
+        icon: AlertTriangle,
+      })
+      return
+    }
+
+    setLoading(true)
     try {
       await api.patch(`/admin/payments/${payment.id}/approve`, {
         amountPaid: amount,
         method,
-      });
-      onSuccess();
+      })
+      onSuccess()
     } catch (err) {
-      if (err.response?.status === 401) { onClose(); return; }
-      setError(getErrorMessage(err));
+      if (err.response?.status === 401) {
+        onClose()
+        return
+      }
+      setError(getErrorMessage(err, payment)) // ✅ FIX — passa payment para mensagem contextual
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+    const handler = (e) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
 
-  const ErrorIcon = error?.icon || AlertCircle;
+  const ErrorIcon = error?.icon || AlertCircle
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
     >
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#DEE2E6]">
           <div>
-            <h2 className="text-lg font-bold text-[#0A3956]">Confirmar Pagamento</h2>
+            <h2 className="text-lg font-bold text-[#0A3956]">
+              Confirmar Pagamento
+            </h2>
             <p className="text-xs text-[#6C757D] mt-0.5">
               {isPartial
                 ? '2ª prestação — saldo parcial em aberto'
                 : '1ª prestação — pagamento inicial'}
             </p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+          >
             <X size={18} className="text-[#6C757D]" />
           </button>
         </div>
@@ -286,8 +350,12 @@ function ApproveModal({ payment, onClose, onSuccess }) {
               {(student?.fullName || 'S').charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="font-semibold text-[#0A3956]">{student?.fullName || '—'}</p>
-              <p className="text-xs text-[#6C757D]">BI: {student?.bi || '—'} · Ano {target?.year}</p>
+              <p className="font-semibold text-[#0A3956]">
+                {student?.fullName || '—'}
+              </p>
+              <p className="text-xs text-[#6C757D]">
+                BI: {student?.bi || '—'} · Ano {target?.year}
+              </p>
             </div>
           </div>
 
@@ -295,24 +363,60 @@ function ApproveModal({ payment, onClose, onSuccess }) {
           <div className="grid grid-cols-3 gap-3 mt-4">
             <div className="bg-white rounded-lg p-3 text-center border border-[#DEE2E6]">
               <p className="text-xs text-[#6C757D] mb-1">Total</p>
-              <p className="text-sm font-bold text-[#0A3956]">{formatCurrency(target?.finalAmount)}</p>
+              <p className="text-sm font-bold text-[#0A3956]">
+                {formatCurrency(target?.finalAmount)}
+              </p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center border border-[#DEE2E6]">
               <p className="text-xs text-[#6C757D] mb-1">Já pago</p>
-              <p className="text-sm font-bold text-[#28A745]">{formatCurrency(payment.amountPaid)}</p>
+              <p className="text-sm font-bold text-[#28A745]">
+                {formatCurrency(payment.amountPaid)}
+              </p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center border border-[#DEE2E6]">
               <p className="text-xs text-[#6C757D] mb-1">Em falta</p>
-              <p className="text-sm font-bold text-[#DC3545]">{formatCurrency(payment.remainingBalance)}</p>
+              <p className="text-sm font-bold text-[#DC3545]">
+                {formatCurrency(realRemaining)}
+              </p>
             </div>
           </div>
+
+          {/* ✅ NOVO — Aviso do valor declarado pelo estudante */}
+          {hasDeclaration && (
+            <div className="mt-3 flex items-start gap-2 bg-[#CCE5FF] rounded-lg px-3 py-2">
+              <DollarSign
+                size={14}
+                className="text-[#004085] flex-shrink-0 mt-0.5"
+              />
+              <p className="text-xs text-[#004085]">
+                O estudante declarou ter pago{' '}
+                <strong>{formatCurrency(payment.declaredAmount)}</strong>
+                {payment.declaredMethod && (
+                  <>
+                    {' '}
+                    via{' '}
+                    <strong>
+                      {METHOD_LABELS[payment.declaredMethod] ||
+                        payment.declaredMethod}
+                    </strong>
+                  </>
+                )}
+                . Confirma este valor com o que recebeste presencialmente antes
+                de aprovar.
+              </p>
+            </div>
+          )}
 
           {/* Aviso 70% — só na 1ª prestação */}
           {!isPartial && (
             <div className="mt-3 flex items-start gap-2 bg-[#FFF3CD] rounded-lg px-3 py-2">
-              <AlertTriangle size={14} className="text-[#856404] flex-shrink-0 mt-0.5" />
+              <AlertTriangle
+                size={14}
+                className="text-[#856404] flex-shrink-0 mt-0.5"
+              />
               <p className="text-xs text-[#856404]">
-                O valor mínimo aceite é <strong>{formatCurrency(minRequired)}</strong> (70% do total).
+                O valor mínimo aceite é{' '}
+                <strong>{formatCurrency(minRequired)}</strong> (70% do total).
                 Podes aceitar um pagamento parcial ou o valor completo.
               </p>
             </div>
@@ -326,18 +430,26 @@ function ApproveModal({ payment, onClose, onSuccess }) {
               Valor recebido presencialmente (Kz)
             </label>
             <div className="relative">
-              <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6C757D]" />
+              <DollarSign
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6C757D]"
+              />
               <input
                 type="number"
                 min="1"
                 value={amountPaid}
-                onChange={e => { setAmountPaid(e.target.value); setError(null); }}
+                onChange={(e) => {
+                  setAmountPaid(e.target.value)
+                  setError(null)
+                }}
                 className="w-full pl-9 pr-4 py-2.5 text-sm border border-[#DEE2E6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A3956]/20 focus:border-[#0A3956]"
                 placeholder="Ex: 11900"
               />
             </div>
             <p className="text-xs text-[#6C757D] mt-1">
-              Pré-preenchido com o saldo em falta. Altera se o estudante pagou um valor diferente.
+              {hasDeclaration
+                ? 'Pré-preenchido com o valor declarado pelo estudante. Altera se for diferente do que recebeste.'
+                : 'Pré-preenchido com o saldo em falta. Altera se o estudante pagou um valor diferente.'}
             </p>
           </div>
 
@@ -347,20 +459,30 @@ function ApproveModal({ payment, onClose, onSuccess }) {
             </label>
             <select
               value={method}
-              onChange={e => { setMethod(e.target.value); setError(null); }}
+              onChange={(e) => {
+                setMethod(e.target.value)
+                setError(null)
+              }}
               className="w-full px-3 py-2.5 text-sm border border-[#DEE2E6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A3956]/20 focus:border-[#0A3956] bg-white"
             >
               {Object.entries(METHOD_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+                <option key={value} value={value}>
+                  {label}
+                </option>
               ))}
             </select>
           </div>
 
           {error && (
             <div className="flex items-start gap-3 bg-[#F8D7DA] border border-[#F5C6CB] rounded-lg px-4 py-3">
-              <ErrorIcon size={16} className="text-[#DC3545] flex-shrink-0 mt-0.5" />
+              <ErrorIcon
+                size={16}
+                className="text-[#DC3545] flex-shrink-0 mt-0.5"
+              />
               <div>
-                <p className="text-sm font-semibold text-[#721C24]">{error.title}</p>
+                <p className="text-sm font-semibold text-[#721C24]">
+                  {error.title}
+                </p>
                 <p className="text-xs text-[#721C24] mt-0.5">{error.message}</p>
               </div>
             </div>
@@ -376,9 +498,14 @@ function ApproveModal({ payment, onClose, onSuccess }) {
             style={{ backgroundColor: '#28A745' }}
           >
             {loading ? (
-              <><RefreshCw size={14} className="animate-spin" /> A confirmar pagamento...</>
+              <>
+                <RefreshCw size={14} className="animate-spin" /> A confirmar
+                pagamento...
+              </>
             ) : (
-              <><CheckCircle size={15} /> Confirmar Pagamento</>
+              <>
+                <CheckCircle size={15} /> Confirmar Pagamento
+              </>
             )}
           </button>
           <button
@@ -389,10 +516,9 @@ function ApproveModal({ payment, onClose, onSuccess }) {
             Cancelar
           </button>
         </div>
-
       </div>
     </div>
-  );
+  )
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
