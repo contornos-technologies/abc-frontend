@@ -1,72 +1,72 @@
-import {
-  MapPin,
-  Phone,
-  Mail,
-  MessageCircle,
-  Facebook
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import logoWhite from "../../assets/logo-white.svg";
+import { MapPin, Phone, Mail, MessageCircle, Facebook } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import logoWhite from '../../assets/logo-white.svg'
 
 const NAV_LINKS = [
-  { label: "Início",     to: "/",           scrollTo: "top" },
-  { label: "Sobre",      to: "/sobre" },
-  { label: "Contacto",   to: "/contacto" },
-  { label: "Simulações", to: "/simulacoes" },
-];
+  { label: 'Início', to: '/', scrollTo: 'top' },
+  { label: 'Sobre', to: '/about' },
+  { label: 'Contacto', to: '/contact' },
+  { label: 'Simulações', to: '/simulacoes' },
+]
 
 const DISCIPLINES = [
-  "Matemática",
-  "Física",
-  "Química",
-  "Biologia",
-  "Língua Portuguesa",
-  "História Universal",
-  "História Económica e Social de Angola",
-  "Inglês",
-  "Desenho Técnico",
-];
+  'Matemática',
+  'Física',
+  'Química',
+  'Biologia',
+  'Língua Portuguesa',
+  'História Universal',
+  'História Económica e Social de Angola',
+  'Inglês',
+  'Desenho Técnico',
+]
 
 const SOCIAL_LINKS = [
-  { label: "Facebook",  href: "#",                          icon: Facebook },
-  { label: "WhatsApp",  href: "https://wa.me/244900000000", icon: MessageCircle },
-];
+  { label: 'Facebook', href: '#', icon: Facebook },
+  {
+    label: 'WhatsApp',
+    href: 'https://wa.me/244900000000',
+    icon: MessageCircle,
+  },
+]
 
 const CONTACT_INFO = [
-  { icon: MapPin,        text: "Huambo, Angola" },
-  { icon: Phone,         text: "+244 900 000 000", href: "tel:+244900000000" },
-  { icon: Mail,          text: "geral@abc-centro.ao", href: "mailto:geral@abc-centro.ao" },
-  { icon: MessageCircle, text: "WhatsApp", href: "https://wa.me/244900000000" },
-];
+  { icon: MapPin, text: 'Huambo, Angola' },
+  { icon: Phone, text: '+244 900 000 000', href: 'tel:+244900000000' },
+  {
+    icon: Mail,
+    text: 'geral@abc-centro.ao',
+    href: 'mailto:geral@abc-centro.ao',
+  },
+  { icon: MessageCircle, text: 'WhatsApp', href: 'https://wa.me/244900000000' },
+]
 
 export default function Footer() {
-  const year = new Date().getFullYear();
+  const year = new Date().getFullYear()
 
   const handleNavClick = (scrollTo) => {
-    if (scrollTo === "top") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (scrollTo === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  };
+  }
 
   const handleDisciplineClick = () => {
-    const section = document.getElementById("cursos");
+    const section = document.getElementById('cursos')
     if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
+      section.scrollIntoView({ behavior: 'smooth' })
     }
-  };
+  }
 
   return (
     <footer className="bg-[#0A3956] text-white">
-
       {/* ── corpo principal ─────────────────────────────────────────────── */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-
           {/* ── coluna 1 — identidade ──────────────────────────────────── */}
           <div className="lg:col-span-1">
             <Link
               to="/"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="flex items-center hover:opacity-80 transition-opacity duration-200"
             >
               <img
@@ -77,12 +77,13 @@ export default function Footer() {
             </Link>
 
             <p className="mt-4 text-sm text-white/70 leading-relaxed">
-             Preparação intensiva e resultados comprovados para conquistar a sua vaga no ensino superior.
+              Preparação intensiva e resultados comprovados para conquistar a
+              sua vaga no ensino superior.
             </p>
 
             <div className="mt-6 flex items-center gap-3">
               {SOCIAL_LINKS.map((social) => {
-                const Icon = social.icon;
+                const Icon = social.icon
                 return (
                   <a
                     key={social.label}
@@ -99,7 +100,7 @@ export default function Footer() {
                   >
                     <Icon size={16} strokeWidth={2} />
                   </a>
-                );
+                )
               })}
             </div>
           </div>
@@ -159,24 +160,34 @@ export default function Footer() {
             </h3>
             <ul className="space-y-4">
               {CONTACT_INFO.map((item, index) => {
-                const Icon = item.icon;
+                const Icon = item.icon
 
                 const content = (
                   <div className="flex items-start gap-3">
-                    <Icon size={16} strokeWidth={2} className="text-[#FFB347] mt-0.5 shrink-0" />
+                    <Icon
+                      size={16}
+                      strokeWidth={2}
+                      className="text-[#FFB347] mt-0.5 shrink-0"
+                    />
                     <span className="text-sm text-white/70 hover:text-white transition-colors duration-200">
                       {item.text}
                     </span>
                   </div>
-                );
+                )
 
                 return (
                   <li key={index}>
                     {item.href ? (
                       <a
                         href={item.href}
-                        target={item.href.startsWith("http") ? "_blank" : undefined}
-                        rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                        target={
+                          item.href.startsWith('http') ? '_blank' : undefined
+                        }
+                        rel={
+                          item.href.startsWith('http')
+                            ? 'noopener noreferrer'
+                            : undefined
+                        }
                         className="block"
                       >
                         {content}
@@ -185,11 +196,10 @@ export default function Footer() {
                       content
                     )}
                   </li>
-                );
+                )
               })}
             </ul>
           </div>
-
         </div>
       </div>
 
@@ -197,9 +207,9 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-
             <p className="text-xs text-white/50">
-              © {year} ABC — Academia Berço do Conhecimento. Todos os direitos reservados.
+              © {year} ABC — Academia Berço do Conhecimento. Todos os direitos
+              reservados.
             </p>
 
             <div className="flex items-center gap-6">
@@ -216,11 +226,9 @@ export default function Footer() {
                 Termos de Uso
               </Link>
             </div>
-
           </div>
         </div>
       </div>
-
     </footer>
-  );
+  )
 }

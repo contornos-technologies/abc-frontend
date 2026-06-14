@@ -59,8 +59,10 @@ export function AuthProvider({ children }) {
       }
     : null;
 
+    const isSuperAdmin = enrichedUser?.role === 'SUPER_ADMIN';
+
   return (
-    <AuthContext.Provider value={{ user: enrichedUser, token, login, logout, setProfile }}>
+    <AuthContext.Provider value={{ user: enrichedUser, token, login, logout, setProfile, isSuperAdmin}}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,47 +1,71 @@
-import { useState } from 'react';
-import { NavLink, useNavigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { AdminNotificationsProvider } from '../../context/AdminNotificationsContext';
-import { useAdminNotifications } from '../../context/AdminNotificationsContext';
-import logoWhite from '../../assets/logo-white.svg';
+import { useState } from 'react'
+import { NavLink, useNavigate, Outlet } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { AdminNotificationsProvider } from '../../context/AdminNotificationsContext'
+import { useAdminNotifications } from '../../context/AdminNotificationsContext'
+import logoWhite from '../../assets/logo-white.svg'
 import {
-  LayoutDashboard, Users, CreditCard, Bell, FileText,
-  BarChart3, LogOut, Menu, X, IdCard, MessageSquareQuote, Mail
-} from 'lucide-react';
+  LayoutDashboard,
+  Users,
+  CreditCard,
+  Bell,
+  FileText,
+  BarChart3,
+  LogOut,
+  Menu,
+  X,
+  IdCard,
+  MessageSquareQuote,
+  Mail,
+  Users2,
+} from 'lucide-react'
 
-const IconDashboard     = () => <LayoutDashboard className="w-5 h-5" />;
-const IconStudents      = () => <Users className="w-5 h-5" />;
-const IconPayments      = () => <CreditCard className="w-5 h-5" />;
-const IconCards         = () => <IdCard className="w-5 h-5" />;
-const IconNotifications = () => <Bell className="w-5 h-5" />;
-const IconExams         = () => <FileText className="w-5 h-5" />;
-const IconAnalytics     = () => <BarChart3 className="w-5 h-5" />;
-const IconTestimonials  = () => <MessageSquareQuote className="w-5 h-5" />;
-const IconMessages      = () => <Mail className="w-5 h-5" />;
-const IconLogout        = () => <LogOut className="w-5 h-5" />;
-const IconMenu          = () => <Menu className="w-6 h-6" />;
-const IconClose         = () => <X className="w-6 h-6" />;
+const IconDashboard = () => <LayoutDashboard className="w-5 h-5" />
+const IconStudents = () => <Users className="w-5 h-5" />
+const IconPayments = () => <CreditCard className="w-5 h-5" />
+const IconCards = () => <IdCard className="w-5 h-5" />
+const IconNotifications = () => <Bell className="w-5 h-5" />
+const IconExams = () => <FileText className="w-5 h-5" />
+const IconAnalytics = () => <BarChart3 className="w-5 h-5" />
+const IconTestimonials = () => <MessageSquareQuote className="w-5 h-5" />
+const IconMessages = () => <Mail className="w-5 h-5" />
+const IconTeam = () => <Users2 className="w-5 h-5" />
+const IconLogout = () => <LogOut className="w-5 h-5" />
+const IconMenu = () => <Menu className="w-6 h-6" />
+const IconClose = () => <X className="w-6 h-6" />
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',    to: '/admin',                  icon: <IconDashboard />,    end: true },
-  { label: 'Estudantes',   to: '/admin/students',         icon: <IconStudents /> },
-  { label: 'Pagamentos',   to: '/admin/payments',         icon: <IconPayments /> },
-  { label: 'Cartões',      to: '/admin/cards',            icon: <IconCards /> },
-  { label: 'Notificações', to: '/admin/notifications',    icon: <IconNotifications /> },
-  { label: 'Provas',       to: '/admin/exams',            icon: <IconExams /> },
-  { label: 'Testemunhos',  to: '/admin/testemunhos',      icon: <IconTestimonials /> },
-  { label: 'Mensagens',    to: '/admin/contact-messages', icon: <IconMessages /> },
-  { label: 'Analytics',    to: '/admin/analytics',        icon: <IconAnalytics /> },
-];
+  { label: 'Dashboard', to: '/admin', icon: <IconDashboard />, end: true },
+
+  // 🔔 Itens com notificações — acesso rápido
+  { label: 'Mensagens', to: '/admin/contact-messages', icon: <IconMessages /> },
+  {
+    label: 'Notificações',
+    to: '/admin/notifications',
+    icon: <IconNotifications />,
+  },
+  {
+    label: 'Testemunhos',
+    to: '/admin/testimonials',
+    icon: <IconTestimonials />,
+  },
+
+  // 📋 Gestão
+  { label: 'Estudantes', to: '/admin/students', icon: <IconStudents /> },
+  { label: 'Pagamentos', to: '/admin/payments', icon: <IconPayments /> },
+  { label: 'Cartões', to: '/admin/cards', icon: <IconCards /> },
+  { label: 'Provas', to: '/admin/exams', icon: <IconExams /> },
+  { label: 'Analytics', to: '/admin/analytics', icon: <IconAnalytics /> },
+]
 
 function SidebarContent({ adminName, adminInitial, onClose }) {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-  const { pendingTestimonials, unreadMessages } = useAdminNotifications();
+  const { logout, isSuperAdmin } = useAuth()
+  const navigate = useNavigate()
+  const { pendingTestimonials, unreadMessages } = useAdminNotifications()
 
   function handleLogout() {
-    logout();
-    navigate('/portal/acesso', { replace: true });
+    logout()
+    navigate('/portal/acesso', { replace: true })
   }
 
   return (
@@ -54,7 +78,10 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
           className="h-10 w-auto"
         />
         {onClose && (
-          <button onClick={onClose} className="text-white/60 hover:text-white md:hidden transition-colors">
+          <button
+            onClick={onClose}
+            className="text-white/60 hover:text-white md:hidden transition-colors"
+          >
             <IconClose />
           </button>
         )}
@@ -67,14 +94,16 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
             <span className="text-white font-bold text-sm">{adminInitial}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-white font-semibold text-sm truncate">{adminName}</p>
+            <p className="text-white font-semibold text-sm truncate">
+              {adminName}
+            </p>
             <p className="text-white/50 text-xs">Administrador</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto scrollbar-hidden">
         <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-3 mb-3">
           Menu
         </p>
@@ -95,19 +124,40 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
               >
                 {item.icon}
                 {item.label}
-                {item.to === '/admin/testemunhos' && pendingTestimonials > 0 && (
-                  <span className="ml-auto bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
-                    {pendingTestimonials}
-                  </span>
-                )}
-                {item.to === '/admin/contact-messages' && unreadMessages > 0 && (
-                  <span className="ml-auto bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
-                    {unreadMessages}
-                  </span>
-                )}
+                {item.to === '/admin/testimonials' &&
+                  pendingTestimonials > 0 && (
+                    <span className="ml-auto bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                      {pendingTestimonials}
+                    </span>
+                  )}
+                {item.to === '/admin/contact-messages' &&
+                  unreadMessages > 0 && (
+                    <span className="ml-auto bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                      {unreadMessages}
+                    </span>
+                  )}
               </NavLink>
             </li>
           ))}
+
+          {isSuperAdmin && (
+            <li>
+              <NavLink
+                to="/admin/team"
+                onClick={onClose}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                    isActive
+                      ? 'bg-[#F69220] text-white shadow-md'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  }`
+                }
+              >
+                <IconTeam />
+                Equipa
+              </NavLink>
+            </li>
+          )}
         </ul>
       </nav>
 
@@ -122,20 +172,19 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
         </button>
       </div>
     </div>
-  );
+  )
 }
 
 export default function AdminLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { user } = useAuth()
 
-  const adminName    = user?.email?.split('@')[0] || 'Administrador';
-  const adminInitial = adminName.charAt(0).toUpperCase();
+  const adminName = user?.email?.split('@')[0] || 'Administrador'
+  const adminInitial = adminName.charAt(0).toUpperCase()
 
   return (
     <AdminNotificationsProvider>
       <div className="flex h-screen bg-gray-50 overflow-hidden">
-
         <aside className="hidden md:flex md:flex-shrink-0 w-60">
           <div className="flex flex-col w-full">
             <SidebarContent adminName={adminName} adminInitial={adminInitial} />
@@ -175,7 +224,9 @@ export default function AdminLayout() {
             />
 
             <div className="w-6 h-6 rounded-full bg-[#F69220] flex items-center justify-center z-10">
-              <span className="text-white font-bold text-xs">{adminInitial}</span>
+              <span className="text-white font-bold text-xs">
+                {adminInitial}
+              </span>
             </div>
           </header>
 
@@ -185,5 +236,5 @@ export default function AdminLayout() {
         </div>
       </div>
     </AdminNotificationsProvider>
-  );
+  )
 }

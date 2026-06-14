@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { User, Mail, Phone, CreditCard, Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signup } from '../../services/authService';
+import api from '../../services/api'
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -80,6 +81,17 @@ export default function Signup() {
         phone:    `+244${formData.phone.replace(/\D/g, '')}`,
         bi:       formData.bi,
       });
+
+      const attemptId = localStorage.getItem('abc_attempt_id')
+      if (attemptId) {
+        try {
+          await api.patch(`/simulations/attempts/${attemptId}/claim`)
+        } catch {
+          /* ignorar — não bloquear o signup */
+        } finally {
+          localStorage.removeItem('abc_attempt_id')
+        }
+      }
 
       setSuccess('Conta criada com sucesso! A redirecionar...');
       setTimeout(() => navigate('/login'), 2000);

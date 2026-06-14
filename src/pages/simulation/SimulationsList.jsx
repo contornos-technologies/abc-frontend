@@ -19,8 +19,6 @@ import {
 } from 'lucide-react'
 import api from '../../services/api'
 
-
-
 // ─── Skeleton Card ─────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
@@ -294,18 +292,18 @@ function CTABanner() {
       </div>
       <div className="relative z-10 flex flex-col sm:flex-row gap-3">
         <Link
-  to="/contacto#formulario"
-  className="bg-white text-[#1565A8] px-6 py-2.5 rounded-full text-sm font-bold hover:bg-[#F4F8FC] transition-all whitespace-nowrap"
->
-  Falar com a equipa
-</Link>
+          to="/contact#formulario"
+          className="bg-white text-[#1565A8] px-6 py-2.5 rounded-full text-sm font-bold hover:bg-[#F4F8FC] transition-all whitespace-nowrap"
+        >
+          Falar com a equipa
+        </Link>
 
         <Link
-  to="/signup"
-  className="border border-white/30 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-white/10 transition-all whitespace-nowrap"
->
-  Criar conta gratuita
-</Link>
+          to="/signup"
+          className="border border-white/30 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-white/10 transition-all whitespace-nowrap"
+        >
+          Criar conta gratuita
+        </Link>
       </div>
     </div>
   )
@@ -432,227 +430,225 @@ export default function SimulationsList() {
 
   return (
     <PublicLayout solidWhite>
-    <div className="bg-[#F4F8FC] min-h-screen font-sans">
-     
+      <div className="bg-[#F4F8FC] min-h-screen font-sans">
+        {/* ── HERO ─────────────────────────────────────────────────────────── */}
+        <section
+          className="relative text-white pt-32 pb-24 overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, #071C35 0%, #1565A8 100%)',
+          }}
+        >
+          {/* Decorativos */}
+          <div className="absolute top-0 right-0 w-[480px] h-[480px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute bottom-12 left-0 w-72 h-72 bg-[#F7941D]/10 rounded-full -translate-x-1/3 pointer-events-none" />
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section
-        className="relative text-white pt-32 pb-24 overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #071C35 0%, #1565A8 100%)',
-        }}
-      >
-        {/* Decorativos */}
-        <div className="absolute top-0 right-0 w-[480px] h-[480px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-12 left-0 w-72 h-72 bg-[#F7941D]/10 rounded-full -translate-x-1/3 pointer-events-none" />
-
-        <div className="max-w-[1200px] mx-auto px-6 md:px-10 relative z-10">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-6">
-            <Zap size={13} className="text-[#F7941D]" />
-            <span className="text-xs font-bold uppercase tracking-widest text-white">
-              Simulações Gratuitas
-            </span>
-          </div>
-
-          {/* Título — variante mobile/desktop */}
-          <h1 className="hidden md:block text-[52px] leading-[1.1] font-extrabold mb-5 max-w-3xl">
-            Testa os teus conhecimentos
-            <br />
-            <span className="text-[#F7941D]">e prepara-te para o sucesso.</span>
-          </h1>
-          <h1 className="md:hidden text-[32px] leading-[1.2] font-extrabold mb-5 max-w-sm">
-            Testa os teus conhecimentos e prepara-te para o sucesso.
-          </h1>
-
-          <p className="text-white/75 text-[17px] leading-7 max-w-xl mb-10 hidden md:block">
-            Prepara-te com os simuladores mais precisos de Angola. Pratica com
-            questões reais de anos anteriores e avalia o teu desempenho antes do
-            dia decisivo.
-          </p>
-
-          {/* Pills de features */}
-          <div className="flex flex-wrap gap-2.5">
-            {[
-              { icon: <Star size={13} />, label: 'Acesso gratuito' },
-              { icon: <Users size={13} />, label: 'Sem login necessário' },
-              { icon: <TrendingUp size={13} />, label: 'Resultado imediato' },
-              { icon: <BookOpen size={13} />, label: 'Questões reais' },
-            ].map(({ icon, label }) => (
-              <div
-                key={label}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/10 border border-white/15 text-sm font-medium backdrop-blur-sm"
-              >
-                {icon}
-                {label}
-              </div>
-            ))}
-          </div>
-
-          {/* Mini stats mobile */}
-          <div className="flex flex-wrap gap-3 mt-9 md:hidden">
-            {[
-              { label: 'SIMULAÇÕES', value: '+500' },
-              { label: 'ESTUDANTES', value: '+12k' },
-              { label: 'APROVAÇÃO', value: '85%' },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="bg-white/5 border border-white/15 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[110px]"
-              >
-                <p className="text-[10px] uppercase tracking-wider text-white/60 mb-0.5">
-                  {label}
-                </p>
-                <p className="text-xl font-bold">{value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <HeroWave />
-        
-      </section>
-
-      {/* ── FILTER BAR ───────────────────────────────────────────────────── */}
-   <div className="bg-white border-b border-[#E7EDF5] shadow-sm">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-3">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            {/* Search */}
-            <div className="relative w-full sm:w-[280px] flex-shrink-0">
-              <Search
-                size={15}
-                strokeWidth={2}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A0AEC0]"
-              />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Pesquisar simulações..."
-                className="w-full border border-[#E7EDF5] rounded-full pl-9 pr-4 py-2 text-sm text-[#374151]
-                           placeholder:text-[#A0AEC0] outline-none focus:border-[#1565A8] focus:ring-1
-                           focus:ring-[#1565A8]/20 transition-all bg-white"
-              />
+          <div className="max-w-[1200px] mx-auto px-6 md:px-10 relative z-10">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-6">
+              <Zap size={13} className="text-[#F7941D]" />
+              <span className="text-xs font-bold uppercase tracking-widest text-white">
+                Simulações Gratuitas
+              </span>
             </div>
 
-            {/* Faculty pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-1 min-w-0 scrollbar-hide">
-              <button
-                onClick={() => setActiveFacultyId(null)}
-                className={`flex-shrink-0 rounded-full text-sm px-3.5 py-1.5 transition-all font-semibold whitespace-nowrap ${
-                  activeFacultyId === null
-                    ? 'bg-[#1565A8] text-white shadow-sm shadow-blue-200'
-                    : 'bg-white border border-[#E7EDF5] text-[#374151] hover:border-[#1565A8] hover:text-[#1565A8]'
-                }`}
-              >
-                Todas
-              </button>
-              {faculties.map((fac) => (
+            {/* Título — variante mobile/desktop */}
+            <h1 className="hidden md:block text-[52px] leading-[1.1] font-extrabold mb-5 max-w-3xl">
+              Testa os teus conhecimentos
+              <br />
+              <span className="text-[#F7941D]">
+                e prepara-te para o sucesso.
+              </span>
+            </h1>
+            <h1 className="md:hidden text-[32px] leading-[1.2] font-extrabold mb-5 max-w-sm">
+              Testa os teus conhecimentos e prepara-te para o sucesso.
+            </h1>
+
+            <p className="text-white/75 text-[17px] leading-7 max-w-xl mb-10 hidden md:block">
+              Prepara-te com os simuladores mais precisos de Angola. Pratica com
+              questões reais de anos anteriores e avalia o teu desempenho antes
+              do dia decisivo.
+            </p>
+
+            {/* Pills de features */}
+            <div className="flex flex-wrap gap-2.5">
+              {[
+                { icon: <Star size={13} />, label: 'Acesso gratuito' },
+                { icon: <Users size={13} />, label: 'Sem login necessário' },
+                { icon: <TrendingUp size={13} />, label: 'Resultado imediato' },
+                { icon: <BookOpen size={13} />, label: 'Questões reais' },
+              ].map(({ icon, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/10 border border-white/15 text-sm font-medium backdrop-blur-sm"
+                >
+                  {icon}
+                  {label}
+                </div>
+              ))}
+            </div>
+
+            {/* Mini stats mobile */}
+            <div className="flex flex-wrap gap-3 mt-9 md:hidden">
+              {[
+                { label: 'SIMULAÇÕES', value: '+500' },
+                { label: 'ESTUDANTES', value: '+12k' },
+                { label: 'APROVAÇÃO', value: '85%' },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="bg-white/5 border border-white/15 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[110px]"
+                >
+                  <p className="text-[10px] uppercase tracking-wider text-white/60 mb-0.5">
+                    {label}
+                  </p>
+                  <p className="text-xl font-bold">{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <HeroWave />
+        </section>
+
+        {/* ── FILTER BAR ───────────────────────────────────────────────────── */}
+        <div className="bg-white border-b border-[#E7EDF5] shadow-sm">
+          <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              {/* Search */}
+              <div className="relative w-full sm:w-[280px] flex-shrink-0">
+                <Search
+                  size={15}
+                  strokeWidth={2}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A0AEC0]"
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Pesquisar simulações..."
+                  className="w-full border border-[#E7EDF5] rounded-full pl-9 pr-4 py-2 text-sm text-[#374151]
+                           placeholder:text-[#A0AEC0] outline-none focus:border-[#1565A8] focus:ring-1
+                           focus:ring-[#1565A8]/20 transition-all bg-white"
+                />
+              </div>
+
+              {/* Faculty pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-1 min-w-0 scrollbar-hide">
                 <button
-                  key={fac.id}
-                  onClick={() => setActiveFacultyId(fac.id)}
+                  onClick={() => setActiveFacultyId(null)}
                   className={`flex-shrink-0 rounded-full text-sm px-3.5 py-1.5 transition-all font-semibold whitespace-nowrap ${
-                    activeFacultyId === fac.id
+                    activeFacultyId === null
                       ? 'bg-[#1565A8] text-white shadow-sm shadow-blue-200'
                       : 'bg-white border border-[#E7EDF5] text-[#374151] hover:border-[#1565A8] hover:text-[#1565A8]'
                   }`}
                 >
-                  {fac.name}
+                  Todas
                 </button>
-              ))}
-            </div>
+                {faculties.map((fac) => (
+                  <button
+                    key={fac.id}
+                    onClick={() => setActiveFacultyId(fac.id)}
+                    className={`flex-shrink-0 rounded-full text-sm px-3.5 py-1.5 transition-all font-semibold whitespace-nowrap ${
+                      activeFacultyId === fac.id
+                        ? 'bg-[#1565A8] text-white shadow-sm shadow-blue-200'
+                        : 'bg-white border border-[#E7EDF5] text-[#374151] hover:border-[#1565A8] hover:text-[#1565A8]'
+                    }`}
+                  >
+                    {fac.name}
+                  </button>
+                ))}
+              </div>
 
-            {/* Count */}
-            {!loading && (
-              <span className="hidden md:block text-[#5F6D7E] text-sm flex-shrink-0 whitespace-nowrap">
-                {filtered.length} simulaç{filtered.length === 1 ? 'ão' : 'ões'}{' '}
-                disponív{filtered.length === 1 ? 'el' : 'eis'}
-              </span>
-            )}
+              {/* Count */}
+              {!loading && (
+                <span className="hidden md:block text-[#5F6D7E] text-sm flex-shrink-0 whitespace-nowrap">
+                  {filtered.length} simulaç
+                  {filtered.length === 1 ? 'ão' : 'ões'} disponív
+                  {filtered.length === 1 ? 'el' : 'eis'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── GRID ─────────────────────────────────────────────────────────── */}
-      <section className="pt-10 pb-24">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-10">
-          {error && (
-            <div className="text-center py-20 text-[#DC3545] text-sm">
-              {error}
-            </div>
-          )}
+        {/* ── GRID ─────────────────────────────────────────────────────────── */}
+        <section className="pt-10 pb-24">
+          <div className="max-w-[1200px] mx-auto px-6 md:px-10">
+            {error && (
+              <div className="text-center py-20 text-[#DC3545] text-sm">
+                {error}
+              </div>
+            )}
 
-          {loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={i} />
+            {loading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            )}
+
+            {!loading && !error && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {grid.length === 1 && grid[0]?.type === 'cta' ? (
+                  <EmptyState onReset={handleReset} />
+                ) : (
+                  grid.map((item) =>
+                    item.type === 'cta' ? (
+                      <CTABanner key={item.key} />
+                    ) : (
+                      <ExamCard key={item.key} sim={item.data} />
+                    )
+                  )
+                )}
+                {filtered.length === 0 && <EmptyState onReset={handleReset} />}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ── STATS STRIP ──────────────────────────────────────────────────── */}
+        {false && (
+          <section className="py-16 bg-white border-t border-[#E7EDF5]">
+            <div className="max-w-[1200px] mx-auto px-6 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              {[
+                {
+                  value: '98%',
+                  label: 'Precisão dos Simulados',
+                  icon: <Star size={18} />,
+                },
+                {
+                  value: '15k+',
+                  label: 'Alunos Aprovados',
+                  icon: <GraduationCap size={18} />,
+                },
+                {
+                  value: '500+',
+                  label: 'Provas Disponíveis',
+                  icon: <BookOpen size={18} />,
+                },
+                {
+                  value: '24/7',
+                  label: 'Acesso Online',
+                  icon: <TrendingUp size={18} />,
+                },
+              ].map(({ value, label, icon }) => (
+                <div key={label} className="group">
+                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#EEF4FF] text-[#1565A8] mb-3 group-hover:bg-[#1565A8] group-hover:text-white transition-all duration-300">
+                    {icon}
+                  </div>
+                  <p className="text-[40px] md:text-[46px] font-extrabold text-[#1565A8] leading-none mb-1">
+                    {value}
+                  </p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-[#5F6D7E]">
+                    {label}
+                  </p>
+                </div>
               ))}
             </div>
-          )}
-
-          {!loading && !error && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {grid.length === 1 && grid[0]?.type === 'cta' ? (
-                <EmptyState onReset={handleReset} />
-              ) : (
-                grid.map((item) =>
-                  item.type === 'cta' ? (
-                    <CTABanner key={item.key} />
-                  ) : (
-                    <ExamCard key={item.key} sim={item.data} />
-                  )
-                )
-              )}
-              {filtered.length === 0 && <EmptyState onReset={handleReset} />}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── STATS STRIP ──────────────────────────────────────────────────── */}
-      {false && (
-      <section className="py-16 bg-white border-t border-[#E7EDF5]">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[
-            {
-              value: '98%',
-              label: 'Precisão dos Simulados',
-              icon: <Star size={18} />,
-            },
-            {
-              value: '15k+',
-              label: 'Alunos Aprovados',
-              icon: <GraduationCap size={18} />,
-            },
-            {
-              value: '500+',
-              label: 'Provas Disponíveis',
-              icon: <BookOpen size={18} />,
-            },
-            {
-              value: '24/7',
-              label: 'Acesso Online',
-              icon: <TrendingUp size={18} />,
-            },
-          ].map(({ value, label, icon }) => (
-            <div key={label} className="group">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#EEF4FF] text-[#1565A8] mb-3 group-hover:bg-[#1565A8] group-hover:text-white transition-all duration-300">
-                {icon}
-              </div>
-              <p className="text-[40px] md:text-[46px] font-extrabold text-[#1565A8] leading-none mb-1">
-                {value}
-              </p>
-              <p className="text-[11px] font-bold uppercase tracking-widest text-[#5F6D7E]">
-                {label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-      )}
-
-    
-    </div>
+          </section>
+        )}
+      </div>
     </PublicLayout>
   )
 }
