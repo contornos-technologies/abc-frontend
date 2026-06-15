@@ -17,6 +17,7 @@ import {
   TrendingUp,
   Star,
 } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 import api from '../../services/api'
 
 // ─── Skeleton Card ─────────────────────────────────────────────────────────────
@@ -131,10 +132,9 @@ function getFacultyBadgeStyle(name) {
   }
 }
 
-// ─── Exam Card — combina o melhor dos dois designs ─────────────────────────────
-function ExamCard({ sim }) {
+// ─── Exam Card ────────────────────────────────────────────────────────────────
+function ExamCard({ sim, index, shouldReduceMotion }) {
   const navigate = useNavigate()
-
   const facultyLabel = sim.targetFaculty?.name ?? sim.targetFacultyName ?? null
   const universityLabel = sim.targetUniversity?.name ?? null
   const { bg, text, border } = getFacultyBadgeStyle(facultyLabel)
@@ -149,14 +149,27 @@ function ExamCard({ sim }) {
   const hiddenCount = (sim.sections ?? []).length - 4
 
   return (
-    <div
+    <motion.div
+      initial={{
+        opacity: shouldReduceMotion ? 1 : 0,
+        y: shouldReduceMotion ? 0 : 20,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.4,
+        ease: 'easeOut',
+        delay: shouldReduceMotion ? 0 : (index % 3) * 0.07,
+      }}
+      viewport={{ once: true, amount: 0.1 }}
       className="bg-white border border-[#E7EDF5] rounded-[16px] p-5 sm:p-6
                  shadow-[0_4px_20px_rgba(0,0,0,0.03)]
                  hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(21,101,168,0.10)]
                  hover:border-[#c8d8f0]
                  transition-all duration-300 flex flex-col group"
     >
-      {/* ── Top row: ícone + badge faculdade ── */}
       <div className="flex items-start justify-between mb-3">
         <div className="w-9 h-9 rounded-xl bg-[#EEF4FF] flex items-center justify-center flex-shrink-0 group-hover:bg-[#1565A8] transition-colors duration-300">
           <FileText
@@ -178,7 +191,6 @@ function ExamCard({ sim }) {
         )}
       </div>
 
-      {/* ── Título ── */}
       <h3
         className="text-[#071C35] text-[15px] font-bold leading-snug mb-2"
         style={{
@@ -192,7 +204,6 @@ function ExamCard({ sim }) {
         {sim.title}
       </h3>
 
-      {/* ── Universidade ── */}
       {universityLabel ? (
         <div className="flex items-center gap-1.5 mb-3">
           <Building2
@@ -208,7 +219,6 @@ function ExamCard({ sim }) {
         <div className="mb-3" />
       )}
 
-      {/* ── Disciplinas ── */}
       <div className="mb-3">
         <span className="text-[#374151] text-[11px] font-semibold uppercase tracking-wide">
           Disciplinas:
@@ -235,7 +245,6 @@ function ExamCard({ sim }) {
         </div>
       </div>
 
-      {/* ── Estatísticas ── */}
       <div className="flex items-center gap-4 mt-auto pt-1">
         <div className="flex items-center gap-1.5">
           <Clock size={13} strokeWidth={2} className="text-[#1565A8]" />
@@ -251,7 +260,6 @@ function ExamCard({ sim }) {
         </div>
       </div>
 
-      {/* ── Divisor + CTA ── */}
       <div className="border-t border-[#E7EDF5] mt-4 mb-4" />
       <button
         onClick={() => navigate(`/simulation/${sim.id}`)}
@@ -262,21 +270,33 @@ function ExamCard({ sim }) {
         Fazer Simulação
         <ChevronRight size={16} strokeWidth={2} />
       </button>
-    </div>
+    </motion.div>
   )
 }
 
-// ─── CTA Banner ────────────────────────────────────────────────────────────────
-function CTABanner() {
+// ─── CTA Banner ───────────────────────────────────────────────────────────────
+function CTABanner({ shouldReduceMotion }) {
   const navigate = useNavigate()
   return (
-    <div
+    <motion.div
+      initial={{
+        opacity: shouldReduceMotion ? 1 : 0,
+        y: shouldReduceMotion ? 0 : 20,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: 'easeOut',
+      }}
+      viewport={{ once: true, amount: 0.1 }}
       className="md:col-span-2 lg:col-span-3 relative overflow-hidden rounded-[16px] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[160px]"
       style={{
         background: 'linear-gradient(135deg, #071C35 0%, #1565A8 100%)',
       }}
     >
-      {/* decorativo */}
       <div className="absolute -right-12 -top-12 w-56 h-56 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       <div className="absolute left-1/2 bottom-0 w-72 h-40 bg-[#F7941D]/10 rounded-full blur-2xl pointer-events-none" />
       <div className="relative z-10 flex-1">
@@ -297,7 +317,6 @@ function CTABanner() {
         >
           Falar com a equipa
         </Link>
-
         <Link
           to="/signup"
           className="border border-white/30 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-white/10 transition-all whitespace-nowrap"
@@ -305,12 +324,29 @@ function CTABanner() {
           Criar conta gratuita
         </Link>
       </div>
+    </motion.div>
+  )
+}
+
+// ─── Empty State — base de dados vazia ───────────────────────────────────────
+function EmptyStateNoSimulations() {
+  return (
+    <div className="col-span-full flex flex-col items-center justify-center py-24 text-center">
+      <div className="w-20 h-20 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-5">
+        <BookOpen size={34} className="text-[#A0B8D8]" />
+      </div>
+      <h3 className="text-[#071C35] text-lg font-bold mb-2">
+        Ainda não há simulações disponíveis
+      </h3>
+      <p className="text-[#5F6D7E] text-sm max-w-xs">
+        Estamos a preparar as provas. Volte em breve.
+      </p>
     </div>
   )
 }
 
-// ─── Empty State ───────────────────────────────────────────────────────────────
-function EmptyState({ onReset }) {
+// ─── Empty State — filtro sem resultados ─────────────────────────────────────
+function EmptyStateNoResults({ onReset }) {
   return (
     <div className="col-span-full flex flex-col items-center justify-center py-24 text-center">
       <div className="w-20 h-20 bg-[#EEF4FF] rounded-full flex items-center justify-center mb-5">
@@ -332,15 +368,16 @@ function EmptyState({ onReset }) {
   )
 }
 
-// ─── Main Page ─────────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function SimulationsList() {
+  const shouldReduceMotion = useReducedMotion()
+
   const [simulations, setSimulations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
-  const [activeFacultyId, setActiveFacultyId] = useState(null) // null = "Todas"
+  const [activeFacultyId, setActiveFacultyId] = useState(null)
 
-  // ── Carregar dados ──────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
@@ -357,7 +394,6 @@ export default function SimulationsList() {
     load()
   }, [])
 
-  // ── Faculdades únicas para filtro ───────────────────────────────────────────
   const faculties = useMemo(() => {
     return [
       ...new Map(
@@ -368,7 +404,6 @@ export default function SimulationsList() {
     ]
   }, [simulations])
 
-  // ── Filtros ─────────────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return simulations.filter((s) => {
       if (activeFacultyId !== null && s.targetFaculty?.id !== activeFacultyId)
@@ -396,10 +431,8 @@ export default function SimulationsList() {
     setActiveFacultyId(null)
   }
 
-  // ── Grid com CTA intercalado ────────────────────────────────────────────────
   const grid = useMemo(() => {
     const items = filtered.map((s) => ({ type: 'sim', data: s, key: s.id }))
-    // Inserir CTA depois do 6.º card (se existirem) ou no final quando há poucos
     if (filtered.length > 0) {
       const insertAt = filtered.length >= 6 ? 6 : filtered.length
       items.splice(insertAt, 0, { type: 'cta', key: 'cta' })
@@ -407,7 +440,6 @@ export default function SimulationsList() {
     return items
   }, [filtered])
 
-  // ── Hero wave SVG ───────────────────────────────────────────────────────────
   const HeroWave = () => (
     <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] translate-y-[1px] pointer-events-none">
       <svg
@@ -431,46 +463,108 @@ export default function SimulationsList() {
   return (
     <PublicLayout solidWhite>
       <div className="bg-[#F4F8FC] min-h-screen font-sans">
-        {/* ── HERO ─────────────────────────────────────────────────────────── */}
+        {/* ── HERO ── */}
         <section
           className="relative text-white pt-32 pb-24 overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, #071C35 0%, #1565A8 100%)',
           }}
         >
-          {/* Decorativos */}
           <div className="absolute top-0 right-0 w-[480px] h-[480px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
           <div className="absolute bottom-12 left-0 w-72 h-72 bg-[#F7941D]/10 rounded-full -translate-x-1/3 pointer-events-none" />
 
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 relative z-10">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-6">
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-6"
+              initial={{
+                opacity: shouldReduceMotion ? 1 : 0,
+                y: shouldReduceMotion ? 0 : -16,
+              }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: shouldReduceMotion ? 0 : 0.5,
+                ease: 'easeOut',
+                delay: 0,
+              }}
+            >
               <Zap size={13} className="text-[#F7941D]" />
               <span className="text-xs font-bold uppercase tracking-widest text-white">
                 Simulações Gratuitas
               </span>
-            </div>
+            </motion.div>
 
-            {/* Título — variante mobile/desktop */}
-            <h1 className="hidden md:block text-[52px] leading-[1.1] font-extrabold mb-5 max-w-3xl">
+            {/* Título desktop */}
+            <motion.h1
+              className="hidden md:block text-[52px] leading-[1.1] font-extrabold mb-5 max-w-3xl"
+              initial={{
+                opacity: shouldReduceMotion ? 1 : 0,
+                y: shouldReduceMotion ? 0 : 24,
+              }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: shouldReduceMotion ? 0 : 0.5,
+                ease: 'easeOut',
+                delay: shouldReduceMotion ? 0 : 0.1,
+              }}
+            >
               Testa os teus conhecimentos
               <br />
               <span className="text-[#F7941D]">
                 e prepara-te para o sucesso.
               </span>
-            </h1>
-            <h1 className="md:hidden text-[32px] leading-[1.2] font-extrabold mb-5 max-w-sm">
-              Testa os teus conhecimentos e prepara-te para o sucesso.
-            </h1>
+            </motion.h1>
 
-            <p className="text-white/75 text-[17px] leading-7 max-w-xl mb-10 hidden md:block">
+            {/* Título mobile */}
+            <motion.h1
+              className="md:hidden text-[32px] leading-[1.2] font-extrabold mb-5 max-w-sm"
+              initial={{
+                opacity: shouldReduceMotion ? 1 : 0,
+                y: shouldReduceMotion ? 0 : 24,
+              }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: shouldReduceMotion ? 0 : 0.5,
+                ease: 'easeOut',
+                delay: shouldReduceMotion ? 0 : 0.1,
+              }}
+            >
+              Testa os teus conhecimentos e prepara-te para o sucesso.
+            </motion.h1>
+
+            {/* Subtítulo */}
+            <motion.p
+              className="text-white/75 text-[17px] leading-7 max-w-xl mb-10 hidden md:block"
+              initial={{
+                opacity: shouldReduceMotion ? 1 : 0,
+                y: shouldReduceMotion ? 0 : 24,
+              }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: shouldReduceMotion ? 0 : 0.5,
+                ease: 'easeOut',
+                delay: shouldReduceMotion ? 0 : 0.2,
+              }}
+            >
               Prepara-te com os simuladores mais precisos de Angola. Pratica com
               questões reais de anos anteriores e avalia o teu desempenho antes
               do dia decisivo.
-            </p>
+            </motion.p>
 
-            {/* Pills de features */}
-            <div className="flex flex-wrap gap-2.5">
+            {/* Chips */}
+            <motion.div
+              className="flex flex-wrap gap-2.5"
+              initial={{
+                opacity: shouldReduceMotion ? 1 : 0,
+                y: shouldReduceMotion ? 0 : 24,
+              }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: shouldReduceMotion ? 0 : 0.5,
+                ease: 'easeOut',
+                delay: shouldReduceMotion ? 0 : 0.3,
+              }}
+            >
               {[
                 { icon: <Star size={13} />, label: 'Acesso gratuito' },
                 { icon: <Users size={13} />, label: 'Sem login necessário' },
@@ -485,10 +579,22 @@ export default function SimulationsList() {
                   {label}
                 </div>
               ))}
-            </div>
+            </motion.div>
 
-            {/* Mini stats mobile */}
-            <div className="flex flex-wrap gap-3 mt-9 md:hidden">
+            {/* Stats mobile */}
+            <motion.div
+              className="flex flex-wrap gap-3 mt-9 md:hidden"
+              initial={{
+                opacity: shouldReduceMotion ? 1 : 0,
+                y: shouldReduceMotion ? 0 : 24,
+              }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: shouldReduceMotion ? 0 : 0.5,
+                ease: 'easeOut',
+                delay: shouldReduceMotion ? 0 : 0.3,
+              }}
+            >
               {[
                 { label: 'SIMULAÇÕES', value: '+500' },
                 { label: 'ESTUDANTES', value: '+12k' },
@@ -504,17 +610,16 @@ export default function SimulationsList() {
                   <p className="text-xl font-bold">{value}</p>
                 </div>
               ))}
-            </div>
+            </motion.div>
           </div>
 
           <HeroWave />
         </section>
 
-        {/* ── FILTER BAR ───────────────────────────────────────────────────── */}
+        {/* ── FILTER BAR — intacta, sem animação ── */}
         <div className="bg-white border-b border-[#E7EDF5] shadow-sm">
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              {/* Search */}
               <div className="relative w-full sm:w-[280px] flex-shrink-0">
                 <Search
                   size={15}
@@ -532,7 +637,6 @@ export default function SimulationsList() {
                 />
               </div>
 
-              {/* Faculty pills */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-1 min-w-0 scrollbar-hide">
                 <button
                   onClick={() => setActiveFacultyId(null)}
@@ -559,7 +663,6 @@ export default function SimulationsList() {
                 ))}
               </div>
 
-              {/* Count */}
               {!loading && (
                 <span className="hidden md:block text-[#5F6D7E] text-sm flex-shrink-0 whitespace-nowrap">
                   {filtered.length} simulaç
@@ -571,7 +674,7 @@ export default function SimulationsList() {
           </div>
         </div>
 
-        {/* ── GRID ─────────────────────────────────────────────────────────── */}
+        {/* ── GRID ── */}
         <section className="pt-10 pb-24">
           <div className="max-w-[1200px] mx-auto px-6 md:px-10">
             {error && (
@@ -590,64 +693,32 @@ export default function SimulationsList() {
 
             {!loading && !error && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {grid.length === 1 && grid[0]?.type === 'cta' ? (
-                  <EmptyState onReset={handleReset} />
-                ) : (
-                  grid.map((item) =>
-                    item.type === 'cta' ? (
-                      <CTABanner key={item.key} />
-                    ) : (
-                      <ExamCard key={item.key} sim={item.data} />
-                    )
-                  )
+                {simulations.length === 0 && <EmptyStateNoSimulations />}
+
+                {simulations.length > 0 && filtered.length === 0 && (
+                  <EmptyStateNoResults onReset={handleReset} />
                 )}
-                {filtered.length === 0 && <EmptyState onReset={handleReset} />}
+
+                {filtered.length > 0 &&
+                  grid.map((item, index) =>
+                    item.type === 'cta' ? (
+                      <CTABanner
+                        key={item.key}
+                        shouldReduceMotion={shouldReduceMotion}
+                      />
+                    ) : (
+                      <ExamCard
+                        key={item.key}
+                        sim={item.data}
+                        index={index}
+                        shouldReduceMotion={shouldReduceMotion}
+                      />
+                    )
+                  )}
               </div>
             )}
           </div>
         </section>
-
-        {/* ── STATS STRIP ──────────────────────────────────────────────────── */}
-        {false && (
-          <section className="py-16 bg-white border-t border-[#E7EDF5]">
-            <div className="max-w-[1200px] mx-auto px-6 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              {[
-                {
-                  value: '98%',
-                  label: 'Precisão dos Simulados',
-                  icon: <Star size={18} />,
-                },
-                {
-                  value: '15k+',
-                  label: 'Alunos Aprovados',
-                  icon: <GraduationCap size={18} />,
-                },
-                {
-                  value: '500+',
-                  label: 'Provas Disponíveis',
-                  icon: <BookOpen size={18} />,
-                },
-                {
-                  value: '24/7',
-                  label: 'Acesso Online',
-                  icon: <TrendingUp size={18} />,
-                },
-              ].map(({ value, label, icon }) => (
-                <div key={label} className="group">
-                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#EEF4FF] text-[#1565A8] mb-3 group-hover:bg-[#1565A8] group-hover:text-white transition-all duration-300">
-                    {icon}
-                  </div>
-                  <p className="text-[40px] md:text-[46px] font-extrabold text-[#1565A8] leading-none mb-1">
-                    {value}
-                  </p>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-[#5F6D7E]">
-                    {label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
     </PublicLayout>
   )

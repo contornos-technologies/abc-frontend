@@ -1,141 +1,160 @@
-import { useState, useRef, useEffect } from "react";
-import {
-  Quote,
-  ChevronLeft,
-  ChevronRight,
-  Send,
-  CheckCircle,
-  X
-} from "lucide-react";
-import api from "../../../services/api";
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { Quote, Send, CheckCircle, X } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import api from '../../../services/api'
 
-function getInitials(name = "") {
+function getInitials(name = '') {
   return name
     .trim()
-    .split(" ")
+    .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map((n) => n[0].toUpperCase())
-    .join("");
+    .join('')
 }
 
 const AVATAR_COLORS = [
-  "bg-[#1565A8]",
-  "bg-[#0D4F8B]",
-  "bg-[#1A7BC4]",
-  "bg-[#0A3D6B]",
-  "bg-[#2260A8]",
-  "bg-[#0E5A8A]",
-];
+  'bg-[#1565A8]',
+  'bg-[#0D4F8B]',
+  'bg-[#1A7BC4]',
+  'bg-[#0A3D6B]',
+  'bg-[#2260A8]',
+  'bg-[#0E5A8A]',
+]
 
-function getAvatarColor(name = "") {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+function getAvatarColor(name = '') {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i)
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
 }
 
-const CARDS_PER_PAGE = 3;
+const AUTOPLAY_INTERVAL = 4500 // ms entre slides
 
 export default function Testimonials() {
-  const [testimonials, setTestimonials] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [page, setPage] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const carouselRef = useRef(null);
+  const shouldReduceMotion = useReducedMotion()
+
+  const [testimonials, setTestimonials] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  // Auto-slider (tablet + desktop)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const intervalRef = useRef(null)
+
+  // Mobile carousel
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const carouselRef = useRef(null)
 
   // Form state
-  const [formOpen, setFormOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", university: "", text: "" });
-  const [formLoading, setFormLoading] = useState(false);
-  const [formSuccess, setFormSuccess] = useState(false);
-  const [formError, setFormError] = useState(false);
+  const [formOpen, setFormOpen] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    university: '',
+    text: '',
+  })
+  const [formLoading, setFormLoading] = useState(false)
+  const [formSuccess, setFormSuccess] = useState(false)
+  const [formError, setFormError] = useState(false)
 
-  // Bloqueia o scroll do body quando o modal está aberto
+  // ── Bloqueia scroll quando modal aberto ──
   useEffect(() => {
-    if (formOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = formOpen ? 'hidden' : ''
     return () => {
-      document.body.style.overflow = "";
-    };
-  }, [formOpen]);
+      document.body.style.overflow = ''
+    }
+  }, [formOpen])
 
-  // Fecha o modal ao pressionar Escape
+  // ── Fecha modal com Escape ──
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "Escape" && formOpen) closeModal();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [formOpen]);
+      if (e.key === 'Escape' && formOpen) closeModal()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [formOpen])
 
+  // ── Fetch testemunhos ──
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        setLoading(true);
-        const res = await api.get("/public/testimonials");
-        const data = res.data?.data ?? res.data;
-        const list = Array.isArray(data) ? data : [];
+        setLoading(true)
+        const res = await api.get('/public/testimonials')
+        const data = res.data?.data ?? res.data
+        const list = Array.isArray(data) ? data : []
         const sorted = [...list].sort((a, b) => {
-          if (!a.createdAt || !b.createdAt) return 0;
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        });
-        setTestimonials(sorted);
+          if (!a.createdAt || !b.createdAt) return 0
+          return new Date(b.createdAt) - new Date(a.createdAt)
+        })
+        setTestimonials(sorted)
       } catch (err) {
-        console.error("Erro ao carregar testemunhos:", err);
-        setError(true);
+        console.error('Erro ao carregar testemunhos:', err)
+        setError(true)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchTestimonials();
-  }, []);
+    }
+    fetchTestimonials()
+  }, [])
 
-  const totalPages = Math.ceil(testimonials.length / CARDS_PER_PAGE);
-  const hasMultiplePages = totalPages > 1;
-  const visibleTestimonials = testimonials.slice(
-    page * CARDS_PER_PAGE,
-    page * CARDS_PER_PAGE + CARDS_PER_PAGE
-  );
+  // ── Auto-slider ──
+  const goToNext = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % Math.max(testimonials.length, 1))
+  }, [testimonials.length])
 
-  const handlePrev = () => setPage((p) => Math.max(0, p - 1));
-  const handleNext = () => setPage((p) => Math.min(totalPages - 1, p + 1));
+  useEffect(() => {
+    if (paused || testimonials.length <= 1) return
+    intervalRef.current = setInterval(goToNext, AUTOPLAY_INTERVAL)
+    return () => clearInterval(intervalRef.current)
+  }, [paused, goToNext, testimonials.length])
 
+  const goToIndex = (index) => {
+    setActiveIndex(index)
+    clearInterval(intervalRef.current)
+    if (!paused && testimonials.length > 1) {
+      intervalRef.current = setInterval(goToNext, AUTOPLAY_INTERVAL)
+    }
+  }
+
+  // ── Form handlers ──
   const handleFormChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
 
   const closeModal = () => {
-    setFormOpen(false);
-    setFormError(false);
-    setFormSuccess(false);
-    setFormData({ name: "", university: "", text: "" });
-  };
+    setFormOpen(false)
+    setFormError(false)
+    setFormSuccess(false)
+    setFormData({ name: '', university: '', text: '' })
+  }
 
   const handleFormSubmit = async () => {
-    if (!formData.name.trim() || !formData.university.trim() || !formData.text.trim()) return;
+    if (
+      !formData.name.trim() ||
+      !formData.university.trim() ||
+      !formData.text.trim()
+    )
+      return
     try {
-      setFormLoading(true);
-      setFormError(false);
-      await api.post("/public/testimonials", {
+      setFormLoading(true)
+      setFormError(false)
+      await api.post('/public/testimonials', {
         name: formData.name,
         university: formData.university,
         text: formData.text,
-      });
-      setFormSuccess(true);
-      setFormData({ name: "", university: "", text: "" });
+      })
+      setFormSuccess(true)
+      setFormData({ name: '', university: '', text: '' })
     } catch (err) {
-      console.error("Erro ao enviar testemunho:", err);
-      setFormError(true);
+      console.error('Erro ao enviar testemunho:', err)
+      setFormError(true)
     } finally {
-      setFormLoading(false);
+      setFormLoading(false)
     }
-  };
+  }
 
-  const TestimonialCard = ({ testimonial, className = "" }) => (
+  // ── Card ──
+  const TestimonialCard = ({ testimonial, className = '' }) => (
     <article
       className={`
         group relative bg-white rounded-[16px] border border-[#E7EDF5]
@@ -146,7 +165,10 @@ export default function Testimonials() {
       `}
     >
       <div className="absolute top-5 right-5">
-        <Quote className="w-6 h-6 text-[#F7941D] opacity-90" strokeWidth={2.2} />
+        <Quote
+          className="w-6 h-6 text-[#F7941D] opacity-90"
+          strokeWidth={2.2}
+        />
       </div>
 
       <div className="flex items-center gap-4">
@@ -163,9 +185,7 @@ export default function Testimonials() {
           <h3 className="text-[15px] font-bold text-[#071C35]">
             {testimonial.name}
           </h3>
-          <p className="text-[13px] text-slate-500">
-            {testimonial.university}
-          </p>
+          <p className="text-[13px] text-slate-500">{testimonial.university}</p>
         </div>
       </div>
 
@@ -173,52 +193,95 @@ export default function Testimonials() {
         "{testimonial.text}"
       </p>
     </article>
-  );
+  )
+
+  // ── Slider visível: 3 cards centrados no activeIndex ──
+  const getVisibleCards = () => {
+    if (testimonials.length === 0) return []
+    const total = testimonials.length
+    if (total <= 3) return testimonials
+    return [-1, 0, 1].map((offset) => {
+      const idx = (activeIndex + offset + total) % total
+      return { ...testimonials[idx], _offset: offset }
+    })
+  }
+
+  const visibleCards = getVisibleCards()
+
+  // ── Variantes de animação ──
+  const fadeUpHeader = {
+    hidden: {
+      opacity: shouldReduceMotion ? 1 : 0,
+      y: shouldReduceMotion ? 0 : 24,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: shouldReduceMotion ? 0 : 0.5, ease: 'easeOut' },
+    },
+  }
+
+  const fadeUpBlock = {
+    hidden: {
+      opacity: shouldReduceMotion ? 1 : 0,
+      y: shouldReduceMotion ? 0 : 20,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: shouldReduceMotion ? 0 : 0.5, ease: 'easeOut' },
+    },
+  }
 
   return (
     <section className="w-full bg-[#F4F8FC] pt-10 pb-12 lg:pt-20 lg:pb-4">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* ───────────────── HEADER ───────────────── */}
-        <div className="text-center max-w-3xl mx-auto">
+        {/* ── HEADER ── */}
+        <motion.div
+          className="text-center max-w-3xl mx-auto"
+          variants={fadeUpHeader}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           <h2 className="text-[24px] sm:text-[36px] lg:text-[42px] leading-[1.15] font-extrabold text-[#071C35]">
-            O que os nossos{" "}
+            O que os nossos{' '}
             <span className="text-[#1565A8]">estudantes dizem</span>
           </h2>
           <p className="mt-4 text-[16px] sm:text-[17px] leading-7 text-slate-500 max-w-2xl mx-auto">
-            Histórias reais de estudantes que confiaram na ABC para alcançar os seus objectivos académicos.
+            Histórias reais de estudantes que confiaram na ABC para alcançar os
+            seus objectivos académicos.
           </p>
-        </div>
+        </motion.div>
 
-        {/* ───────────────── LOADING ───────────────── */}
+        {/* ── LOADING ── */}
         {loading && (
           <div className="mt-12 flex justify-center items-center py-16">
             <div className="w-8 h-8 rounded-full border-2 border-[#1565A8] border-t-transparent animate-spin" />
           </div>
         )}
 
-        {/* ───────────────── ERRO ───────────────── */}
+        {/* ── ERRO ── */}
         {!loading && error && (
           <p className="mt-12 text-center text-slate-400 text-[15px]">
             Não foi possível carregar os testemunhos.
           </p>
         )}
 
-        {/* ───────────────── CONTEÚDO ───────────────── */}
+        {/* ── CONTEÚDO ── */}
         {!loading && !error && testimonials.length > 0 && (
           <>
-            {/* ── MOBILE CAROUSEL ── */}
+            {/* ════ MOBILE — carousel manual (sem animação) ════ */}
             <div
               ref={carouselRef}
               onScroll={() => {
-                const el = carouselRef.current;
-                if (!el) return;
-                const index = Math.round(el.scrollLeft / el.clientWidth);
-                setCurrentIndex(index);
+                const el = carouselRef.current
+                if (!el) return
+                setCurrentIndex(Math.round(el.scrollLeft / el.clientWidth))
               }}
               className="
                 mt-8 flex gap-5 overflow-x-auto snap-x snap-mandatory
-                scroll-smooth pb-2 lg:hidden
+                scroll-smooth pb-2 md:hidden
                 [-ms-overflow-style:none] [scrollbar-width:none]
                 [&::-webkit-scrollbar]:hidden
               "
@@ -227,87 +290,119 @@ export default function Testimonials() {
                 <TestimonialCard
                   key={testimonial.id ?? index}
                   testimonial={testimonial}
-                  className="min-w-[88%] snap-center h-full"
+                  className="min-w-[88%] snap-center"
                 />
               ))}
             </div>
 
-            {/* ── DOTS mobile ── */}
-            <div className="flex lg:hidden justify-center gap-2 mt-4">
+            {/* dots mobile */}
+            <div className="flex md:hidden justify-center gap-2 mt-4">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => {
-                    const el = carouselRef.current;
-                    if (!el) return;
-                    el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
+                    const el = carouselRef.current
+                    if (!el) return
+                    el.scrollTo({
+                      left: index * el.clientWidth,
+                      behavior: 'smooth',
+                    })
                   }}
-                  className={`
-                    transition-all duration-300 rounded-full
-                    ${currentIndex === index ? "w-5 h-2.5 bg-[#1565A8]" : "w-2.5 h-2.5 bg-slate-300"}
-                  `}
+                  className={`transition-all duration-300 rounded-full ${
+                    currentIndex === index
+                      ? 'w-5 h-2.5 bg-[#1565A8]'
+                      : 'w-2.5 h-2.5 bg-slate-300'
+                  }`}
                 />
               ))}
             </div>
 
-            {/* ── DESKTOP GRID ── */}
-            <div className="hidden lg:block mt-12">
-              <div className="grid lg:grid-cols-3 gap-5">
-                {visibleTestimonials.map((testimonial, index) => (
-                  <TestimonialCard
-                    key={testimonial.id ?? index}
-                    testimonial={testimonial}
-                    className="h-full"
-                  />
-                ))}
+            {/* ════ TABLET + DESKTOP — auto-slider (wrapper animado) ════ */}
+            <motion.div
+              className="hidden md:block mt-12"
+              variants={fadeUpBlock}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+            >
+              {/* Cards */}
+              <div className="grid grid-cols-3 gap-5 items-stretch">
+                {visibleCards.map((testimonial, i) => {
+                  const offset =
+                    testimonials.length > 3 ? testimonial._offset : i - 1
+                  const isCenter = offset === 0 || testimonials.length <= 3
+                  return (
+                    <div
+                      key={testimonial.id ?? i}
+                      className={`transition-all duration-500 ${
+                        isCenter
+                          ? 'opacity-100 scale-100'
+                          : 'opacity-50 scale-[0.97]'
+                      }`}
+                    >
+                      <TestimonialCard
+                        testimonial={testimonial}
+                        className="h-full"
+                      />
+                    </div>
+                  )
+                })}
               </div>
 
-              {hasMultiplePages && (
-                <div className="flex items-center justify-center gap-4 mt-10">
-                  <button
-                    onClick={handlePrev}
-                    disabled={page === 0}
-                    className={`
-                      w-11 h-11 rounded-full border flex items-center justify-center
-                      transition-all duration-300
-                      ${page === 0
-                        ? "border-[#E7EDF5] text-slate-300 cursor-not-allowed"
-                        : "border-[#1565A8] text-[#1565A8] hover:bg-[#1565A8] hover:text-white"
-                      }
-                    `}
-                  >
-                    <ChevronLeft className="w-5 h-5" strokeWidth={2} />
-                  </button>
+              {/* Dots + barra de progresso */}
+              {testimonials.length > 1 && (
+                <div className="flex flex-col items-center gap-3 mt-8">
+                  {/* Dots */}
+                  <div className="flex items-center gap-2">
+                    {testimonials.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToIndex(index)}
+                        className={`transition-all duration-300 rounded-full ${
+                          activeIndex === index
+                            ? 'w-6 h-2.5 bg-[#1565A8]'
+                            : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
+                        }`}
+                        aria-label={`Ir para testemunho ${index + 1}`}
+                      />
+                    ))}
+                  </div>
 
-                  <button
-                    onClick={handleNext}
-                    disabled={page === totalPages - 1}
-                    className={`
-                      w-11 h-11 rounded-full border flex items-center justify-center
-                      transition-all duration-300
-                      ${page === totalPages - 1
-                        ? "border-[#E7EDF5] text-slate-300 cursor-not-allowed"
-                        : "border-[#1565A8] text-[#1565A8] hover:bg-[#1565A8] hover:text-white"
-                      }
-                    `}
-                  >
-                    <ChevronRight className="w-5 h-5" strokeWidth={2} />
-                  </button>
+                  {/* Barra de progresso */}
+                  <div className="w-24 h-0.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      key={activeIndex}
+                      className="h-full bg-[#1565A8] rounded-full"
+                      style={{
+                        animation: paused
+                          ? 'none'
+                          : `progressBar ${AUTOPLAY_INTERVAL}ms linear forwards`,
+                      }}
+                    />
+                  </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           </>
         )}
 
-        {/* ───────────────── SEM TESTEMUNHOS ───────────────── */}
+        {/* ── SEM TESTEMUNHOS ── */}
         {!loading && !error && testimonials.length === 0 && (
           <p className="mt-12 text-center text-slate-400 text-[15px]">
             Ainda não existem testemunhos disponíveis.
           </p>
         )}
 
-        {/* ───────────────── CTA ───────────────── */}
-        <div className="text-center mt-10 lg:mt-10">
+        {/* ── CTA ── */}
+        <motion.div
+          className="text-center mt-10 lg:mt-10"
+          variants={fadeUpBlock}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           <button
             onClick={() => setFormOpen(true)}
             className="inline-flex items-center justify-center px-8 sm:px-10 py-4 bg-[#F69220] hover:bg-[#e0821a] text-white text-[16px] font-bold rounded-full transition-all duration-300 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(246,146,32,0.18)]"
@@ -315,12 +410,13 @@ export default function Testimonials() {
             Partilha a tua experiência
           </button>
           <p className="text-[14px] text-slate-500 mt-4">
-            Conta como a Academia Berço do Conhecimento contribuiu para o teu percurso académico.
+            Conta como a Academia Berço do Conhecimento contribuiu para o teu
+            percurso académico.
           </p>
-        </div>
+        </motion.div>
       </div>
 
-      {/* ───────────────── MODAL POPUP ───────────────── */}
+      {/* ── MODAL — intacto ── */}
       {formOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center px-4"
@@ -328,16 +424,12 @@ export default function Testimonials() {
           aria-modal="true"
           aria-labelledby="modal-title"
         >
-          {/* Overlay / backdrop */}
           <div
             className="absolute inset-0 bg-[#071C35]/50 backdrop-blur-sm"
             onClick={closeModal}
           />
 
-          {/* Painel do modal */}
           <div className="relative z-10 w-full max-w-lg bg-white rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.18)] p-6 sm:p-8 animate-[fadeInUp_0.22s_ease-out]">
-
-            {/* Botão fechar */}
             <button
               onClick={closeModal}
               className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200"
@@ -346,7 +438,6 @@ export default function Testimonials() {
               <X className="w-5 h-5" />
             </button>
 
-            {/* ── FORMULÁRIO ── */}
             {!formSuccess && (
               <>
                 <h3
@@ -355,7 +446,7 @@ export default function Testimonials() {
                 >
                   Deixa o teu testemunho
                 </h3>
-                
+
                 <div className="flex flex-col gap-4">
                   <div>
                     <label className="block text-[13px] font-semibold text-[#071C35] mb-1.5">
@@ -421,7 +512,7 @@ export default function Testimonials() {
                       ) : (
                         <Send className="w-4 h-4" strokeWidth={2.2} />
                       )}
-                      {formLoading ? "A enviar..." : "Enviar testemunho"}
+                      {formLoading ? 'A enviar...' : 'Enviar testemunho'}
                     </button>
 
                     <button
@@ -435,17 +526,20 @@ export default function Testimonials() {
               </>
             )}
 
-            {/* ── SUCESSO ── */}
             {formSuccess && (
               <div className="py-4 text-center">
                 <div className="w-14 h-14 bg-[#F0FBF1] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-7 h-7 text-[#41B349]" strokeWidth={2} />
+                  <CheckCircle
+                    className="w-7 h-7 text-[#41B349]"
+                    strokeWidth={2}
+                  />
                 </div>
                 <h3 className="text-[20px] font-extrabold text-[#071C35] mb-2">
                   Obrigado pelo teu testemunho!
                 </h3>
                 <p className="text-[15px] text-slate-500 leading-7">
-                  A tua mensagem foi recebida e será publicada após revisão pela nossa equipa.
+                  A tua mensagem foi recebida e será publicada após revisão pela
+                  nossa equipa.
                 </p>
               </div>
             )}
@@ -453,13 +547,17 @@ export default function Testimonials() {
         </div>
       )}
 
-      {/* Animação de entrada do modal */}
+      {/* Animações CSS */}
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(16px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes progressBar {
+          from { width: 0%; }
+          to   { width: 100%; }
+        }
       `}</style>
     </section>
-  );
+  )
 }

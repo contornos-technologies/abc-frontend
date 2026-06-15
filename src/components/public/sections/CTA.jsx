@@ -1,17 +1,49 @@
-import {
-  GraduationCap,
-  ArrowRight,
-  MessageCircle,
-} from "lucide-react";
-import { Link } from "react-router-dom";
+import { GraduationCap, ArrowRight, MessageCircle } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 
 export default function CTA() {
+  const shouldReduceMotion = useReducedMotion()
+
+  const fadeDown = (delay = 0) => ({
+    hidden: {
+      opacity: shouldReduceMotion ? 1 : 0,
+      y: shouldReduceMotion ? 0 : -16,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: 'easeOut',
+        delay: shouldReduceMotion ? 0 : delay,
+      },
+    },
+  })
+
+  const fadeUp = (delay = 0) => ({
+    hidden: {
+      opacity: shouldReduceMotion ? 1 : 0,
+      y: shouldReduceMotion ? 0 : 24,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: 'easeOut',
+        delay: shouldReduceMotion ? 0 : delay,
+      },
+    },
+  })
+
   return (
     <section
       className="relative overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #1565A8 0%, #12558F 100%)" }}
+      style={{
+        background: 'linear-gradient(135deg, #1565A8 0%, #12558F 100%)',
+      }}
     >
-
       {/* ───────────────── WAVE TOP ───────────────── */}
       <div className="absolute top-0 left-0 w-full overflow-hidden leading-none">
         <svg
@@ -27,54 +59,81 @@ export default function CTA() {
       </div>
 
       {/* ───────────────── CONTEÚDO ───────────────── */}
-      <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-12 sm:pt-18 sm:pb-14 lg:pt-32 lg:pb-20">
+      <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-12 sm:pt-28 sm:pb-14 lg:pt-32 lg:pb-20">
         <div className="flex flex-col items-center text-center max-w-[900px] mx-auto">
-
           {/* ───────────────── BADGE ───────────────── */}
-          <div className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/8 border border-white/10 mt-6 mb-6 backdrop-blur-sm">
-            <GraduationCap size={15} className="text-[#F69220]" strokeWidth={2.2} />
+          <motion.div
+            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/8 border border-white/10 mt-6 mb-6 backdrop-blur-sm"
+            variants={fadeDown(0)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            <GraduationCap
+              size={15}
+              className="text-[#F69220]"
+              strokeWidth={2.2}
+            />
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
               As inscrições para o próximo ciclo encontram-se abertas
             </span>
-          </div>
+          </motion.div>
 
           {/* ───────────────── HEADLINE ───────────────── */}
-          <h2
+          <motion.h2
             className="mt-6 sm:mt-0 font-extrabold text-white leading-[1.08] tracking-tight px-1 sm:px-0"
-            style={{ fontSize: "clamp(24px, 6vw, 48px)" }}
+            style={{ fontSize: 'clamp(24px, 6vw, 48px)' }}
+            variants={fadeUp(0.1)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
           >
-            Pronto para começar a tua{" "}
+            Pronto para começar a tua{' '}
             <span
               className="relative inline-block"
               style={{
-                WebkitTextFillColor: "transparent",
-                WebkitBackgroundClip: "text",
-                backgroundImage: "linear-gradient(90deg, #F69220, #FFB457)",
+                WebkitTextFillColor: 'transparent',
+                WebkitBackgroundClip: 'text',
+                backgroundImage: 'linear-gradient(90deg, #F69220, #FFB457)',
               }}
             >
               preparação
-            </span>{" "}
+            </span>{' '}
             rumo à universidade?
-          </h2>
+          </motion.h2>
 
           {/* ───────────────── SUBHEADLINE ───────────────── */}
-          <p className="mt-5 sm:mt-6 max-w-[620px] text-[15px] sm:text-[16px] leading-relaxed text-white/60">
-            Inscreve-te hoje e estuda com acompanhamento
-            de excelência, preparação focada nos exames
-            de admissão e professores comprometidos com
-            os teus resultados.
-          </p>
+          <motion.p
+            className="mt-5 sm:mt-6 max-w-[620px] text-[15px] sm:text-[16px] leading-relaxed text-white/60"
+            variants={fadeUp(0.2)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            Inscreve-te hoje e estuda com acompanhamento de excelência,
+            preparação focada nos exames de admissão e professores comprometidos
+            com os teus resultados.
+          </motion.p>
 
           {/* ───────────────── BOTÕES ───────────────── */}
-          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-3 sm:gap-4">
-
+          <motion.div
+            className="mt-8 sm:mt-10 flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-3 sm:gap-4"
+            variants={fadeUp(0.3)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
             {/* botão principal */}
             <Link
               to="/signup"
               className="group flex items-center justify-center gap-2.5 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-[#F69220] hover:bg-[#E8850E] text-white font-bold text-sm sm:text-base transition-all duration-200 hover:-translate-y-0.5"
             >
               Inscrever-me Agora
-              <ArrowRight size={18} strokeWidth={2.5} className="transition-transform duration-200 group-hover:translate-x-1" />
+              <ArrowRight
+                size={18}
+                strokeWidth={2.5}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
             </Link>
 
             {/* botão secundário — link externo, <a> correcto */}
@@ -84,15 +143,16 @@ export default function CTA() {
               rel="noopener noreferrer"
               className="group flex items-center justify-center gap-2.5 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-white/8 hover:bg-white/14 border border-white/20 hover:border-white/30 text-white font-semibold text-sm sm:text-base transition-all duration-200 hover:-translate-y-0.5 backdrop-blur-sm"
             >
-              <MessageCircle size={18} strokeWidth={2} className="text-white/70" />
+              <MessageCircle
+                size={18}
+                strokeWidth={2}
+                className="text-white/70"
+              />
               Falar no WhatsApp
             </a>
-
-          </div>
-
+          </motion.div>
         </div>
       </div>
-
     </section>
-  );
+  )
 }

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/AuthContext'
 import PrivateRoute from './components/layout/PrivateRoute'
+import ScrollToTop from './components/layout/ScrollToTop' 
 
 // Layouts
 import AdminLayout from './components/layout/AdminLayout'
@@ -124,6 +125,7 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>

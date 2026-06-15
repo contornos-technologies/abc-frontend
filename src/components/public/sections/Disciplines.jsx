@@ -8,84 +8,97 @@ import {
   Globe,
   Languages,
   Ruler,
-} from "lucide-react";
+} from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const disciplines = [
   {
     icon: Calculator,
-    title: "Matemática",
-    description: "Álgebra, geometria, trigonometria e cálculo aplicado aos exames de acesso.",
+    title: 'Matemática',
+    description:
+      'Álgebra, geometria, trigonometria e cálculo aplicado aos exames de acesso.',
   },
   {
     icon: Atom,
-    title: "Física",
-    description: "Mecânica, eletromagnetismo, termodinâmica e física moderna.",
+    title: 'Física',
+    description: 'Mecânica, eletromagnetismo, termodinâmica e física moderna.',
   },
   {
     icon: FlaskConical,
-    title: "Química",
-    description: "Química geral, orgânica, inorgânica e físico-química.",
+    title: 'Química',
+    description: 'Química geral, orgânica, inorgânica e físico-química.',
   },
   {
     icon: Dna,
-    title: "Biologia",
-    description: "Biologia celular, genética, ecologia e fisiologia humana.",
+    title: 'Biologia',
+    description: 'Biologia celular, genética, ecologia e fisiologia humana.',
   },
   {
     icon: BookText,
-    title: "Língua Portuguesa",
-    description: "Gramática, interpretação de texto, literatura e redação académica.",
+    title: 'Língua Portuguesa',
+    description:
+      'Gramática, interpretação de texto, literatura e redação académica.',
   },
   {
     icon: Scroll,
-    title: "História Universal",
-    description: "História antiga, medieval, moderna e contemporânea.",
+    title: 'História Universal',
+    description: 'História antiga, medieval, moderna e contemporânea.',
   },
   {
     icon: Globe,
-    title: "HESA",
-    description: "História Económica e Social de Angola com foco nos exames de acesso.",
+    title: 'HESA',
+    description:
+      'História Económica e Social de Angola com foco nos exames de acesso.',
   },
   {
     icon: Languages,
-    title: "Inglês",
-    description: "Grammar, reading comprehension, writing e conversação.",
+    title: 'Inglês',
+    description: 'Grammar, reading comprehension, writing e conversação.',
   },
   {
     icon: Ruler,
-    title: "Desenho Técnico",
-    description: "Geometria descritiva, projeções e representação técnica.",
+    title: 'Desenho Técnico',
+    description: 'Geometria descritiva, projeções e representação técnica.',
   },
-];
+]
 
 export default function Disciplines() {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <section
       id="cursos"
       className="w-full bg-[#F4F8FC] pt-10 pb-12 lg:pt-20 lg:pb-16"
     >
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-
         {/* ───────────────── HEADER ───────────────── */}
-        <div className="text-center max-w-3xl mx-auto">
+        <motion.div
+          className="text-center max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: shouldReduceMotion ? 0 : 0.5,
+            ease: 'easeOut',
+          }}
+          viewport={{ once: true, amount: 0.2 }}
+        >
           <h2 className="text-[24px] sm:text-[36px] lg:text-[42px] leading-[1.15] font-extrabold text-[#071C35]">
-            Disciplinas{" "}
-            <span className="text-[#1565A8]">Disponíveis</span>
+            Disciplinas <span className="text-[#1565A8]">Disponíveis</span>
           </h2>
 
           <p className="mt-4 text-[16px] sm:text-[17px] leading-7 text-slate-500 max-w-2xl mx-auto">
-            Preparação completa nas disciplinas essenciais para os exames
-            de acesso ao ensino superior angolano.
+            Preparação completa nas disciplinas essenciais para os exames de
+            acesso ao ensino superior angolano.
           </p>
-        </div>
+        </motion.div>
 
         {/* ───────────────── GRID ───────────────── */}
         <div className="mt-8 lg:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {disciplines.map((discipline, index) => {
-            const Icon = discipline.icon;
+            const Icon = discipline.icon
 
             return (
-              <article
+              <motion.article
                 key={index}
                 className="
                   group
@@ -103,12 +116,21 @@ export default function Disciplines() {
                   duration-300
                   overflow-hidden
                 "
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: shouldReduceMotion ? 0 : 0.4,
+                  ease: 'easeOut',
+                  delay: shouldReduceMotion ? 0 : index * 0.07,
+                }}
+                viewport={{ once: true, amount: 0.1 }}
               >
                 {/* ───────────────── BORDA LARANJA ───────────────── */}
                 <div className="absolute top-0 left-0 h-full w-[4px] bg-[#F69220]" />
 
                 {/* ───────────────── ICON ───────────────── */}
-                <div className="
+                <div
+                  className="
                   w-10
                   h-10
                   sm:w-11
@@ -122,8 +144,13 @@ export default function Disciplines() {
                   transition-all
                   duration-300
                   group-hover:scale-110
-                ">
-                  <Icon size={20} strokeWidth={2.1} className="text-[#1565A8]" />
+                "
+                >
+                  <Icon
+                    size={20}
+                    strokeWidth={2.1}
+                    className="text-[#1565A8]"
+                  />
                 </div>
 
                 {/* ───────────────── TITLE ───────────────── */}
@@ -135,13 +162,11 @@ export default function Disciplines() {
                 <p className="text-[14px] leading-6 text-slate-500">
                   {discipline.description}
                 </p>
-
-              </article>
-            );
+              </motion.article>
+            )
           })}
         </div>
-
       </div>
     </section>
-  );
+  )
 }

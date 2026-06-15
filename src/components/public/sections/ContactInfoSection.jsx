@@ -3,71 +3,66 @@
 // FILE: src/components/public/sections/ContactInfoSection.jsx
 // ============================================================================
 
-import { useState } from "react";
-import {
-  MapPin,
-  Mail,
-  Phone,
-  Facebook,
-  Instagram,
-} from "lucide-react";
+import { useState } from 'react'
+import { MapPin, Mail, Phone, Facebook, Instagram } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL
 
 export default function ContactInfoSection() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
+  const shouldReduceMotion = useReducedMotion()
 
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  })
+
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState(null)
 
   function handleChange(e) {
     setForm((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }));
+    }))
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
+    e.preventDefault()
 
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
+    setLoading(true)
+    setError(null)
+    setSuccess(false)
 
     try {
       const response = await fetch(`${API_BASE_URL}/public/contact`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(form),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error("Erro ao enviar mensagem.");
+        throw new Error('Erro ao enviar mensagem.')
       }
 
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 4000);
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 4000)
 
       setForm({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-      });
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      })
     } catch (err) {
-      setError(
-        "Não foi possível enviar a mensagem. Tente novamente."
-      );
+      setError('Não foi possível enviar a mensagem. Tente novamente.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
@@ -77,35 +72,40 @@ export default function ContactInfoSection() {
       className="
         relative
         z-20
-
         -mt-24
         px-4
         pb-24
-
         sm:px-6
         md:-mt-32
-
         lg:-mt-44
       "
     >
-      <div
+      <motion.div
         className="
           mx-auto
           grid
           max-w-[1000px]
-
           grid-cols-1
-
           overflow-hidden
-
           rounded-[28px]
           bg-white
-
           shadow-[0_20px_60px_rgba(0,0,0,0.08)]
-
           lg:grid-cols-[0.46fr_0.54fr]
           lg:rounded-[36px]
         "
+        initial={{
+          opacity: shouldReduceMotion ? 1 : 0,
+          y: shouldReduceMotion ? 0 : 24,
+        }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: shouldReduceMotion ? 0 : 0.5,
+          ease: 'easeOut',
+        }}
+        viewport={{ once: true, amount: 0.1 }}
       >
         {/* ── LEFT SIDE ── */}
         <div
@@ -140,13 +140,12 @@ export default function ContactInfoSection() {
               text-[#6B7280]
             "
           >
-            Estamos disponíveis para responder às suas dúvidas
-            e ajudá-lo a alcançar os seus objectivos académicos.
+            Estamos disponíveis para responder às suas dúvidas e ajudá-lo a
+            alcançar os seus objectivos académicos.
           </p>
 
           {/* CONTACT ITEMS */}
           <div className="mt-10 space-y-6 md:space-y-8">
-
             {/* ADDRESS */}
             <div className="flex items-start gap-4">
               <div
@@ -163,8 +162,7 @@ export default function ContactInfoSection() {
                   Localização
                 </h3>
                 <p className="mt-1 text-[15px] leading-relaxed text-[#6B7280]">
-                  Cidade Alta,{" "}
-                  <strong>Escola do Ensino Especial</strong>{" "}
+                  Cidade Alta, <strong>Escola do Ensino Especial</strong>{' '}
                   (próximo à Mediateca)
                 </p>
               </div>
@@ -213,7 +211,6 @@ export default function ContactInfoSection() {
                 </p>
               </div>
             </div>
-
           </div>
 
           {/* DIVIDER */}
@@ -268,10 +265,8 @@ export default function ContactInfoSection() {
           </h2>
 
           <form className="mt-10" onSubmit={handleSubmit}>
-
             {/* INPUT GRID */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
               {/* NAME */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#021B4E]">
@@ -389,9 +384,7 @@ export default function ContactInfoSection() {
             )}
 
             {error && (
-              <p className="mt-4 text-sm font-medium text-red-500">
-                {error}
-              </p>
+              <p className="mt-4 text-sm font-medium text-red-500">{error}</p>
             )}
 
             {/* BUTTON */}
@@ -414,12 +407,11 @@ export default function ContactInfoSection() {
                 disabled:opacity-60
               "
             >
-              {loading ? "A enviar..." : "Enviar mensagem"}
+              {loading ? 'A enviar...' : 'Enviar mensagem'}
             </button>
-
           </form>
         </div>
-      </div>
+      </motion.div>
     </section>
-  );
+  )
 }
