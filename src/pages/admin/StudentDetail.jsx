@@ -174,7 +174,6 @@ export default function StudentDetail() {
   const [error, setError]               = useState(null);
 
   const [showScholarModal, setShowScholarModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [scholarValue, setScholarValue]         = useState('');
   const [actionLoading, setActionLoading]       = useState(false);
   const [actionError, setActionError]           = useState(null);
@@ -202,21 +201,6 @@ export default function StudentDetail() {
   const applications = target?.applications ?? student?.targets?.flatMap(t => t.applications ?? []) ?? [];
 
   // ─── Actions ─────────────────────────────────────────────────────────────
-
-  const handleApprovePayment = async () => {
-    try {
-      setActionLoading(true);
-      setActionError(null);
-      await api.patch(`/admin/payments/${payment.id}/approve`);
-      setActionSuccess('Pagamento aprovado com sucesso!');
-      setShowPaymentModal(false);
-      await loadStudent();
-    } catch (err) {
-      setActionError(err.response?.data?.message ?? 'Erro ao aprovar pagamento.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const handleUpdateScholarship = async () => {
     try {
@@ -362,17 +346,6 @@ export default function StudentDetail() {
                         >
                           <IdCard className="w-4 h-4" />
                           Gerar Cartão
-                        </button>
-                      )}
-
-                      {/* Aprovar Pagamento */}
-                      {payment && (payment.status === 'PENDING' || payment.status === 'PARTIAL') && (
-                        <button
-                          onClick={() => setShowPaymentModal(true)}
-                          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#28A745] hover:bg-[#218838] text-white text-sm font-semibold rounded-lg transition-colors shadow-sm w-full sm:w-auto"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          Aprovar Pagamento
                         </button>
                       )}
                     </div>
@@ -576,56 +549,6 @@ export default function StudentDetail() {
                 className="flex-1 px-4 py-2.5 bg-[#0A3956] hover:bg-[#0D4A6E] text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {actionLoading ? 'A guardar...' : 'Confirmar'}
-              </button>
-            </div>
-          </div>
-        </ModalOverlay>
-      )}
-
-      {/* ── MODAL — Aprovar Pagamento ── */}
-      {showPaymentModal && (
-        <ModalOverlay onClose={() => setShowPaymentModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-[#28A745]" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-[#0A3956]">Aprovar Pagamento</h3>
-                <p className="text-xs text-gray-500">{name}</p>
-              </div>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-4 mb-5 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Valor total</span>
-                <span className="font-semibold text-gray-800">{formatCurrency(target?.finalAmount)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Já pago</span>
-                <span className="font-semibold text-[#28A745]">{formatCurrency(payment?.amountPaid)}</span>
-              </div>
-              <div className="flex justify-between text-sm border-t border-gray-200 pt-2">
-                <span className="text-gray-600 font-medium">Em falta</span>
-                <span className="font-bold text-[#DC3545]">{formatCurrency(payment?.remainingBalance)}</span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mb-5">
-              Ao aprovar, o estado do pagamento será actualizado. Esta acção não pode ser revertida.
-            </p>
-            {actionError && <p className="text-xs text-red-600 mb-3">{actionError}</p>}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleApprovePayment}
-                disabled={actionLoading}
-                className="flex-1 px-4 py-2.5 bg-[#28A745] hover:bg-[#218838] text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {actionLoading ? 'A processar...' : 'Aprovar'}
               </button>
             </div>
           </div>
