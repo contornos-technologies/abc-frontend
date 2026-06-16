@@ -1,6 +1,6 @@
 {
   "name": "ABC",
-  "short_name": "MySite",
+  "short_name": "ABC",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
