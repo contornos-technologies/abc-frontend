@@ -4,9 +4,9 @@ import logoWhite from '../../assets/logo-white.svg'
 
 const NAV_LINKS = [
   { label: 'Início', to: '/', scrollTo: 'top' },
-  { label: 'Sobre', to: '/about' },
-  { label: 'Contacto', to: '/contact' },
-  { label: 'Simulações', to: '/simulacoes' },
+  { label: 'Sobre', to: '/about', scrollTo: 'top' },
+  { label: 'Contacto', to: '/contact', scrollTo: 'top' },
+  { label: 'Simulações', to: '/simulations', scrollTo: 'top' },
 ]
 
 const DISCIPLINES = [

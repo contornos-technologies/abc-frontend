@@ -39,7 +39,8 @@ function InstrucoesPresenciais() {
   return (
     <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
       <p className="text-[#0A3956] font-semibold text-sm mb-3">
-        Para concluir a inscrição, efectue o pagamento em:
+        Para concluir a sua inscrição, dirija-se ao seguinte local para efectuar
+        o pagamento:
       </p>
       <div className="flex items-start gap-2 mb-2">
         <MapPin className="w-4 h-4 text-[#F69220] mt-0.5 flex-shrink-0" />
@@ -47,20 +48,22 @@ function InstrucoesPresenciais() {
           <p className="text-[#1F2937] text-sm font-semibold">
             Escola do Ensino Especial Huambo
           </p>
-          <p className="text-[#6C757D] text-xs">Junto à Mediate</p>
+          <p className="text-[#6C757D] text-xs">Junto à Mediateca</p>
         </div>
       </div>
       <div className="flex items-center gap-2 mb-3">
         <Clock className="w-4 h-4 text-[#F69220] flex-shrink-0" />
-        <p className="text-[#6C757D] text-xs">Segunda a Sexta, 08h às 15h</p>
+        <p className="text-[#6C757D] text-xs">
+          Segunda a Sexta, das 08h às 15h
+        </p>
       </div>
       <div className="bg-white border border-orange-200 rounded-md px-3 py-2">
         <p className="text-[#6C757D] text-xs">
-          Leve o seu BI no acto do pagamento
+          Apresente o seu BI no acto do pagamento.
         </p>
       </div>
     </div>
-  );
+  )
 }
 
 export default function EnrollmentSuccess() {

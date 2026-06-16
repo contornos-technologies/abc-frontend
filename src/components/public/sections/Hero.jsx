@@ -1,9 +1,32 @@
-import { Link } from 'react-router-dom';
-import heroBg from '../../../assets/hero-bg.png';
-import heroBgMobile from '../../../assets/hero-students-mobile.png';
-import { TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom'
+import heroBg from '../../../assets/hero-bg.png'
+import heroBgMobile from '../../../assets/hero-students-mobile.png'
+import { TrendingUp } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 
 export default function Hero() {
+  const shouldReduceMotion = useReducedMotion()
+
+  const fadeUp = (delay = 0) => ({
+    initial: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: {
+      duration: shouldReduceMotion ? 0 : 0.5,
+      ease: 'easeOut',
+      delay,
+    },
+  })
+
+  const fadeDown = (delay = 0) => ({
+    initial: { opacity: 0, y: shouldReduceMotion ? 0 : -16 },
+    animate: { opacity: 1, y: 0 },
+    transition: {
+      duration: shouldReduceMotion ? 0 : 0.5,
+      ease: 'easeOut',
+      delay,
+    },
+  })
+
   return (
     <section
       className="relative w-full overflow-hidden bg-[#F4F8FC] pt-14"
@@ -21,49 +44,60 @@ export default function Hero() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 70% 42%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.18) 35%, transparent 65%)',
+          background:
+            'radial-gradient(circle at 70% 42%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.18) 35%, transparent 65%)',
         }}
       />
 
       {/* Conteúdo */}
-      <div className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 flex items-center
+      <div
+        className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 flex items-center
         min-h-[auto] md:min-h-[480px] lg:min-h-[600px]
-        py-10 md:py-0">
-
-        <div className="flex flex-col
+        py-10 md:py-0"
+      >
+        <div
+          className="flex flex-col
           w-full md:max-w-[420px] lg:max-w-[560px]
           gap-4 md:gap-4 lg:gap-5
-          pb-0 md:pb-6 lg:pb-12">
-
+          pb-0 md:pb-6 lg:pb-12"
+        >
           {/* Badge */}
-          <div className="w-fit">
-            <span className="bg-blue-50 border border-blue-100 text-[#1565A8] rounded-full font-semibold
-              px-3 py-1.5 text-xs md:px-3 md:py-1 md:text-xs lg:px-4 lg:py-2 lg:text-sm">
+          <motion.div className="w-fit" {...fadeDown(0.1)}>
+            <span
+              className="bg-blue-50 border border-blue-100 text-[#1565A8] rounded-full font-semibold
+              px-3 py-1.5 text-xs md:px-3 md:py-1 md:text-xs lg:px-4 lg:py-2 lg:text-sm"
+            >
               Líder na Preparação para o Acesso ao Ensino Superior
             </span>
-          </div>
+          </motion.div>
 
           {/* Título */}
-          <h1 className="text-[#071C35] font-extrabold leading-[1.1] tracking-tight
-            text-[28px] md:text-[24px] lg:text-[clamp(28px,4vw,48px)]">
+          <motion.h1
+            className="text-[#071C35] font-extrabold leading-[1.1] tracking-tight
+              text-[28px] md:text-[24px] lg:text-[clamp(28px,4vw,48px)]"
+            {...fadeUp(0.2)}
+          >
             Prepare Hoje o Seu
             <br />
-            Futuro{' '}
-            <span className="text-[#1565A8]">
-              Universitário
-            </span>
-          </h1>
+            Futuro <span className="text-[#1565A8]">Universitário</span>
+          </motion.h1>
 
           {/* Subtítulo */}
-          <p className="text-[#64748B] leading-relaxed
-            text-[15px] md:text-[15px] lg:text-lg
-            max-w-full md:max-w-[295px] lg:max-w-[480px]">
-            Preparação intensiva, professores experientes e métodos
-            comprovados para conquistar a sua vaga no ensino superior.
-          </p>
+          <motion.p
+            className="text-[#64748B] leading-relaxed
+              text-[15px] md:text-[15px] lg:text-lg
+              max-w-full md:max-w-[295px] lg:max-w-[480px]"
+            {...fadeUp(0.3)}
+          >
+            Preparação intensiva, professores experientes e métodos comprovados
+            para conquistar a sua vaga no ensino superior.
+          </motion.p>
 
           {/* Botões */}
-          <div className="flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-3 lg:gap-4 mt-1 md:mt-1 lg:mt-2">
+          <motion.div
+            className="flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-3 lg:gap-4 mt-1 md:mt-1 lg:mt-2"
+            {...fadeUp(0.4)}
+          >
             <Link
               to="/signup"
               className="inline-flex items-center justify-center gap-2
@@ -90,7 +124,7 @@ export default function Hero() {
             >
               Conhecer os Serviços
             </a>
-          </div>
+          </motion.div>
 
           {/* Imagem — só no mobile */}
           <div className="md:hidden mt-6 -mx-6 relative pb-0">
@@ -101,30 +135,33 @@ export default function Hero() {
             />
 
             {/* Badge flutuante */}
-            <div className="absolute top-8 right-6 z-20 flex items-center gap-2.5
-  bg-white/80 backdrop-blur-sm
-  border border-white/60
-  px-3 py-2 rounded-2xl shadow-lg
-  animate-bounce"
-  style={{ animationDuration: '3s' }}
->
+            <div
+              className="absolute top-8 right-6 z-20 flex items-center gap-2.5
+              bg-white/80 backdrop-blur-sm
+              border border-white/60
+              px-3 py-2 rounded-2xl shadow-lg
+              animate-bounce"
+              style={{ animationDuration: '3s' }}
+            >
               <div className="bg-white rounded-full p-1.5 flex-shrink-0">
-                <TrendingUp size={16} strokeWidth={1.8} className="text-[#41B349]" />
+                <TrendingUp
+                  size={16}
+                  strokeWidth={1.8}
+                  className="text-[#41B349]"
+                />
               </div>
               <div>
                 <p className="text-[9px] uppercase tracking-wider font-black text-slate-400 leading-none mb-0.5">
-                    Taxa de Aprovação
+                  Taxa de Aprovação
                 </p>
                 <p className="text-sm font-bold text-slate-900 leading-none">
                   60% Aprovados
                 </p>
               </div>
             </div>
-
           </div>
-
         </div>
       </div>
     </section>
-  );
+  )
 }

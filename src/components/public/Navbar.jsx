@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 import logoDark from '../../assets/logo-dark.svg'
 import logoWhite from '../../assets/logo-white.svg'
 
@@ -19,6 +20,15 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [activePath, setActivePath] = useState('/')
+
+  // Respeita a preferência do sistema operativo do utilizador
+  const shouldReduceMotion = useReducedMotion()
+
+  // Só anima na primeira página da sessão
+  const hasAnimated = sessionStorage.getItem('navbar-animated')
+  useEffect(() => {
+    sessionStorage.setItem('navbar-animated', 'true')
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10)
@@ -48,9 +58,23 @@ export default function Navbar({
         ? 'text-white'
         : 'text-[#071C35]'
 
+  // Animação de entrada — desativada se já animou nesta sessão ou se o utilizador preferir menos movimento
+  const skipAnimation = hasAnimated || shouldReduceMotion
+  const navVariants = {
+    hidden: { opacity: skipAnimation ? 1 : 0, y: skipAnimation ? 0 : -16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: skipAnimation ? 0 : 0.4, ease: 'easeOut' },
+    },
+  }
+
   return (
     <>
-      <header
+      <motion.header
+        variants={navVariants}
+        initial="hidden"
+        animate="visible"
         className={`
           fixed top-0 left-0 right-0 z-50 h-20
           transition-all duration-300 ease-in-out
@@ -169,20 +193,22 @@ export default function Navbar({
             </button>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* menu mobile */}
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={
+          menuOpen
+            ? { opacity: 1, y: 0 }
+            : { opacity: 0, y: shouldReduceMotion ? 0 : -8 }
+        }
+        transition={{ duration: shouldReduceMotion ? 0 : 0.2, ease: 'easeOut' }}
         className={`
           fixed top-20 left-0 right-0 z-40
           bg-white shadow-lg border-t border-gray-100
-          transition-all duration-300 ease-in-out
           md:hidden
-          ${
-            menuOpen
-              ? 'opacity-100 translate-y-0 pointer-events-auto'
-              : 'opacity-0 -translate-y-2 pointer-events-none'
-          }
+          ${menuOpen ? 'pointer-events-auto' : 'pointer-events-none'}
         `}
       >
         <nav className="max-w-[1200px] mx-auto px-4 py-4 flex flex-col gap-1">
@@ -241,7 +267,7 @@ export default function Navbar({
             </Link>
           </div>
         </nav>
-      </div>
+      </motion.div>
 
       {/* overlay mobile */}
       {menuOpen && (

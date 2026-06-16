@@ -2,46 +2,70 @@
 // SECTION: CONTACT MAP (PREMIUM VERSION)
 // ============================================================================
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import L from 'leaflet'
+import { motion, useReducedMotion } from 'framer-motion'
 
 // ───────────────── CUSTOM ICON ─────────────────
 
 const customIcon = new L.Icon({
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [28, 45],
   iconAnchor: [14, 45],
-});
+})
 
 // ───────────────── COORDINATES ─────────────────
 
-const position = [-12.7744147, 15.7441334];
+const position = [-12.7744147, 15.7441334]
 
-// Google Maps link
-const googleMapsUrl =
-  "https://www.google.com/maps?q=-12.7744147,15.7441334";
+const googleMapsUrl = 'https://www.google.com/maps?q=-12.7744147,15.7441334'
 
 export default function ContactMapSection() {
+  const shouldReduceMotion = useReducedMotion()
+
+  const fadeUp = (delay = 0) => ({
+    hidden: {
+      opacity: shouldReduceMotion ? 1 : 0,
+      y: shouldReduceMotion ? 0 : 24,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: 'easeOut',
+        delay: shouldReduceMotion ? 0 : delay,
+      },
+    },
+  })
+
   return (
-   <section className="pb-12 md:pb-16">
-
-    {/* TITLE */}
-<div className="text-center mb-8 px-4 -mt-10 md:-mt-6">
-  <h2 className="text-[22px] sm:text-[26px] lg:text-[28px] leading-[1.15] font-bold text-[#021B4E]">
-    Localização
-  </h2>
-
-  <p className="mt-2 text-[15px] sm:text-[16px] leading-7 text-slate-500">
-    Veja onde estamos no mapa
-  </p>
-</div>
+    <section className="pb-12 md:pb-16">
+      {/* TITLE */}
+      <motion.div
+        className="text-center mb-8 px-4 -mt-10 md:-mt-6"
+        variants={fadeUp(0)}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
+        <h2 className="text-[22px] sm:text-[26px] lg:text-[28px] leading-[1.15] font-bold text-[#021B4E]">
+          Localização
+        </h2>
+        <p className="mt-2 text-[15px] sm:text-[16px] leading-7 text-slate-500">
+          Veja onde estamos no mapa
+        </p>
+      </motion.div>
 
       {/* MAP WRAPPER */}
-      <div className="relative overflow-hidden w-full">
-
+      <motion.div
+        className="relative overflow-hidden w-full"
+        variants={fadeUp(0.1)}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+      >
         {/* MAP */}
         <div className="h-[300px] sm:h-[380px] md:h-[450px] w-full">
           <MapContainer
@@ -61,11 +85,9 @@ export default function ContactMapSection() {
                   <h3 className="font-bold text-[#021B4E]">
                     ABC Centro Preparatório
                   </h3>
-
                   <p className="mt-1 text-sm text-gray-600">
                     Escola do Ensino Especial
                   </p>
-
                   <p className="text-sm text-gray-600">
                     Próximo ao CLESE, Huambo
                   </p>
@@ -104,7 +126,7 @@ export default function ContactMapSection() {
             Abrir no Google Maps
           </a>
         </div>
-      </div>
+      </motion.div>
     </section>
-  );
+  )
 }
