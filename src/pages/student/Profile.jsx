@@ -164,7 +164,8 @@ export default function Profile() {
           ) : errorStudent ? (
             <ErrorBanner message={errorStudent} onRetry={fetchStudent} />
           ) : (
-            <PersonalInfoCard student={student} onUpdate={fetchStudent} />
+            //<PersonalInfoCard student={student} onUpdate={fetchStudent} />
+            <PersonalInfoCard student={student} onUpdate={fetchStudent} emailVerified={user?.emailVerified} />
           )}
         </div>
 
