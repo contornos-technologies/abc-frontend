@@ -382,7 +382,7 @@ export default function Signup() {
             />
             <label htmlFor="terms" className="text-sm cursor-pointer" style={{ color: '#6C757D' }}>
               Li e aceito os{' '}
-              <a href="/termos" className="font-medium hover:underline" style={{ color: '#F69220' }}>
+              <a href="/terms" className="font-medium hover:underline" style={{ color: '#F69220' }}>
                 Termos e Condições
               </a>
             </label>
