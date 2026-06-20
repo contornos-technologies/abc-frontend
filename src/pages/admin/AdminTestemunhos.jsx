@@ -6,6 +6,7 @@ import {
   AlertCircle,
   RefreshCw,
   Trash2,
+  Loader2,
 } from 'lucide-react'
 import api from '../../services/api'
 import { useAdminNotifications } from '../../context/AdminNotificationsContext'
@@ -27,9 +28,53 @@ function SkeletonCard() {
   )
 }
 
+function ConfirmModal({ open, title, message, onConfirm, onCancel, loading }) {
+  if (!open) return null
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-xl shadow-lg max-w-sm w-full p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+            <Trash2 className="w-5 h-5 text-[#DC3545]" />
+          </div>
+          <h3 className="text-base font-semibold text-[#0A3956]">{title}</h3>
+        </div>
+
+        <p className="text-sm text-gray-600 leading-relaxed">{message}</p>
+
+        <div className="flex justify-end gap-2 pt-1">
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="px-4 py-2 rounded-lg text-sm font-medium border-2 border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-[#DC3545] text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+          >
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            Apagar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TestimonialCard({ item, onAction, onDelete }) {
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   async function handleAction(approved) {
     setLoading(true)
@@ -42,18 +87,13 @@ function TestimonialCard({ item, onAction, onDelete }) {
   }
 
   async function handleDelete() {
-    if (
-      !window.confirm(
-        'Tens a certeza que queres apagar este testemunho? Esta acção não pode ser desfeita.'
-      )
-    )
-      return
     setDeleting(true)
     try {
       await api.delete(`/admin/testimonials/${item.id}`)
       onDelete(item.id)
     } catch {
       setDeleting(false)
+      setConfirmOpen(false)
     }
   }
 
@@ -113,7 +153,7 @@ function TestimonialCard({ item, onAction, onDelete }) {
           Rejeitar
         </button>
         <button
-          onClick={handleDelete}
+          onClick={() => setConfirmOpen(true)}
           disabled={loading || deleting}
           title="Apagar testemunho"
           className="ml-auto flex items-center justify-center w-9 h-9 rounded-lg text-[#6C757D] hover:bg-red-50 hover:text-[#DC3545] transition-colors disabled:opacity-50"
@@ -121,26 +161,31 @@ function TestimonialCard({ item, onAction, onDelete }) {
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="Apagar testemunho"
+        message="Tens a certeza que queres apagar este testemunho? Esta acção não pode ser desfeita."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmOpen(false)}
+        loading={deleting}
+      />
     </div>
   )
 }
 
 function PublishedCard({ item, onDelete }) {
   const [deleting, setDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   async function handleDelete() {
-    if (
-      !window.confirm(
-        'Tens a certeza que queres apagar este testemunho publicado? Esta acção não pode ser desfeita.'
-      )
-    )
-      return
     setDeleting(true)
     try {
       await api.delete(`/admin/testimonials/${item.id}`)
       onDelete(item.id)
     } catch {
       setDeleting(false)
+      setConfirmOpen(false)
     }
   }
 
@@ -186,7 +231,7 @@ function PublishedCard({ item, onDelete }) {
           Publicado
         </div>
         <button
-          onClick={handleDelete}
+          onClick={() => setConfirmOpen(true)}
           disabled={deleting}
           title="Apagar testemunho"
           className="flex items-center justify-center w-8 h-8 rounded-lg text-[#6C757D] hover:bg-red-50 hover:text-[#DC3545] transition-colors disabled:opacity-50"
@@ -194,6 +239,15 @@ function PublishedCard({ item, onDelete }) {
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="Apagar testemunho"
+        message="Tens a certeza que queres apagar este testemunho publicado? Esta acção não pode ser desfeita."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmOpen(false)}
+        loading={deleting}
+      />
     </div>
   )
 }
@@ -226,12 +280,12 @@ export default function AdminTestemunhos() {
 
   function handleAction(id, approved) {
     setItems((prev) => prev.filter((i) => i.id !== id))
-    decrementTestimonials() // aprovar ou rejeitar, ambos saem da lista de pendentes
+    decrementTestimonials()
   }
 
   function handleDelete(id) {
     setItems((prev) => prev.filter((i) => i.id !== id))
-    if (tab === 'pending') decrementTestimonials() // só decrementa o badge se ainda estava pendente
+    if (tab === 'pending') decrementTestimonials()
   }
 
   return (
