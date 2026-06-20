@@ -97,7 +97,7 @@ export default function Profile() {
     setResendLoading(true)
     setResendStatus(null)
     try {
-      await api.post('/auth/resend-verification')
+      await api.post('/auth/resend-verification', { email: user.email })
       setResendStatus('success')
     } catch {
       setResendStatus('error')
