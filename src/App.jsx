@@ -35,6 +35,8 @@ import EquipaPage from './pages/admin/EquipaPage'
 // Publics
 import Home from './pages/public/Home'
 import Contact from './pages/public/Contact'
+import Privacy from './pages/public/Privacy'
+import Terms from './pages/public/Terms'
 
 // Simulation
 import SimulationPage from './pages/simulation/SimulationPage'
@@ -57,6 +59,8 @@ function AppRoutes() {
       <Route path="/about" element={<div>Sobre (em breve)</div>} />
       <Route path="/services" element={<div>Serviços (em breve)</div>} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/privacidade" element={<Privacy />} />
+      <Route path="/termos" element={<Terms />} />
       <Route path="/simulations" element={<SimulationsList />} />
       <Route path="/simulation/:id" element={<SimulationIntro />} />
       <Route path="/simulation/:id/exam" element={<SimulationPage />} />
