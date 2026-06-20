@@ -59,8 +59,8 @@ function AppRoutes() {
       <Route path="/about" element={<div>Sobre (em breve)</div>} />
       <Route path="/services" element={<div>Serviços (em breve)</div>} />
       <Route path="/contact" element={<Contact />} />
-      <Route path="/privacidade" element={<Privacy />} />
-      <Route path="/termos" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
       <Route path="/simulations" element={<SimulationsList />} />
       <Route path="/simulation/:id" element={<SimulationIntro />} />
       <Route path="/simulation/:id/exam" element={<SimulationPage />} />
