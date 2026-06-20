@@ -1,60 +1,62 @@
-import { useState } from 'react';
-import { User, Loader2 } from 'lucide-react';
-import api from '../../services/api';
+import { useState } from 'react'
+import api from '../../services/api'
+import { User, Loader2, CheckCircle2 } from 'lucide-react'
 
-export default function PersonalInfoCard({ student, onUpdate }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving]       = useState(false);
-  const [error, setError]         = useState('');
-  const [success, setSuccess]     = useState(false);
+export default function PersonalInfoCard({ student, onUpdate, emailVerified }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
 
   const [form, setForm] = useState({
-    fullName:  student?.fullName        || '',
-    email:     student?.user?.email     || '',
-    phone:     student?.user?.phone     || '', // ✅ V12.3 — era student?.phone
-  });
+    fullName: student?.fullName || '',
+    email: student?.user?.email || '',
+    phone: student?.user?.phone || '', // ✅ V12.3 — era student?.phone
+  })
 
   function handleChange(e) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   function handleEdit() {
     setForm({
-      fullName: student?.fullName     || '',
-      email:    student?.user?.email  || '',
-      phone:    student?.user?.phone  || '', // ✅ V12.3 — era student?.phone
-    });
-    setError('');
-    setSuccess(false);
-    setIsEditing(true);
+      fullName: student?.fullName || '',
+      email: student?.user?.email || '',
+      phone: student?.user?.phone || '', // ✅ V12.3 — era student?.phone
+    })
+    setError('')
+    setSuccess(false)
+    setIsEditing(true)
   }
 
   function handleCancel() {
-    setIsEditing(false);
-    setError('');
+    setIsEditing(false)
+    setError('')
   }
 
   async function handleSave() {
     if (!form.fullName.trim() || !form.email.trim()) {
-      setError('Nome e email são obrigatórios.');
-      return;
+      setError('Nome e email são obrigatórios.')
+      return
     }
-    setSaving(true);
-    setError('');
+    setSaving(true)
+    setError('')
     try {
       await api.patch('/students/me', {
         fullName: form.fullName.trim(),
-        email:    form.email.trim(),
-        phone:    form.phone.trim() || null,
-      });
-      setSuccess(true);
-      setIsEditing(false);
-      onUpdate && onUpdate();
-      setTimeout(() => setSuccess(false), 3000);
+        email: form.email.trim(),
+        phone: form.phone.trim() || null,
+      })
+      setSuccess(true)
+      setIsEditing(false)
+      onUpdate && onUpdate()
+      setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
-      setError(err?.response?.data?.message || 'Erro ao guardar. Tenta novamente.');
+      setError(
+        err?.response?.data?.message || 'Erro ao guardar. Tenta novamente.'
+      )
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
@@ -64,7 +66,9 @@ export default function PersonalInfoCard({ student, onUpdate }) {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <User className="text-[#0A3956]" size={24} />
-          <h2 className="text-[#0A3956] font-semibold text-base">Informações Pessoais</h2>
+          <h2 className="text-[#0A3956] font-semibold text-base">
+            Informações Pessoais
+          </h2>
         </div>
         {!isEditing ? (
           <button
@@ -109,19 +113,57 @@ export default function PersonalInfoCard({ student, onUpdate }) {
       {/* Campos */}
       {!isEditing ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { label: 'NOME COMPLETO',         value: student?.fullName        || '—' },
-            { label: 'EMAIL',                 value: student?.user?.email     || '—' },
-            { label: 'BILHETE DE IDENTIDADE', value: student?.bi              || '—' },
-            { label: 'TELEFONE',              value: student?.user?.phone     || '—' }, // ✅ V12.3 — era student?.phone
-          ].map((info) => (
-            <div key={info.label} className="bg-[#F8FAFC] p-4 rounded-lg">
-              <div className="text-[11px] uppercase tracking-wider text-[#6B7280] mb-2">
-                {info.label}
-              </div>
-              <div className="text-[#1A1A2E] font-medium text-sm">{info.value}</div>
+          {/* Nome */}
+          <div className="bg-[#F8FAFC] p-4 rounded-lg">
+            <div className="text-[11px] uppercase tracking-wider text-[#6B7280] mb-2">
+              NOME COMPLETO
             </div>
-          ))}
+            <div className="text-[#1A1A2E] font-medium text-sm">
+              {student?.fullName || '—'}
+            </div>
+          </div>
+
+          {/* Email — com badge de verificação */}
+          <div className="bg-[#F8FAFC] p-4 rounded-lg">
+            <div className="text-[11px] uppercase tracking-wider text-[#6B7280] mb-2">
+              EMAIL
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[#1A1A2E] font-medium text-sm">
+                {student?.user?.email || '—'}
+              </span>
+              {emailVerified ? (
+                <span className="inline-flex items-center gap-1 bg-[#D4EDDA] text-[#155724] text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                  <CheckCircle2 size={11} />
+                  Verificado
+                </span>
+              ) : (
+                <span className="inline-flex items-center bg-[#FFF8E1] text-[#92400E] text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                  Não verificado
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Bilhete de Identidade */}
+          <div className="bg-[#F8FAFC] p-4 rounded-lg">
+            <div className="text-[11px] uppercase tracking-wider text-[#6B7280] mb-2">
+              BILHETE DE IDENTIDADE
+            </div>
+            <div className="text-[#1A1A2E] font-medium text-sm">
+              {student?.bi || '—'}
+            </div>
+          </div>
+
+          {/* Telefone */}
+          <div className="bg-[#F8FAFC] p-4 rounded-lg">
+            <div className="text-[11px] uppercase tracking-wider text-[#6B7280] mb-2">
+              TELEFONE
+            </div>
+            <div className="text-[#1A1A2E] font-medium text-sm">
+              {student?.user?.phone || '—'}
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -138,18 +180,26 @@ export default function PersonalInfoCard({ student, onUpdate }) {
             />
           </div>
 
-          {/* Email */}
-          <div>
-            <label className="text-[11px] uppercase tracking-wider text-[#6B7280] mb-2 block">
+          {/* Email — com badge de verificação */}
+          <div className="bg-[#F8FAFC] p-4 rounded-lg">
+            <div className="text-[11px] uppercase tracking-wider text-[#6B7280] mb-2">
               EMAIL
-            </label>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full text-sm border border-[#E5E7EB] rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#F69220] bg-white"
-            />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[#1A1A2E] font-medium text-sm">
+                {student?.user?.email || '—'}
+              </span>
+              {emailVerified ? (
+                <span className="inline-flex items-center gap-1 bg-[#D4EDDA] text-[#155724] text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                  <CheckCircle2 size={11} />
+                  Verificado
+                </span>
+              ) : (
+                <span className="inline-flex items-center bg-[#FFF8E1] text-[#92400E] text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                  Não verificado
+                </span>
+              )}
+            </div>
           </div>
 
           {/* BI — não editável */}
@@ -178,5 +228,5 @@ export default function PersonalInfoCard({ student, onUpdate }) {
         </div>
       )}
     </div>
-  );
+  )
 }
