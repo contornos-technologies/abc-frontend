@@ -1,5 +1,7 @@
 import { Link, NavLink } from 'react-router-dom'
+import Navbar from './Navbar'
 import Footer from './Footer'
+
 
 /**
  * Shell partilhado pelas páginas legais (Privacidade e Termos).
@@ -26,38 +28,10 @@ export default function LegalLayout({ title, lastUpdated, intro, sections }) {
       }}
     >
       {/* Cabeçalho */}
-      <header className="sticky top-0 z-10 h-16 bg-white border-b border-[#E7EDF5] shadow-[0_1px_6px_rgba(0,0,0,0.04)]">
-        <div className="max-w-[1000px] mx-auto h-full flex items-center justify-between px-6">
-          <Link
-            to="/"
-            className="flex items-center gap-2.5 text-[#071C35] no-underline"
-          >
-            <span className="w-[34px] h-[34px] rounded-[10px] bg-gradient-to-br from-[#1565A8] to-[#0A3956] flex items-center justify-center text-white font-extrabold text-sm tracking-wide shrink-0">
-              ABC
-            </span>
-            <span className="font-extrabold text-base leading-tight">
-              Centro Preparatório
-              <span className="block font-medium text-[11px] text-[#5F6D7E] tracking-wide">
-                Academia Berço do Conhecimento
-              </span>
-            </span>
-          </Link>
-          <nav className="flex gap-6">
-            <NavLink to="/" end className={navLinkClass}>
-              Início
-            </NavLink>
-            <NavLink to="/privacidade" className={navLinkClass}>
-              Privacidade
-            </NavLink>
-            <NavLink to="/termos" className={navLinkClass}>
-              Termos
-            </NavLink>
-          </nav>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Conteúdo */}
-      <main className="max-w-[760px] mx-auto px-6 pt-14 pb-20">
+      <main className="max-w-[760px] mx-auto px-6 pt-26 pb-20">
         <h1 className="text-[32px] font-extrabold text-[#071C35] m-0 mb-2 tracking-tight">
           {title}
         </h1>
