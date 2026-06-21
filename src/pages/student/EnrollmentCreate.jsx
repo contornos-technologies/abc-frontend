@@ -288,7 +288,7 @@ export default function EnrollmentCreate() {
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
                 currentStep === 2 ? 'bg-white text-[#F69220]' : 'bg-gray-300 text-white'
               }`}>2</div>
-              <span className="font-semibold">Candidaturas</span>
+              <span className="font-semibold">Universidades</span>
             </div>
           </div>
         </div>
@@ -368,10 +368,10 @@ export default function EnrollmentCreate() {
           {currentStep === 2 && (
             <div>
               <h2 className="text-xl font-bold text-[#0A3956] mb-1">
-                Adiciona as tuas candidaturas
+                A que universidade(s) vais te candidatar?
               </h2>
               <p className="text-[#6C757D] mb-6">
-                Opcional — podes adicionar mais tarde no teu perfil
+                Indica a universidade, faculdade e curso a que pretendes concorrer. É opcional — podes adicionar mais do que uma, ou fazer isto mais tarde no teu perfil.
               </p>
 
               {/* Erro de submissão */}
@@ -384,12 +384,12 @@ export default function EnrollmentCreate() {
               {applications.length === 0 ? (
                 <div className="text-center py-12">
                   <GraduationCap className="w-16 h-16 text-[#F69220] mx-auto mb-4" />
-                  <p className="text-[#6C757D] mb-6">Ainda não adicionaste nenhuma candidatura</p>
+                  <p className="text-[#6C757D] mb-6">Ainda não indicaste nenhuma universidade ou curso</p>
                   <button
                     onClick={openModal}
                     className="bg-[#F69220] text-white px-6 py-3 rounded-lg hover:bg-[#e58419] transition-colors font-semibold"
                   >
-                    + Adicionar Candidatura
+                    + Adicionar Universidade
                   </button>
                 </div>
               ) : (
@@ -417,7 +417,7 @@ export default function EnrollmentCreate() {
                     onClick={openModal}
                     className="w-full bg-[#F69220] text-white px-6 py-3 rounded-lg hover:bg-[#e58419] transition-colors font-semibold"
                   >
-                    + Adicionar Candidatura
+                    + Adicionar Universidade
                   </button>
                 </div>
               )}
@@ -479,7 +479,7 @@ export default function EnrollmentCreate() {
 
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-[#0A3956]">Nova Candidatura</h3>
+              <h3 className="text-xl font-bold text-[#0A3956]">Nova Universidade</h3>
               <button
                 onClick={closeModal}
                 className="text-[#6C757D] hover:text-[#0A3956] transition-colors"
