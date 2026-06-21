@@ -586,7 +586,6 @@ export default function Signup() {
                 >
                   Cria a tua conta
                 </h2>
-                
               </div>
 
               {renderForm('tablet')}

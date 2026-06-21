@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, MessageSquareQuote, AlertCircle, RefreshCw } from 'lucide-react';
-import api from '../../services/api';
-import { useAdminNotifications } from '../../context/AdminNotificationsContext';
+import { useState, useEffect } from 'react'
+import {
+  CheckCircle,
+  XCircle,
+  MessageSquareQuote,
+  AlertCircle,
+  RefreshCw,
+  Trash2,
+  Loader2,
+} from 'lucide-react'
+import api from '../../services/api'
+import { useAdminNotifications } from '../../context/AdminNotificationsContext'
 
 function SkeletonCard() {
   return (
@@ -17,35 +25,94 @@ function SkeletonCard() {
       <div className="h-3 bg-gray-200 rounded w-5/6" />
       <div className="h-3 bg-gray-200 rounded w-2/3" />
     </div>
-  );
+  )
 }
 
-function TestimonialCard({ item, onAction }) {
-  const [loading, setLoading] = useState(false);
+function ConfirmModal({ open, title, message, onConfirm, onCancel, loading }) {
+  if (!open) return null
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-xl shadow-lg max-w-sm w-full p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+            <Trash2 className="w-5 h-5 text-[#DC3545]" />
+          </div>
+          <h3 className="text-base font-semibold text-[#0A3956]">{title}</h3>
+        </div>
+
+        <p className="text-sm text-gray-600 leading-relaxed">{message}</p>
+
+        <div className="flex justify-end gap-2 pt-1">
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="px-4 py-2 rounded-lg text-sm font-medium border-2 border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-[#DC3545] text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+          >
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            Apagar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TestimonialCard({ item, onAction, onDelete }) {
+  const [loading, setLoading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   async function handleAction(approved) {
-    setLoading(true);
+    setLoading(true)
     try {
-      await api.patch(`/admin/testimonials/${item.id}`, { approved });
-      onAction(item.id, approved);
+      await api.patch(`/admin/testimonials/${item.id}`, { approved })
+      onAction(item.id, approved)
     } catch {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  const initials = item.name
-    ?.trim()
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0].toUpperCase())
-    .join('') || '?';
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await api.delete(`/admin/testimonials/${item.id}`)
+      onDelete(item.id)
+    } catch {
+      setDeleting(false)
+      setConfirmOpen(false)
+    }
+  }
+
+  const initials =
+    item.name
+      ?.trim()
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((n) => n[0].toUpperCase())
+      .join('') || '?'
 
   const date = item.createdAt
     ? new Date(item.createdAt).toLocaleDateString('pt-PT', {
-        day: '2-digit', month: 'short', year: 'numeric',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
       })
-    : null;
+    : null
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-[#DEE2E6] p-5 space-y-4">
@@ -54,20 +121,24 @@ function TestimonialCard({ item, onAction }) {
           <span className="text-white font-bold text-sm">{initials}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-[#0A3956] truncate">{item.name}</p>
+          <p className="text-sm font-semibold text-[#0A3956] truncate">
+            {item.name}
+          </p>
           <p className="text-xs text-[#6C757D] truncate">{item.university}</p>
         </div>
         {date && (
-          <span className="ml-auto text-xs text-[#6C757D] flex-shrink-0">{date}</span>
+          <span className="ml-auto text-xs text-[#6C757D] flex-shrink-0">
+            {date}
+          </span>
         )}
       </div>
 
       <p className="text-sm text-gray-700 leading-relaxed">{item.text}</p>
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex items-center gap-2 pt-1">
         <button
           onClick={() => handleAction(true)}
-          disabled={loading}
+          disabled={loading || deleting}
           className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-[#28A745] text-white hover:bg-green-600 transition-colors disabled:opacity-50"
         >
           <CheckCircle className="w-4 h-4" />
@@ -75,31 +146,65 @@ function TestimonialCard({ item, onAction }) {
         </button>
         <button
           onClick={() => handleAction(false)}
-          disabled={loading}
+          disabled={loading || deleting}
           className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-[#DC3545] text-white hover:bg-red-600 transition-colors disabled:opacity-50"
         >
           <XCircle className="w-4 h-4" />
           Rejeitar
         </button>
+        <button
+          onClick={() => setConfirmOpen(true)}
+          disabled={loading || deleting}
+          title="Apagar testemunho"
+          className="ml-auto flex items-center justify-center w-9 h-9 rounded-lg text-[#6C757D] hover:bg-red-50 hover:text-[#DC3545] transition-colors disabled:opacity-50"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="Apagar testemunho"
+        message="Tens a certeza que queres apagar este testemunho? Esta acção não pode ser desfeita."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmOpen(false)}
+        loading={deleting}
+      />
     </div>
-  );
+  )
 }
 
-function PublishedCard({ item }) {
-  const initials = item.name
-    ?.trim()
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0].toUpperCase())
-    .join('') || '?';
+function PublishedCard({ item, onDelete }) {
+  const [deleting, setDeleting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await api.delete(`/admin/testimonials/${item.id}`)
+      onDelete(item.id)
+    } catch {
+      setDeleting(false)
+      setConfirmOpen(false)
+    }
+  }
+
+  const initials =
+    item.name
+      ?.trim()
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((n) => n[0].toUpperCase())
+      .join('') || '?'
 
   const date = item.createdAt
     ? new Date(item.createdAt).toLocaleDateString('pt-PT', {
-        day: '2-digit', month: 'short', year: 'numeric',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
       })
-    : null;
+    : null
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-[#DEE2E6] p-5 space-y-3">
@@ -108,58 +213,84 @@ function PublishedCard({ item }) {
           <span className="text-white font-bold text-sm">{initials}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-[#0A3956] truncate">{item.name}</p>
+          <p className="text-sm font-semibold text-[#0A3956] truncate">
+            {item.name}
+          </p>
           <p className="text-xs text-[#6C757D] truncate">{item.university}</p>
         </div>
         {date && (
-          <span className="ml-auto text-xs text-[#6C757D] flex-shrink-0">{date}</span>
+          <span className="ml-auto text-xs text-[#6C757D] flex-shrink-0">
+            {date}
+          </span>
         )}
       </div>
       <p className="text-sm text-gray-700 leading-relaxed">{item.text}</p>
-      <div className="flex items-center gap-1.5 text-xs text-[#28A745] font-medium">
-        <CheckCircle className="w-3.5 h-3.5" />
-        Publicado
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-xs text-[#28A745] font-medium">
+          <CheckCircle className="w-3.5 h-3.5" />
+          Publicado
+        </div>
+        <button
+          onClick={() => setConfirmOpen(true)}
+          disabled={deleting}
+          title="Apagar testemunho"
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-[#6C757D] hover:bg-red-50 hover:text-[#DC3545] transition-colors disabled:opacity-50"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="Apagar testemunho"
+        message="Tens a certeza que queres apagar este testemunho publicado? Esta acção não pode ser desfeita."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmOpen(false)}
+        loading={deleting}
+      />
     </div>
-  );
+  )
 }
 
 export default function AdminTestemunhos() {
-  const [tab, setTab] = useState('pending');
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const { decrementTestimonials } = useAdminNotifications();
+  const [tab, setTab] = useState('pending')
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const { decrementTestimonials } = useAdminNotifications()
 
   async function fetchItems() {
-    setLoading(true);
-    setError(false);
+    setLoading(true)
+    setError(false)
     try {
-      const param = tab === 'pending' ? '?approved=false' : '?approved=true';
-      const res = await api.get(`/admin/testimonials${param}`);
-      const data = res.data?.data ?? res.data;
-      setItems(Array.isArray(data) ? data : []);
+      const param = tab === 'pending' ? '?approved=false' : '?approved=true'
+      const res = await api.get(`/admin/testimonials${param}`)
+      const data = res.data?.data ?? res.data
+      setItems(Array.isArray(data) ? data : [])
     } catch {
-      setError(true);
+      setError(true)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchItems();
-  }, [tab]);
+    fetchItems()
+  }, [tab])
 
   function handleAction(id, approved) {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-    if (!approved) decrementTestimonials(); // rejeitar também retira do badge
-    else decrementTestimonials();           // aprovar também retira dos pendentes
+    setItems((prev) => prev.filter((i) => i.id !== id))
+    decrementTestimonials()
+  }
+
+  function handleDelete(id) {
+    setItems((prev) => prev.filter((i) => i.id !== id))
+    if (tab === 'pending') decrementTestimonials()
   }
 
   return (
     <div className="bg-[#F8F9FA] min-h-full p-6">
       <div className="max-w-[1200px] mx-auto space-y-6">
-
         {/* Header */}
         <div className="flex items-center gap-3">
           <MessageSquareQuote className="w-6 h-6 text-[#0A3956]" />
@@ -194,7 +325,9 @@ export default function AdminTestemunhos() {
         {error && (
           <div className="bg-white border border-[#DC3545]/30 rounded-xl p-5 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-[#DC3545] flex-shrink-0" />
-            <p className="text-sm text-gray-700 flex-1">Erro ao carregar os testemunhos.</p>
+            <p className="text-sm text-gray-700 flex-1">
+              Erro ao carregar os testemunhos.
+            </p>
             <button
               onClick={fetchItems}
               className="flex items-center gap-1.5 text-sm font-medium text-[#0A3956] hover:text-[#0D4A6E] transition-colors"
@@ -208,7 +341,9 @@ export default function AdminTestemunhos() {
         {/* Loading */}
         {loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+            {[...Array(6)].map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         )}
 
@@ -216,9 +351,20 @@ export default function AdminTestemunhos() {
         {!loading && !error && items.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {items.map((item) =>
-              tab === 'pending'
-                ? <TestimonialCard key={item.id} item={item} onAction={handleAction} />
-                : <PublishedCard key={item.id} item={item} />
+              tab === 'pending' ? (
+                <TestimonialCard
+                  key={item.id}
+                  item={item}
+                  onAction={handleAction}
+                  onDelete={handleDelete}
+                />
+              ) : (
+                <PublishedCard
+                  key={item.id}
+                  item={item}
+                  onDelete={handleDelete}
+                />
+              )
             )}
           </div>
         )}
@@ -228,15 +374,18 @@ export default function AdminTestemunhos() {
           <div className="bg-white rounded-xl border border-[#DEE2E6] p-10 text-center">
             <MessageSquareQuote className="w-10 h-10 text-[#DEE2E6] mx-auto mb-3" />
             <p className="text-sm font-medium text-[#0A3956]">
-              {tab === 'pending' ? 'Nenhum testemunho pendente' : 'Nenhum testemunho publicado'}
+              {tab === 'pending'
+                ? 'Nenhum testemunho pendente'
+                : 'Nenhum testemunho publicado'}
             </p>
             <p className="text-xs text-[#6C757D] mt-1">
-              {tab === 'pending' ? 'Todos os testemunhos foram moderados.' : 'Ainda não há testemunhos aprovados.'}
+              {tab === 'pending'
+                ? 'Todos os testemunhos foram moderados.'
+                : 'Ainda não há testemunhos aprovados.'}
             </p>
           </div>
         )}
-
       </div>
     </div>
-  );
+  )
 }
