@@ -37,6 +37,7 @@ import Home from './pages/public/Home'
 import Contact from './pages/public/Contact'
 import Privacy from './pages/public/Privacy'
 import Terms from './pages/public/Terms'
+import About from './pages/public/About'
 
 // Simulation
 import SimulationPage from './pages/simulation/SimulationPage'
@@ -56,7 +57,7 @@ function AppRoutes() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/portal/acesso" element={<AdminLogin />} />
       <Route path="/" element={<Home />} />
-      <Route path="/about" element={<div>Sobre (em breve)</div>} />
+      <Route path="/about" element={<About />} />
       <Route path="/services" element={<div>Serviços (em breve)</div>} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/privacy" element={<Privacy />} />
