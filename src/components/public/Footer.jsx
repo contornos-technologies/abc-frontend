@@ -246,7 +246,7 @@ export default function Footer() {
 
           <div className="mt-4 flex justify-center sm:justify-end">
             <a
-              href="https://contornos.design"
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               className="contornos-credit"
