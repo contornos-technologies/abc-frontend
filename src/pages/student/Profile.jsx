@@ -108,6 +108,12 @@ export default function Profile() {
 
   const showEmailBanner = user?.emailVerified === false
 
+  // ✅ Novo — determina se o estudante já tem inscrição.
+  // Enquanto `targets` ainda está a carregar, assume-se "tem inscrição"
+  // (ordem normal) para evitar um "flash" de reordenação ao entrar na página.
+  const hasEnrollment =
+    loadingTargets || (Array.isArray(targets) && targets.length > 0)
+
   return (
     <StudentLayout activeTab={activeTab} onTabChange={setActiveTab}>
       {/* Banner de email não verificado */}
@@ -158,25 +164,59 @@ export default function Profile() {
 
       {/* Cards */}
       <div className="space-y-8">
-        <div ref={refs.perfil}>
-          {loadingStudent ? (
-            <PersonalInfoCardSkeleton />
-          ) : errorStudent ? (
-            <ErrorBanner message={errorStudent} onRetry={fetchStudent} />
-          ) : (
-            //<PersonalInfoCard student={student} onUpdate={fetchStudent} />
-            <PersonalInfoCard student={student} onUpdate={fetchStudent} emailVerified={user?.emailVerified} />
-          )}
-        </div>
+        {/* ✅ Novo — "Minha Inscrição" passa para o topo quando o estudante
+            ainda não tem inscrição, para não exigir scroll para a ver. */}
+        {hasEnrollment ? (
+          <>
+            <div ref={refs.perfil}>
+              {loadingStudent ? (
+                <PersonalInfoCardSkeleton />
+              ) : errorStudent ? (
+                <ErrorBanner message={errorStudent} onRetry={fetchStudent} />
+              ) : (
+                <PersonalInfoCard
+                  student={student}
+                  onUpdate={fetchStudent}
+                  emailVerified={user?.emailVerified}
+                />
+              )}
+            </div>
 
-        <div ref={refs.inscricao}>
-          <EnrollmentCard
-            targets={targets}
-            loading={loadingTargets}
-            error={errorTargets}
-            onRefresh={fetchTargets}
-          />
-        </div>
+            <div ref={refs.inscricao}>
+              <EnrollmentCard
+                targets={targets}
+                loading={loadingTargets}
+                error={errorTargets}
+                onRefresh={fetchTargets}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div ref={refs.inscricao}>
+              <EnrollmentCard
+                targets={targets}
+                loading={loadingTargets}
+                error={errorTargets}
+                onRefresh={fetchTargets}
+              />
+            </div>
+
+            <div ref={refs.perfil}>
+              {loadingStudent ? (
+                <PersonalInfoCardSkeleton />
+              ) : errorStudent ? (
+                <ErrorBanner message={errorStudent} onRetry={fetchStudent} />
+              ) : (
+                <PersonalInfoCard
+                  student={student}
+                  onUpdate={fetchStudent}
+                  emailVerified={user?.emailVerified}
+                />
+              )}
+            </div>
+          </>
+        )}
 
         <div ref={refs.pagamentos}>
           <PaymentCard
