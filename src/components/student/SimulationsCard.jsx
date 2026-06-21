@@ -30,7 +30,7 @@ export default function SimulationsCard() {
     setLoading(true)
     setError('')
     try {
-      const res = await api.get('/api/simulations/attempts')
+      const res = await api.get('/simulations/attempts')
       const data = res.data?.data ?? res.data
       setAttempts(Array.isArray(data) ? data : [])
     } catch (err) {
