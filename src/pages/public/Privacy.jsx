@@ -9,8 +9,8 @@ export default function Privacy() {
       node: (
         // ⚠️ Confirmar morada real — "Commercial Street" parece um placeholder genérico
         <p>
-          O ABC Centro Preparatório (Academia Berço do Conhecimento), com
-          funcionamento presencial no Huambo, Escola do Ensino Especial, Huambo,
+          O Centro Preparatório da Academia Berço do Conhecimento (ABC), com
+          funcionamento presencial na Cidade Alta, Escola do Ensino Especial, Huambo,
           Angola, é responsável pelo tratamento dos dados pessoais recolhidos
           através dos seus sistemas de inscrição, plataforma de simulações e
           canais de comunicação (incluindo WhatsApp e email). Para questões
@@ -219,9 +219,9 @@ export default function Privacy() {
       title: 'Como nos contactar',
       node: (
         <p>
-          ABC Centro Preparatório — Academia Berço do Conhecimento
+         Centro Preparatório ABC — Academia Berço do Conhecimento
           <br />
-          Huambo, Commercial Street, Huambo, Angola
+          Cidade Alta, Escola do Ensino Especial, Huambo, Angola
           <br />
           Email: <a href="mailto:info@abchuambo.com">info@abchuambo.com</a>
           <br />
@@ -234,7 +234,7 @@ export default function Privacy() {
   return (
     <LegalLayout
       title="Política de Privacidade"
-      intro="Esta política explica como o ABC Centro Preparatório recolhe, usa e protege os dados pessoais dos estudantes e visitantes."
+      intro="Esta política explica como o Centro Preparatório ABC recolhe, usa e protege os dados pessoais dos estudantes e visitantes."
       lastUpdated="Junho 2026"
       sections={sections}
     />
