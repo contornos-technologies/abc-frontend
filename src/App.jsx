@@ -31,6 +31,7 @@ import Analytics from './pages/admin/Analytics'
 import AdminTestemunhos from './pages/admin/AdminTestemunhos'
 import ContactMessages from './pages/admin/ContactMessages'
 import EquipaPage from './pages/admin/EquipaPage'
+import AdminWhatsApp from './pages/admin/AdminWhatsApp'
 
 // Publics
 import Home from './pages/public/Home'
@@ -116,6 +117,7 @@ function AppRoutes() {
         <Route path="analytics" element={<Analytics />} />
         <Route path="testimonials" element={<AdminTestemunhos />} />
         <Route path="contact-messages" element={<ContactMessages />} />
+        <Route path="whatsapp" element={<AdminWhatsApp />} />
         <Route
           path="team"
           element={
