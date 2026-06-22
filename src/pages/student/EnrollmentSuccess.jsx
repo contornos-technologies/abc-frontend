@@ -54,7 +54,7 @@ function InstrucoesPresenciais() {
       <div className="flex items-center gap-2 mb-3">
         <Clock className="w-4 h-4 text-[#F69220] flex-shrink-0" />
         <p className="text-[#6C757D] text-xs">
-          Segunda a Sexta, das 08h às 15h
+          Segunda a Sexta, das 08h às 17h
         </p>
       </div>
       <div className="bg-white border border-orange-200 rounded-md px-3 py-2">
