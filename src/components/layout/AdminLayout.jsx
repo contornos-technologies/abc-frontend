@@ -18,6 +18,7 @@ import {
   MessageSquareQuote,
   Mail,
   Users2,
+  MessageSquare,
 } from 'lucide-react'
 
 const IconDashboard = () => <LayoutDashboard className="w-5 h-5" />
@@ -43,6 +44,11 @@ const NAV_ITEMS = [
     label: 'Notificações',
     to: '/admin/notifications',
     icon: <IconNotifications />,
+  },
+  {
+    label: 'WhatsApp',
+    to: '/admin/whatsapp',
+    icon: <MessageSquare />,
   },
   {
     label: 'Testemunhos',

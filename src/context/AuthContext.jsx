@@ -51,11 +51,25 @@ export function AuthProvider({ children }) {
   }
 
   // Merge JWT payload with profile data so Sidebar gets fullName + email
+  //
+  // ⚠️ Correcção: a resposta real de POST /auth/login devolve `user` (o registo
+  // User, com `fullName: null`) com o Student aninhado em `user.student.fullName`
+  // — o inverso da forma "Student com user aninhado" assumida antes aqui.
+  // Cobrimos as duas formas possíveis, para não voltar a partir se outro fluxo
+  // (ex: signup) passar a forma contrária.
   const enrichedUser = user
     ? {
         ...user,
-        fullName: profile?.fullName || user?.fullName || '',
-        email:    profile?.user?.email || profile?.email || user?.email || '',
+        fullName:
+          profile?.fullName ||
+          profile?.student?.fullName ||
+          user?.fullName ||
+          '',
+        email:
+          profile?.email ||
+          profile?.user?.email ||
+          user?.email ||
+          '',
       }
     : null;
 

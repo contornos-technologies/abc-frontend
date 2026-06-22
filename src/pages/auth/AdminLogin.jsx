@@ -237,10 +237,6 @@ export default function AdminLogin() {
 
           </form>
 
-          {/* Footer */}
-          <div className="mt-8 text-center text-[#CBD5E0] text-xs">
-            ABC Platform © 2026
-          </div>
 
         </div>
       </div>
