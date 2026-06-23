@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Menu, X, ChevronDown, User, UserCircle2, LogOut } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import logoDark from '../../assets/logo-dark.svg'
 import logoWhite from '../../assets/logo-white.svg'
-
+import { useAuth } from '../../context/AuthContext'
 
 const NAV_LINKS = [
   { label: 'Início', to: '/' },
@@ -13,6 +13,16 @@ const NAV_LINKS = [
   { label: 'Simulações', to: '/simulations' },
 ]
 
+// Devolve null (em vez de '?') quando ainda não há nome — assim o avatar
+// mostra um ícone genérico de pessoa em vez de um ponto de interrogação.
+function getInitials(name) {
+  if (!name) return null
+  const parts = name.trim().split(' ')
+  return parts.length > 1
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : parts[0].slice(0, 2).toUpperCase()
+}
+
 export default function Navbar({
   darkHero = false,
   showBorder = false,
@@ -20,7 +30,14 @@ export default function Navbar({
 }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [activePath, setActivePath] = useState('/')
+  // ⚠️ Correcção: o AuthContext exporta a chave `user`, mas o valor dela já
+  // é o objecto fundido com fullName/email (ver `value={{ user: user, ... }}`
+  // no AuthContext.jsx). Não existe uma chave separada `user` no contexto.
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const accountMenuRef = useRef(null)
 
   // Respeita a preferência do sistema operativo do utilizador
   const shouldReduceMotion = useReducedMotion()
@@ -48,6 +65,33 @@ export default function Navbar({
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  // Fecha o dropdown da conta ao clicar fora ou ao premir Escape
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(e.target)
+      ) {
+        setAccountMenuOpen(false)
+      }
+    }
+    function handleEscape(e) {
+      if (e.key === 'Escape') setAccountMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+
+  function handleLogout() {
+    setAccountMenuOpen(false)
+    logout()
+    navigate('/')
+  }
 
   const isScrolled = scrolled || menuOpen
 
@@ -153,31 +197,90 @@ export default function Navbar({
 
           {/* acções + hamburger */}
           <div className="flex items-center gap-3">
-            <Link
-              to="/signup"
-              className={`
-                hidden sm:inline-flex
-                text-sm font-medium
-                transition-colors duration-300
-                hover:text-[#F69220]
-                ${textColor}
-              `}
-            >
-              Inscrição
-            </Link>
+            {user ? (
+              <div className="hidden sm:block relative" ref={accountMenuRef}>
+                <button
+                  onClick={() => setAccountMenuOpen((prev) => !prev)}
+                  aria-haspopup="true"
+                  aria-expanded={accountMenuOpen}
+                  aria-label="Menu da conta"
+                  className="flex items-center gap-1.5 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F69220] focus-visible:ring-offset-2"
+                >
+                  <div className="w-9 h-9 rounded-full bg-[#F69220] group-hover:bg-[#e0821a] flex items-center justify-center text-white text-sm font-bold shrink-0 transition-colors duration-200">
+                    {getInitials(user.fullName) || <UserCircle2 size={20} />}
+                  </div>
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform duration-200 ${textColor} ${accountMenuOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
 
-            <Link
-              to="/login"
-              className="
-                hidden sm:inline-flex items-center gap-2
-                bg-[#F69220] hover:bg-[#e0821a]
-                text-white text-sm font-semibold
-                px-5 py-2.5 rounded-2xl
-                transition-all duration-200
-              "
-            >
-              Portal do Aluno
-            </Link>
+                {accountMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 overflow-hidden"
+                  >
+                    <div className="px-4 py-2.5 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-[#071C35] truncate">
+                        {user.fullName || 'Minha conta'}
+                      </p>
+                      {user.email && (
+                        <p className="text-xs text-gray-500 truncate mt-0.5">
+                          {user.email}
+                        </p>
+                      )}
+                    </div>
+
+                    <Link
+                      to="/student/profile"
+                      role="menuitem"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#071C35] hover:bg-blue-50 hover:text-[#1565A8] transition-colors duration-150"
+                    >
+                      <User size={16} />
+                      Meu Perfil
+                    </Link>
+
+                    <button
+                      role="menuitem"
+                      onClick={handleLogout}
+                      className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-sm text-[#DC3545] hover:bg-red-50 transition-colors duration-150"
+                    >
+                      <LogOut size={16} />
+                      Terminar Sessão
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/signup"
+                  className={`
+                    hidden sm:inline-flex
+                    text-sm font-medium
+                    transition-colors duration-300
+                    hover:text-[#F69220]
+                    ${textColor}
+                  `}
+                >
+                  Inscrição
+                </Link>
+
+                <Link
+                  to="/login"
+                  className="
+                    hidden sm:inline-flex items-center gap-2
+                    bg-[#F69220] hover:bg-[#e0821a]
+                    text-white text-sm font-semibold
+                    px-5 py-2.5 rounded-2xl
+                    transition-all duration-200
+                  "
+                >
+                  Portal do Aluno
+                </Link>
+              </>
+            )}
 
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
@@ -245,35 +348,70 @@ export default function Navbar({
           })}
 
           <div className="pt-3 mt-auto border-t border-gray-100 flex flex-col gap-2 pb-6">
-            <Link
-              to="/signup"
-              onClick={() => setMenuOpen(false)}
-              className="
-                flex items-center justify-center
-                border-2 border-[#0A3956]
-                text-[#0A3956]
-                text-sm font-semibold
-                px-5 py-3 rounded-xl w-full
-                transition-all duration-200
-                hover:bg-gray-50
-              "
-            >
-              Inscreva-se
-            </Link>
+            {user ? (
+              <>
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50">
+                  <div className="w-9 h-9 rounded-full bg-[#F69220] flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    {getInitials(user.fullName) || <UserCircle2 size={20} />}
+                  </div>
+                  <span className="text-sm font-semibold text-[#0A3956] truncate">
+                    {user.fullName || 'Minha conta'}
+                  </span>
+                </div>
 
-            <Link
-              to="/login"
-              onClick={() => setMenuOpen(false)}
-              className="
-                flex items-center justify-center
-                bg-[#F69220] hover:bg-[#e0821a]
-                text-white text-sm font-semibold
-                px-5 py-3 rounded-xl w-full
-                transition-all duration-200
-              "
-            >
-              Portal do Aluno
-            </Link>
+                <Link
+                  to="/student/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-[#071C35] hover:bg-blue-50 hover:text-[#1565A8] transition-colors duration-200"
+                >
+                  <User size={16} />
+                  Meu Perfil
+                </Link>
+
+                <button
+                  onClick={() => {
+                    setMenuOpen(false)
+                    handleLogout()
+                  }}
+                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-[#DC3545] hover:bg-red-50 transition-colors duration-200 text-left"
+                >
+                  <LogOut size={16} />
+                  Terminar Sessão
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className="
+                    flex items-center justify-center
+                    border-2 border-[#0A3956]
+                    text-[#0A3956]
+                    text-sm font-semibold
+                    px-5 py-3 rounded-xl w-full
+                    transition-all duration-200
+                    hover:bg-gray-50
+                  "
+                >
+                  Inscreva-se
+                </Link>
+
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="
+                    flex items-center justify-center
+                    bg-[#F69220] hover:bg-[#e0821a]
+                    text-white text-sm font-semibold
+                    px-5 py-3 rounded-xl w-full
+                    transition-all duration-200
+                  "
+                >
+                  Portal do Aluno
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </motion.div>

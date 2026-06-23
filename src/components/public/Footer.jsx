@@ -130,6 +130,22 @@ export default function Footer() {
                   Portal do Aluno
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/privacy"
+                  className="text-sm text-white/70 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
+                >
+                  Política de Privacidade
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terms"
+                  className="text-sm text-white/70 hover:text-white hover:translate-x-1 inline-block transition-all duration-200"
+                >
+                  Termos de Uso
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -214,19 +230,66 @@ export default function Footer() {
 
             <div className="flex items-center gap-6">
               <Link
-                to="/privacidade"
+                to="/privacy"
                 className="text-xs text-white/50 hover:text-white/80 transition-colors duration-200"
               >
                 Política de Privacidade
               </Link>
               <Link
-                to="/termos"
+                to="/terms"
                 className="text-xs text-white/50 hover:text-white/80 transition-colors duration-200"
               >
                 Termos de Uso
               </Link>
             </div>
           </div>
+
+          <div className="mt-4 flex justify-center sm:justify-end">
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contornos-credit"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <span
+                className="contornos-credit-label"
+                style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}
+              >
+                Desenvolvido por
+              </span>
+              <span
+                className="contornos-credit-brand"
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  color: '#B388C9',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                CONTORNOS{' '}
+                <span
+                  className="contornos-credit-designs"
+                  style={{ fontWeight: 400, color: 'rgba(255,255,255,0.7)' }}
+                >
+                  Designs
+                </span>
+              </span>
+            </a>
+          </div>
+
+          <style>{`
+            .contornos-credit:hover .contornos-credit-label,
+            .contornos-credit:hover .contornos-credit-brand,
+            .contornos-credit:hover .contornos-credit-designs {
+              color: #ffffff !important;
+              text-decoration: underline;
+            }
+          `}</style>
         </div>
       </div>
     </footer>

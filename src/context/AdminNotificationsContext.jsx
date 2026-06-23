@@ -1,51 +1,78 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import api from "../services/api";
+import { createContext, useContext, useEffect, useState } from 'react'
+import api from '../services/api'
 
-const AdminNotificationsContext = createContext({});
+const AdminNotificationsContext = createContext({})
 
 export function AdminNotificationsProvider({ children }) {
-  const [pendingTestimonials, setPendingTestimonials] = useState(0);
-  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [pendingTestimonials, setPendingTestimonials] = useState(0)
+  const [unreadMessages, setUnreadMessages] = useState(0)
+  const [unreadWhatsApp, setUnreadWhatsApp] = useState(0)
 
   useEffect(() => {
-    api.get("/admin/testimonials?approved=false")
-      .then(res => {
-        const data = res.data?.data ?? res.data;
-        const list = Array.isArray(data) ? data : [];
-        setPendingTestimonials(list.length);
+    api
+      .get('/admin/testimonials?approved=false')
+      .then((res) => {
+        const data = res.data?.data ?? res.data
+        const list = Array.isArray(data) ? data : []
+        setPendingTestimonials(list.length)
       })
-      .catch(() => {});
+      .catch(() => {})
 
-    api.get("/admin/contact-messages/unread-count")
-      .then(res => {
-        setUnreadMessages(res.data?.data?.count ?? 0);
+    api
+      .get('/admin/contact-messages/unread-count')
+      .then((res) => {
+        setUnreadMessages(res.data?.data?.count ?? 0)
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => {})
+
+    api
+      .get('/whatsapp/conversations?status=OPEN')
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : []
+        const total = list.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
+        setUnreadWhatsApp(total)
+      })
+      .catch(() => {})
+  }, [])
 
   const decrementTestimonials = () =>
-    setPendingTestimonials(p => Math.max(0, p - 1));
+    setPendingTestimonials((p) => Math.max(0, p - 1))
 
-  const decrementMessages = () =>
-    setUnreadMessages(p => Math.max(0, p - 1));
+  const decrementMessages = () => setUnreadMessages((p) => Math.max(0, p - 1))
 
   const refreshUnreadMessages = () => {
-    api.get("/admin/contact-messages/unread-count")
-      .then(res => setUnreadMessages(res.data?.data?.count ?? 0))
-      .catch(() => {});
-  };
+    api
+      .get('/admin/contact-messages/unread-count')
+      .then((res) => setUnreadMessages(res.data?.data?.count ?? 0))
+      .catch(() => {})
+  }
+
+  const refreshUnreadWhatsApp = () => {
+    api
+      .get('/whatsapp/conversations?status=OPEN')
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : []
+        const total = list.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
+        setUnreadWhatsApp(total)
+      })
+      .catch(() => {})
+  }
 
   return (
-    <AdminNotificationsContext.Provider value={{
-      pendingTestimonials,
-      decrementTestimonials,
-      unreadMessages,
-      decrementMessages,
-      refreshUnreadMessages,
-    }}>
+    <AdminNotificationsContext.Provider
+      value={{
+        pendingTestimonials,
+        decrementTestimonials,
+        unreadMessages,
+        decrementMessages,
+        refreshUnreadMessages,
+        unreadWhatsApp,
+        refreshUnreadWhatsApp,
+      }}
+    >
       {children}
     </AdminNotificationsContext.Provider>
-  );
+  )
 }
 
-export const useAdminNotifications = () => useContext(AdminNotificationsContext);
+export const useAdminNotifications = () => useContext(AdminNotificationsContext)

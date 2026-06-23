@@ -18,6 +18,7 @@ import {
   MessageSquareQuote,
   Mail,
   Users2,
+  MessageSquare,
 } from 'lucide-react'
 
 const IconDashboard = () => <LayoutDashboard className="w-5 h-5" />
@@ -45,6 +46,11 @@ const NAV_ITEMS = [
     icon: <IconNotifications />,
   },
   {
+    label: 'WhatsApp',
+    to: '/admin/whatsapp',
+    icon: <MessageSquare />,
+  },
+  {
     label: 'Testemunhos',
     to: '/admin/testimonials',
     icon: <IconTestimonials />,
@@ -61,7 +67,8 @@ const NAV_ITEMS = [
 function SidebarContent({ adminName, adminInitial, onClose }) {
   const { logout, isSuperAdmin } = useAuth()
   const navigate = useNavigate()
-  const { pendingTestimonials, unreadMessages } = useAdminNotifications()
+  const { pendingTestimonials, unreadMessages, unreadWhatsApp } =
+    useAdminNotifications()
 
   function handleLogout() {
     logout()
@@ -136,6 +143,11 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
                       {unreadMessages}
                     </span>
                   )}
+                {item.to === '/admin/whatsapp' && unreadWhatsApp > 0 && (
+                  <span className="ml-auto bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                    {unreadWhatsApp}
+                  </span>
+                )}
               </NavLink>
             </li>
           ))}
