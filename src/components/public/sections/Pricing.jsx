@@ -28,8 +28,9 @@ const pricingTiers = [
 
 const benefits = [
   'Material didático incluído',
-  'Acesso ao portal do aluno',
+  'Simulados online em tempo real',
   'Treino com provas anteriores de acesso',
+  'Acesso ao portal do aluno',
   'Acompanhamento individualizado',
   'Orientação estratégica para exames',
 ]

@@ -10,6 +10,7 @@ import AdminLayout from './components/layout/AdminLayout'
 // Auth
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
+import VerifyEmail from './pages/auth/VerifyEmail'
 
 // Student
 import Profile from './pages/student/Profile'
@@ -56,6 +57,7 @@ function AppRoutes() {
       {/* ──────────────── */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/portal/acesso" element={<AdminLogin />} />
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<About />} />
