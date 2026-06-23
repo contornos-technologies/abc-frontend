@@ -67,7 +67,8 @@ const NAV_ITEMS = [
 function SidebarContent({ adminName, adminInitial, onClose }) {
   const { logout, isSuperAdmin } = useAuth()
   const navigate = useNavigate()
-  const { pendingTestimonials, unreadMessages } = useAdminNotifications()
+  const { pendingTestimonials, unreadMessages, unreadWhatsApp } =
+    useAdminNotifications()
 
   function handleLogout() {
     logout()
@@ -142,6 +143,11 @@ function SidebarContent({ adminName, adminInitial, onClose }) {
                       {unreadMessages}
                     </span>
                   )}
+                {item.to === '/admin/whatsapp' && unreadWhatsApp > 0 && (
+                  <span className="ml-auto bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                    {unreadWhatsApp}
+                  </span>
+                )}
               </NavLink>
             </li>
           ))}
