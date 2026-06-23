@@ -264,7 +264,7 @@ export default function Navbar({
                     ${textColor}
                   `}
                 >
-                  Inscrição
+                  Inscreva-se
                 </Link>
 
                 <Link
