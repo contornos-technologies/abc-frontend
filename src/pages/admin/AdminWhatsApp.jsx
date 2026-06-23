@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import api from '../../services/api'
+import { useAdminNotifications } from '../../context/AdminNotificationsContext'
 import {
   MessageSquare,
   Search,
@@ -7,6 +8,7 @@ import {
   Archive,
   Send,
   RefreshCw,
+  Trash2,
 } from 'lucide-react'
 
 const STATUS_LABELS = {
@@ -46,6 +48,7 @@ export default function AdminWhatsApp() {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const pollRef = useRef(null)
+  const { refreshUnreadWhatsApp } = useAdminNotifications()
 
   const loadConversations = useCallback(async () => {
     try {
@@ -76,6 +79,7 @@ export default function AdminWhatsApp() {
     setSelected(conv)
     setLoadingConv(true)
     await loadMessages(conv.id, true)
+    refreshUnreadWhatsApp()
   }
 
   async function loadMessages(id, scrollToBottom = true) {
@@ -148,6 +152,25 @@ export default function AdminWhatsApp() {
     await api.patch(`/whatsapp/conversations/${selected.id}/archive`)
     setSelected(null)
     setConversations((prev) => prev.filter((c) => c.id !== selected.id))
+  }
+
+  async function handleDelete() {
+    if (!selected) return
+    if (
+      !window.confirm(
+        'Tens a certeza que queres apagar esta conversa? Esta acção é irreversível.'
+      )
+    )
+      return
+    try {
+      await api.delete(`/whatsapp/conversations/${selected.id}`)
+      setSelected(null)
+      setMessages([])
+      setConversations((prev) => prev.filter((c) => c.id !== selected.id))
+      refreshUnreadWhatsApp()
+    } catch {
+      alert('Erro ao apagar conversa.')
+    }
   }
 
   const filtered = conversations.filter(
@@ -297,6 +320,13 @@ export default function AdminWhatsApp() {
               >
                 <Archive size={14} />
                 Arquivar
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
+              >
+                <Trash2 size={14} />
+                Apagar
               </button>
             </div>
           </div>
