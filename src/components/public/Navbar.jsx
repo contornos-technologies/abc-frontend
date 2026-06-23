@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import logoDark from '../../assets/logo-dark.svg'
 import logoWhite from '../../assets/logo-white.svg'
 
+
 const NAV_LINKS = [
   { label: 'Início', to: '/' },
   { label: 'Sobre', to: '/about' },
@@ -93,6 +94,14 @@ export default function Navbar({
             to="/"
             className="flex items-center hover:opacity-80 transition-opacity duration-200"
           >
+            {/* Logo mobile — branco sobre Hero transparente, dark só quando a página é solidWhite */}
+            <img
+              src={solidWhite ? logoDark : logoWhite}
+              alt="ABC Centro Preparatório"
+              className="h-12 w-auto md:hidden"
+            />
+
+            {/* Logo tablet/desktop — mantém o comportamento original */}
             <img
               src={
                 solidWhite
@@ -102,7 +111,7 @@ export default function Navbar({
                     : logoDark
               }
               alt="ABC Centro Preparatório"
-              className="h-12 w-auto"
+              className="h-12 w-auto hidden md:block"
             />
           </Link>
 
@@ -205,13 +214,13 @@ export default function Navbar({
         }
         transition={{ duration: shouldReduceMotion ? 0 : 0.2, ease: 'easeOut' }}
         className={`
-          fixed top-20 left-0 right-0 z-40
-          bg-white shadow-lg border-t border-gray-100
-          md:hidden
-          ${menuOpen ? 'pointer-events-auto' : 'pointer-events-none'}
-        `}
+    fixed top-20 left-0 right-0 bottom-0 z-40
+    bg-white
+    md:hidden
+    ${menuOpen ? 'pointer-events-auto' : 'pointer-events-none'}
+  `}
       >
-        <nav className="max-w-[1200px] mx-auto px-4 py-4 flex flex-col gap-1">
+        <nav className="h-full max-w-[1200px] mx-auto px-4 pt-16 pb-6 flex flex-col gap-1">
           {NAV_LINKS.map((link) => {
             const isActive = activePath === link.to
             return (
@@ -235,7 +244,7 @@ export default function Navbar({
             )
           })}
 
-          <div className="pt-3 mt-2 border-t border-gray-100 flex flex-col gap-2">
+          <div className="pt-3 mt-auto border-t border-gray-100 flex flex-col gap-2 pb-6">
             <Link
               to="/signup"
               onClick={() => setMenuOpen(false)}
@@ -249,7 +258,7 @@ export default function Navbar({
                 hover:bg-gray-50
               "
             >
-              Inscrição
+              Inscreva-se
             </Link>
 
             <Link
