@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import heroBg from '../../../assets/hero-bg.png'
-import heroBgMobile from '../../../assets/hero-students-mobile.png'
+import heroBg from '../../../assets/hero-bg.webp'
+import heroBgMobile from '../../../assets/hero-students-mobile.webp'
 import { TrendingUp } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 
