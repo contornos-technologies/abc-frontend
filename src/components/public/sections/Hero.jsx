@@ -56,6 +56,7 @@ export default function Hero() {
           <img
             src={heroBgMobile}
             alt="Estudantes a estudar"
+            fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover object-[center_25%]"
           />
 
