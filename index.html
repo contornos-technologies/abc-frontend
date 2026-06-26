@@ -32,6 +32,10 @@
     <meta name="twitter:description" content="Centro Preparatório da Academia Berço do Conhecimento (ABC), no Huambo, Angola. Preparação para o Exame de Acesso ao Ensino Superior desde 2016." />
     <meta name="twitter:image" content="https://www.abchuambo.com/og-image.jpg" />
 
+    <!-- Preload Hero images — quebra a cadeia lazy-load → LCP -->
+    <link rel="preload" as="image" href="/hero-bg.webp" media="(min-width: 768px)" fetchpriority="high">
+    <link rel="preload" as="image" href="/hero-students-mobile.webp" media="(max-width: 767px)" fetchpriority="high">
+
     <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
