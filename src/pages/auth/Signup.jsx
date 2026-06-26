@@ -458,13 +458,15 @@ export default function Signup() {
             style={{ color: '#6C757D' }}
           >
             Li e aceito os{' '}
-            <a
-              href="/termos"
+            <Link
+              to="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
               className="font-semibold hover:underline"
               style={{ color: '#F69220' }}
             >
               Termos e Condições
-            </a>
+            </Link>
           </label>
         </div>
 
