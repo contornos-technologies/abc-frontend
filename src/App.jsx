@@ -1,15 +1,12 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom'
+import CookieBanner from './components/public/CookieBanner'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/AuthContext'
 import PrivateRoute from './components/layout/PrivateRoute'
 import ScrollToTop from './components/layout/ScrollToTop'
 import AdminLayout from './components/layout/AdminLayout'
+import { usePageTracking } from './hooks/usePageTracking'
 
 // Fallback simples enquanto o chunk carrega
 function PageLoader() {
@@ -66,6 +63,7 @@ const ResultsPage = lazy(() => import('./pages/simulation/ResultsPage'))
 
 function AppRoutes() {
   const { isSuperAdmin } = useAuth()
+  usePageTracking()
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -153,6 +151,7 @@ function App() {
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
+      <CookieBanner />
     </BrowserRouter>
   )
 }
