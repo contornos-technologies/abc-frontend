@@ -7,6 +7,7 @@ import PrivateRoute from './components/layout/PrivateRoute'
 import ScrollToTop from './components/layout/ScrollToTop'
 import AdminLayout from './components/layout/AdminLayout'
 import { usePageTracking } from './hooks/usePageTracking'
+import Home from './pages/public/Home'
 
 // Fallback simples enquanto o chunk carrega
 function PageLoader() {
@@ -49,7 +50,6 @@ const EquipaPage = lazy(() => import('./pages/admin/EquipaPage'))
 const AdminWhatsApp = lazy(() => import('./pages/admin/AdminWhatsApp'))
 
 // Public
-const Home = lazy(() => import('./pages/public/Home'))
 const About = lazy(() => import('./pages/public/About'))
 const Contact = lazy(() => import('./pages/public/Contact'))
 const Privacy = lazy(() => import('./pages/public/Privacy'))
