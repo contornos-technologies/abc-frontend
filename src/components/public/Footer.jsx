@@ -32,13 +32,13 @@ const SOCIAL_LINKS = [
 
 const CONTACT_INFO = [
   { icon: MapPin, text: 'Huambo, Angola' },
-  { icon: Phone, text: '+244 900 000 000', href: 'tel:+244900000000' },
+  { icon: Phone, text: '+244 930 469 087', href: 'tel:+244930469087' },
   {
     icon: Mail,
-    text: 'geral@abc-centro.ao',
-    href: 'mailto:geral@abc-centro.ao',
+    text: 'info@abchuambo.com',
+    href: 'mailto:info@abchuambo.com',
   },
-  { icon: MessageCircle, text: 'WhatsApp', href: 'https://wa.me/244900000000' },
+  { icon: MessageCircle, text: 'WhatsApp', href: 'https://wa.me/244942082678' },
 ]
 
 export default function Footer() {

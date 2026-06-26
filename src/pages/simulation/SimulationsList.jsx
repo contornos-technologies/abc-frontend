@@ -583,7 +583,7 @@ export default function SimulationsList() {
 
             {/* Stats mobile */}
             <motion.div
-              className="flex flex-wrap gap-3 mt-9 md:hidden"
+              className="hidden" // original: "flex flex-wrap gap-3 mt-9 md:hidden"
               initial={{
                 opacity: shouldReduceMotion ? 1 : 0,
                 y: shouldReduceMotion ? 0 : 24,

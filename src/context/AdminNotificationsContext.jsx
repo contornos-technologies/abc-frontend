@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+/* eslint-disable react-refresh/only-export-components */
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react'
 import api from '../services/api'
 
 const AdminNotificationsContext = createContext({})
@@ -7,6 +14,17 @@ export function AdminNotificationsProvider({ children }) {
   const [pendingTestimonials, setPendingTestimonials] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [unreadWhatsApp, setUnreadWhatsApp] = useState(0)
+
+  const fetchWhatsApp = useCallback(() => {
+    api
+      .get('/whatsapp/conversations?status=OPEN')
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : []
+        const total = list.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
+        setUnreadWhatsApp(total)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     api
@@ -25,15 +43,12 @@ export function AdminNotificationsProvider({ children }) {
       })
       .catch(() => {})
 
-    api
-      .get('/whatsapp/conversations?status=OPEN')
-      .then((res) => {
-        const list = Array.isArray(res.data) ? res.data : []
-        const total = list.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
-        setUnreadWhatsApp(total)
-      })
-      .catch(() => {})
-  }, [])
+    fetchWhatsApp()
+
+    // Polling a cada 30s para manter o badge actualizado
+    const interval = setInterval(fetchWhatsApp, 30000)
+    return () => clearInterval(interval)
+  }, [fetchWhatsApp])
 
   const decrementTestimonials = () =>
     setPendingTestimonials((p) => Math.max(0, p - 1))
@@ -47,16 +62,7 @@ export function AdminNotificationsProvider({ children }) {
       .catch(() => {})
   }
 
-  const refreshUnreadWhatsApp = () => {
-    api
-      .get('/whatsapp/conversations?status=OPEN')
-      .then((res) => {
-        const list = Array.isArray(res.data) ? res.data : []
-        const total = list.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
-        setUnreadWhatsApp(total)
-      })
-      .catch(() => {})
-  }
+  const refreshUnreadWhatsApp = fetchWhatsApp
 
   return (
     <AdminNotificationsContext.Provider

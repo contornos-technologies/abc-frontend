@@ -46,6 +46,7 @@ export default function AdminWhatsApp() {
   const [loadingConv, setLoadingConv] = useState(false)
   const [sending, setSending] = useState(false)
   const [input, setInput] = useState('')
+  const [deleteModal, setDeleteModal] = useState(false)
   const messagesEndRef = useRef(null)
   const pollRef = useRef(null)
   const { refreshUnreadWhatsApp } = useAdminNotifications()
@@ -154,14 +155,13 @@ export default function AdminWhatsApp() {
     setConversations((prev) => prev.filter((c) => c.id !== selected.id))
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!selected) return
-    if (
-      !window.confirm(
-        'Tens a certeza que queres apagar esta conversa? Esta acção é irreversível.'
-      )
-    )
-      return
+    setDeleteModal(true)
+  }
+
+  async function confirmDelete() {
+    setDeleteModal(false)
     try {
       await api.delete(`/whatsapp/conversations/${selected.id}`)
       setSelected(null)
@@ -181,6 +181,49 @@ export default function AdminWhatsApp() {
 
   return (
     <div className="flex h-full overflow-hidden bg-gray-50">
+      {/* Modal de confirmação — apagar conversa */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Trash2 size={18} className="text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Apagar conversa
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Esta acção é irreversível.
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              Tens a certeza que queres apagar a conversa com{' '}
+              <span className="font-medium text-gray-900">
+                {selected?.student?.fullName ?? selected?.phone}
+              </span>
+              ? Todas as mensagens serão apagadas permanentemente.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteModal(false)}
+                className="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded-lg transition flex items-center gap-1.5"
+              >
+                <Trash2 size={14} />
+                Apagar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Sidebar: lista de conversas ─────────────────────────── */}
       <div className="w-80 flex-shrink-0 flex flex-col border-r border-gray-200 bg-white">
         <div className="p-4 border-b border-gray-200">

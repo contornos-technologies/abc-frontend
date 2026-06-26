@@ -64,7 +64,16 @@ export default function Stats() {
   ]
 
   return (
-    <section className="relative lg:-mt-4 md:-mt-32 bg-[#F4F8FC] pb-16">
+    <section className="relative pt-12 lg:-mt-4 md:-mt-32 bg-[#F4F8FC] pb-16">
+
+ {/* Sombra suave no topo — simula transição da Hero */}
+  <div
+    className="md:hidden absolute top-0 left-0 right-0 h-12 pointer-events-none"
+    style={{
+      background: 'radial-gradient(ellipse 80% 100% at 50% 0%, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 70%)',
+    }}
+  />
+      
       {/* ───────────────── CONTAINER ───────────────── */}
       <div className="w-full max-w-[1150px] mx-auto px-4 sm:px-6">
         {/* ───────────────── CARD WRAPPER ───────────────── */}

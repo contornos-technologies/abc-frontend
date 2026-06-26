@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { signup } from '../../services/authService'
 import api from '../../services/api'
 import PublicLayout from '../../components/public/PublicLayout'
-import loginIllustration from '../../assets/login-illustration.png'
+import loginIllustration from '../../assets/login-illustration.webp'
 import loginMobileIllustration from '../../assets/login-mobile-Illustration.png'
 
 export default function Signup() {
@@ -205,7 +205,7 @@ export default function Signup() {
             value={formData.fullName}
             onChange={(e) => handleChange('fullName', e.target.value)}
             onBlur={() => handleBlur('fullName')}
-            placeholder="João Manuel Silva"
+            placeholder="O seu nome completo"
             autoComplete="name"
             className={inputClass(
               touched.fullName && !validateFullName(formData.fullName)
@@ -234,7 +234,7 @@ export default function Signup() {
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
             onBlur={() => handleBlur('email')}
-            placeholder="joao@email.com"
+            placeholder="seuemail@gmail.com"
             autoComplete="email"
             className={inputClass(
               touched.email && !validateEmail(formData.email)
@@ -270,7 +270,7 @@ export default function Signup() {
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               onBlur={() => handleBlur('phone')}
-              placeholder="900 000 000"
+              placeholder="Número de telefone"
               autoComplete="tel"
               className={`${inputClass(touched.phone && !validatePhone(formData.phone))} pl-14`}
               style={{ fontSize: isMobile ? '16px' : undefined }}
@@ -299,7 +299,7 @@ export default function Signup() {
               value={formData.bi}
               onChange={(e) => handleChange('bi', e.target.value.toUpperCase())}
               onBlur={() => handleBlur('bi')}
-              placeholder="123456789LA045"
+              placeholder="Número do BI"
               maxLength={14}
               autoComplete="off"
               className={`${inputClass(
@@ -458,13 +458,15 @@ export default function Signup() {
             style={{ color: '#6C757D' }}
           >
             Li e aceito os{' '}
-            <a
-              href="/termos"
+            <Link
+              to="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
               className="font-semibold hover:underline"
               style={{ color: '#F69220' }}
             >
               Termos e Condições
-            </a>
+            </Link>
           </label>
         </div>
 

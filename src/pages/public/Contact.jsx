@@ -7,12 +7,10 @@ import ContactMapSection from "../../components/public/sections/ContactMapSectio
 
 export default function Contact() {
   return (
-    <PublicLayout darkHero>
+    <PublicLayout solidWhite>
       <ContactHero />
       <ContactInfoSection />
       <ContactMapSection />
-      
-
     </PublicLayout>
-  );
+  )
 }

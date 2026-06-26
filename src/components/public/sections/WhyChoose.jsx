@@ -7,7 +7,7 @@ import {
   HeartHandshake,
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import whyChooseImage from '../../../assets/why-choose-abc.png'
+import whyChooseImage from '../../../assets/why-choose-abc.webp'
 
 const benefits = [
   { icon: HandshakeIcon, title: 'Comprometimento' },
@@ -89,19 +89,37 @@ export default function WhyChoose() {
           <div className="grid grid-cols-2 lg:grid-cols-3">
             {benefits.map((item, index) => {
               const Icon = item.icon
-              const col = index % 3
-              const row = Math.floor(index / 3)
-              const totalRows = Math.ceil(benefits.length / 3)
+
+              // Grid mobile/tablet: 2 colunas, 3 linhas
+              const colMobile = index % 2
+              const rowMobile = Math.floor(index / 2)
+              const totalRowsMobile = Math.ceil(benefits.length / 2)
+
+              // Grid desktop: 3 colunas, 2 linhas
+              const colDesktop = index % 3
+              const rowDesktop = Math.floor(index / 3)
+              const totalRowsDesktop = Math.ceil(benefits.length / 3)
+
+              const borderRightMobile = colMobile < 1 ? 'border-r' : ''
+              const borderBottomMobile =
+                rowMobile < totalRowsMobile - 1 ? 'border-b' : ''
+
+              const borderRightDesktop =
+                colDesktop < 2 ? 'lg:border-r' : 'lg:border-r-0'
+              const borderBottomDesktop =
+                rowDesktop < totalRowsDesktop - 1
+                  ? 'lg:border-b'
+                  : 'lg:border-b-0'
 
               return (
                 <motion.div
                   key={index}
-                  className="flex flex-col items-center text-center px-4 py-6 lg:py-7"
-                  style={{
-                    borderRight: col < 2 ? '1px solid #E6EBF2' : 'none',
-                    borderBottom:
-                      row < totalRows - 1 ? '1px solid #E6EBF2' : 'none',
-                  }}
+                  className={`
+        flex flex-col items-center text-center px-4 py-6 lg:py-7
+        border-[#E6EBF2]
+        ${borderRightMobile} ${borderBottomMobile}
+        ${borderRightDesktop} ${borderBottomDesktop}
+      `}
                   initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{
