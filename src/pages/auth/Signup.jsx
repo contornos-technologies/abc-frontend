@@ -205,7 +205,7 @@ export default function Signup() {
             value={formData.fullName}
             onChange={(e) => handleChange('fullName', e.target.value)}
             onBlur={() => handleBlur('fullName')}
-            placeholder="João Manuel Silva"
+            placeholder="O seu nome completo"
             autoComplete="name"
             className={inputClass(
               touched.fullName && !validateFullName(formData.fullName)
@@ -234,7 +234,7 @@ export default function Signup() {
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
             onBlur={() => handleBlur('email')}
-            placeholder="joao@email.com"
+            placeholder="seuemail@gmail.com"
             autoComplete="email"
             className={inputClass(
               touched.email && !validateEmail(formData.email)
@@ -270,7 +270,7 @@ export default function Signup() {
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               onBlur={() => handleBlur('phone')}
-              placeholder="900 000 000"
+              placeholder="Número de telefone"
               autoComplete="tel"
               className={`${inputClass(touched.phone && !validatePhone(formData.phone))} pl-14`}
               style={{ fontSize: isMobile ? '16px' : undefined }}
@@ -299,7 +299,7 @@ export default function Signup() {
               value={formData.bi}
               onChange={(e) => handleChange('bi', e.target.value.toUpperCase())}
               onBlur={() => handleBlur('bi')}
-              placeholder="123456789LA045"
+              placeholder="Número do BI"
               maxLength={14}
               autoComplete="off"
               className={`${inputClass(

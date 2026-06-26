@@ -545,11 +545,11 @@ export default function SimulationIntro() {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#1565A8',
+                  color: '#F7941D',
                   fontWeight: 700,
                   cursor: 'pointer',
                   padding: 0,
-                  textDecoration: 'underline',
+                  textDecoration: 'none',
                   fontSize: 14,
                 }}
               >

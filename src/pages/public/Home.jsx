@@ -10,7 +10,7 @@ import CTA from "../../components/public/sections/CTA";
 
 export default function Home() {
   return (
-    <PublicLayout>
+    <PublicLayout solidWhite>
       <Hero />
       <Stats />
       <WhyChoose />
@@ -19,5 +19,5 @@ export default function Home() {
       <Testimonials />
       <CTA />
     </PublicLayout>
-  );
+  )
 }

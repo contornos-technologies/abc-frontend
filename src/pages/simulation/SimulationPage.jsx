@@ -141,7 +141,7 @@ function LoadingSkeleton() {
 
 // ─── Top Bar ──────────────────────────────────────────────────────────────────
 
-function TopBar({ simulation, timeLeft, answeredCount, totalCount, onSubmit }) {
+function TopBar({ simulation, timeLeft, answeredCount, totalCount, onSubmit, onExit }) {
   const isUnderFiveMin = timeLeft < 300
   const isUnderOneMin = timeLeft < 60
 
@@ -163,14 +163,22 @@ function TopBar({ simulation, timeLeft, answeredCount, totalCount, onSubmit }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#E7EDF5] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        {/* Título + badge */}
+        {/* Sair (mobile) + Título + badge (desktop) */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
+          <button
+            onClick={onExit}
+            className="sm:hidden flex items-center gap-1 text-sm font-medium text-[#5F6D7E] hover:text-[#071C35] active:scale-95 transition-all shrink-0"
+          >
+            <ArrowLeft size={16} />
+            <span>Sair</span>
+          </button>
+
           {facultyLabel && (
             <span className="hidden sm:inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#EEF4FF] text-[#1565A8] border border-blue-100 shrink-0">
               {facultyLabel}
             </span>
           )}
-          <h1 className="text-sm font-semibold text-[#071C35] truncate leading-tight">
+          <h1 className="hidden sm:block text-sm font-semibold text-[#071C35] truncate leading-tight">
             {simulation.title}
           </h1>
         </div>
@@ -677,6 +685,61 @@ function SubmitModal({
   )
 }
 
+
+
+ {/* Modal confirmação de saida */}
+function ExitConfirmModal({ onClose, onConfirm }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-[#071C35]/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-[#E7EDF5] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E7EDF5]">
+          <h2 className="text-base font-semibold text-[#071C35]">
+            Sair da prova
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-[#F4F8FC] text-[#A0AEC0] hover:text-[#5F6D7E] transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="px-6 py-5">
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-50 border border-orange-200">
+            <AlertTriangle
+              size={18}
+              className="text-[#F7941D] shrink-0 mt-0.5"
+            />
+            <p className="text-sm text-[#071C35]">
+              Tens a certeza que queres sair? Vais perder o progresso desta
+              tentativa.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex gap-3 px-6 py-4 border-t border-[#E7EDF5] bg-[#F4F8FC]">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-full border border-[#E7EDF5] bg-white text-sm font-medium text-[#5F6D7E] hover:bg-[#F4F8FC] hover:text-[#071C35] transition-colors"
+          >
+            Continuar a prova
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full bg-[#DC3545] text-white text-sm font-semibold hover:bg-[#c5303f] active:scale-95 transition-all duration-150 shadow-sm"
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Contornos Footer ─────────────────────────────────────────────────────────
 
 function ContornosFooter() {
@@ -718,6 +781,7 @@ export default function SimulationPage() {
   const [flagged, setFlagged] = useState(new Set())
   const [timeLeft, setTimeLeft] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [showExitModal, setShowExitModal] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(false)
 
   const timerRef = useRef(null)
@@ -819,6 +883,9 @@ export default function SimulationPage() {
     }
   }, [questionIndex, activeSection, sectionIndex, isLastSection, simulation])
 
+
+const handleExit = () => setShowExitModal(true)
+
   const handleSelectSection = (sId) => {
     setActiveSectionId(sId)
     setQuestionIndex(0)
@@ -866,7 +933,7 @@ export default function SimulationPage() {
   }
 
   // ── Offsets para os elementos fixed ───────────────────────────────────────
-  const bannerHeight = isAnonymous && !bannerDismissed ? 44 : 0
+  const bannerHeight = isAnonymous && !bannerDismissed ? 70 : 0
   const topOffset = 64 + bannerHeight + 48
 
   // ── Estados de erro e loading ──────────────────────────────────────────────
@@ -905,6 +972,7 @@ export default function SimulationPage() {
         answeredCount={answeredCount}
         totalCount={allQuestions.length}
         onSubmit={() => setShowModal(true)}
+        onExit={handleExit}
       />
 
       {/* ── Banner anónimo (fixed, logo abaixo do topbar) ── */}
@@ -984,6 +1052,13 @@ export default function SimulationPage() {
           onClose={() => !submitting && setShowModal(false)}
           onConfirm={handleSubmitConfirm}
           submitting={submitting}
+        />
+      )}
+
+      {showExitModal && (
+        <ExitConfirmModal
+          onClose={() => setShowExitModal(false)}
+          onConfirm={() => navigate('/')}
         />
       )}
     </div>

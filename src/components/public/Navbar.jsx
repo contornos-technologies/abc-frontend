@@ -140,9 +140,9 @@ export default function Navbar({
           >
             {/* Logo mobile — branco sobre Hero transparente, dark só quando a página é solidWhite */}
             <img
-              src={solidWhite ? logoDark : logoWhite}
+              src={solidWhite || !isScrolled ? logoDark : logoWhite}
               alt="ABC Centro Preparatório"
-              className="h-12 w-auto md:hidden"
+              className="h-10 w-auto md:hidden"
             />
 
             {/* Logo tablet/desktop — mantém o comportamento original */}
@@ -198,7 +198,7 @@ export default function Navbar({
           {/* acções + hamburger */}
           <div className="flex items-center gap-3">
             {user ? (
-              <div className="hidden sm:block relative" ref={accountMenuRef}>
+              <div className="relative" ref={accountMenuRef}>
                 <button
                   onClick={() => setAccountMenuOpen((prev) => !prev)}
                   aria-haspopup="true"
@@ -211,14 +211,14 @@ export default function Navbar({
                   </div>
                   <ChevronDown
                     size={16}
-                    className={`transition-transform duration-200 ${textColor} ${accountMenuOpen ? 'rotate-180' : ''}`}
+                    className={`hidden sm:block transition-transform duration-200 ${textColor} ${accountMenuOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
 
                 {accountMenuOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 overflow-hidden"
+                    className="absolute right-0 mt-3 w-56 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-lg border border-gray-100 py-2 overflow-hidden"
                   >
                     <div className="px-4 py-2.5 border-b border-gray-100">
                       <p className="text-sm font-semibold text-[#071C35] truncate">
@@ -285,21 +285,29 @@ export default function Navbar({
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
               className={`
-                md:hidden p-2 rounded-lg
-                transition-colors duration-200
-                ${isScrolled || darkHero ? 'hover:bg-white/10' : 'hover:bg-black/5'}
-              `}
+    md:hidden p-2.5 rounded-lg
+    transition-colors duration-200
+    ${!solidWhite && (isScrolled || darkHero) ? 'hover:bg-white/10' : 'hover:bg-black/5'}
+  `}
               aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
             >
               {menuOpen ? (
                 <X
-                  size={22}
-                  color={isScrolled || darkHero ? '#ffffff' : '#071C35'}
+                  size={24}
+                  color={
+                    !solidWhite && (isScrolled || darkHero)
+                      ? '#ffffff'
+                      : '#071C35'
+                  }
                 />
               ) : (
                 <Menu
-                  size={22}
-                  color={isScrolled || darkHero ? '#ffffff' : '#071C35'}
+                  size={24}
+                  color={
+                    !solidWhite && (isScrolled || darkHero)
+                      ? '#ffffff'
+                      : '#071C35'
+                  }
                 />
               )}
             </button>
@@ -347,72 +355,38 @@ export default function Navbar({
             )
           })}
 
-          <div className="pt-3 mt-auto border-t border-gray-100 flex flex-col gap-2 pb-6">
-            {user ? (
-              <>
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50">
-                  <div className="w-9 h-9 rounded-full bg-[#F69220] flex items-center justify-center text-white text-sm font-bold shrink-0">
-                    {getInitials(user.fullName) || <UserCircle2 size={20} />}
-                  </div>
-                  <span className="text-sm font-semibold text-[#0A3956] truncate">
-                    {user.fullName || 'Minha conta'}
-                  </span>
-                </div>
+          {/* Quando logado: as ações de conta já estão no dropdown do avatar (cabeçalho)
+              e o CTA de Simulações já está visível antes de abrir o menu (ex: na Hero) —
+              por isso não repetimos nenhum botão aqui, só os links de navegação acima. */}
+          {!user && (
+            <div className="pt-3 mt-auto border-t border-gray-100 flex flex-col gap-2 pb-6">
+              <Link
+                to="/signup"
+                onClick={() => setMenuOpen(false)}
+                className="inline-flex items-center justify-center gap-2
+                  bg-[#F7941D] hover:bg-[#ea860f] text-white font-bold
+                  w-full px-6 py-3.5 text-base rounded-xl
+                  shadow-lg shadow-black/20 transition-all duration-300 active:scale-[0.98]"
+              >
+                Inscreva-se
+              </Link>
 
-                <Link
-                  to="/student/profile"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-[#071C35] hover:bg-blue-50 hover:text-[#1565A8] transition-colors duration-200"
-                >
-                  <User size={16} />
-                  Meu Perfil
-                </Link>
-
-                <button
-                  onClick={() => {
-                    setMenuOpen(false)
-                    handleLogout()
-                  }}
-                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-[#DC3545] hover:bg-red-50 transition-colors duration-200 text-left"
-                >
-                  <LogOut size={16} />
-                  Terminar Sessão
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/signup"
-                  onClick={() => setMenuOpen(false)}
-                  className="
-                    flex items-center justify-center
-                    border-2 border-[#0A3956]
-                    text-[#0A3956]
-                    text-sm font-semibold
-                    px-5 py-3 rounded-xl w-full
-                    transition-all duration-200
-                    hover:bg-gray-50
-                  "
-                >
-                  Inscreva-se
-                </Link>
-
-                <Link
-                  to="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className="
-                    flex items-center justify-center
-                    bg-[#F69220] hover:bg-[#e0821a]
-                    text-white text-sm font-semibold
-                    px-5 py-3 rounded-xl w-full
-                    transition-all duration-200
-                  "
-                >
-                  Portal do Aluno
-                </Link>
-              </>
-            )}
-          </div>
+              <Link
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                className="
+                  flex items-center justify-center
+                  border border-[#0A3956]/30
+                  text-[#0A3956] text-sm font-semibold
+                  px-5 py-3 rounded-xl w-full
+                  hover:bg-gray-50
+                  transition-all duration-200
+                "
+              >
+                Portal do Aluno
+              </Link>
+            </div>
+          )}
         </nav>
       </motion.div>
 

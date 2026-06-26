@@ -29,7 +29,7 @@ export default function Hero() {
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#F4F8FC] pt-14"
+      className="relative w-full overflow-hidden bg-[#F4F8FC] pt-24 md:pt-14"
       style={{
         backgroundImage: `url(${heroBg})`,
         backgroundSize: 'contain',

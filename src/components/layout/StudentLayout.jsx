@@ -73,12 +73,13 @@ export default function StudentLayout({ children, activeTab, onTabChange }) {
       `}</style>
 
       {/* Mobile Top Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0A3956] text-white px-4 py-3 flex items-center justify-between shadow-md">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-[#0A3956] text-white px-4 flex items-center justify-between shadow-md">
         <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="hover:bg-white/10 rounded-lg transition-colors"
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+          className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors flex-shrink-0 -ml-1"
+          aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
         >
-          <Menu size={24} />
+          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
         <Link
           to="/"
@@ -90,19 +91,19 @@ export default function StudentLayout({ children, activeTab, onTabChange }) {
             className="h-8 w-auto"
           />
         </Link>
-        <div className="w-7 h-7 rounded-full bg-[#F69220] flex items-center justify-center flex-shrink-0">
-          <span className="text-white font-bold text-xs">{initials}</span>
+        <div className="w-9 h-9 rounded-full bg-[#F69220] flex items-center justify-center flex-shrink-0 mr-1">
+          <span className="text-white font-bold text-sm">{initials}</span>
         </div>
       </div>
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-60 bg-[#0A3956] text-white flex flex-col transition-transform duration-200 ease-in-out ${
+        className={`fixed top-16 bottom-0 left-0 right-0 z-40 bg-[#0A3956] text-white flex flex-col transition-transform duration-200 ease-in-out ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        } lg:top-0 lg:right-auto lg:w-60 lg:translate-x-0`}
       >
-        {/* Logo */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        {/* Logo — só no desktop. No mobile o logo já aparece na barra fixa do topo */}
+        <div className="hidden lg:flex items-center justify-between px-6 py-4 border-b border-white/10">
           <Link to="/" className="hover:opacity-80 transition-opacity">
             <img
               src={logoWhite}
@@ -110,29 +111,25 @@ export default function StudentLayout({ children, activeTab, onTabChange }) {
               className="h-10 w-auto"
             />
           </Link>
-          <button
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="lg:hidden text-white/60 hover:text-white transition-colors"
-          >
-            <X size={20} />
-          </button>
         </div>
 
         {/* Avatar */}
-        <div className="px-6 py-4 border-b border-white/10">
-          <div className="w-11 h-11 rounded-full bg-[#F69220] flex items-center justify-center text-white mb-2.5 font-bold text-lg">
+        <div className="px-6 pt-6 pb-4 border-b border-white/10 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-full bg-[#F69220] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
             {initials}
           </div>
-          <div className="font-semibold text-sm truncate">
-            {user?.fullName || 'Estudante'}
-          </div>
-          <div className="text-xs text-white/60 mt-0.5 truncate">
-            {user?.email || ''}
+          <div className="min-w-0">
+            <div className="font-semibold text-sm truncate">
+              {user?.fullName || 'Estudante'}
+            </div>
+            <div className="text-xs text-white/60 truncate">
+              {user?.email || ''}
+            </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-3 overflow-y-auto sidebar-scroll">
+        <nav className="flex-1 px-3 pt-6 pb-3 overflow-y-auto sidebar-scroll">
           {menuItems.map((item) => {
             const Icon = item.icon
             const isActive = activeTab === item.id
@@ -173,38 +170,8 @@ export default function StudentLayout({ children, activeTab, onTabChange }) {
         </div>
       </aside>
 
-      {/* Mobile overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 px-2 py-2">
-        <div className="flex justify-around">
-          {menuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = activeTab === item.id
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleTabChange(item.id)}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
-                  isActive ? 'text-[#F69220]' : 'text-[#6B7280]'
-                }`}
-              >
-                <Icon size={20} />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
       {/* Conteúdo principal */}
-      <main className="lg:ml-60 pt-16 lg:pt-0 pb-24 lg:pb-0">
+      <main className="lg:ml-60 pt-16 lg:pt-0">
         <div className="p-4 sm:p-6 lg:p-8">{children}</div>
       </main>
     </div>

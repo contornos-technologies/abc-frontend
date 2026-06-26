@@ -3,11 +3,11 @@
 // FILE: src/components/public/sections/ContactHero.jsx
 // ============================================================================
 
-import { motion, useReducedMotion } from 'framer-motion'
-import heroImage from '../../../assets/contact-hero.png'
+import { motion, useReducedMotion } from "framer-motion";
+import heroImage from "../../../assets/contact-hero.png";
 
 export default function ContactHero() {
-  const shouldReduceMotion = useReducedMotion()
+  const shouldReduceMotion = useReducedMotion();
 
   const fadeDown = (delay = 0) => ({
     hidden: {
@@ -19,11 +19,11 @@ export default function ContactHero() {
       y: 0,
       transition: {
         duration: shouldReduceMotion ? 0 : 0.5,
-        ease: 'easeOut',
+        ease: "easeOut",
         delay: shouldReduceMotion ? 0 : delay,
       },
     },
-  })
+  });
 
   const fadeUp = (delay = 0) => ({
     hidden: {
@@ -35,14 +35,14 @@ export default function ContactHero() {
       y: 0,
       transition: {
         duration: shouldReduceMotion ? 0 : 0.5,
-        ease: 'easeOut',
+        ease: "easeOut",
         delay: shouldReduceMotion ? 0 : delay,
       },
     },
-  })
+  });
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden pt-20">
       {/* ───────────────── BACKGROUND IMAGE ───────────────── */}
       <div
         className="
