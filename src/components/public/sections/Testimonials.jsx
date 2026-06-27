@@ -182,9 +182,10 @@ export default function Testimonials() {
           {getInitials(testimonial.name)}
         </div>
         <div>
-          <h3 className="text-[15px] font-bold text-[#071C35]">
+          {/* ✅ a11y: era h3, alterado para p — não é um título de secção */}
+          <p className="text-[15px] font-bold text-[#071C35]">
             {testimonial.name}
-          </h3>
+          </p>
           <p className="text-[13px] text-slate-500">{testimonial.university}</p>
         </div>
       </div>
@@ -308,6 +309,7 @@ export default function Testimonials() {
                       behavior: 'smooth',
                     })
                   }}
+                  aria-label={`Ir para testemunho ${index + 1}`}
                   className={`transition-all duration-300 rounded-full ${
                     currentIndex === index
                       ? 'w-5 h-2.5 bg-[#1565A8]'
