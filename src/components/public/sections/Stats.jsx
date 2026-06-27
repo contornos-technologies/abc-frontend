@@ -127,7 +127,7 @@ export default function Stats() {
                   <div className="mb-3">{stat.icon}</div>
 
                   {/* ───────────────── NÚMERO ───────────────── */}
-                  <h3 className="text-[28px] sm:text-[30px] lg:text-[34px] font-extrabold leading-none text-[#071C35]">
+                  <p className="text-[28px] sm:text-[30px] lg:text-[34px] font-extrabold leading-none text-[#071C35]">
                     <CountUp
                       end={stat.end}
                       prefix={stat.prefix}
@@ -137,7 +137,7 @@ export default function Stats() {
                       enableScrollSpy
                       scrollSpyOnce
                     />
-                  </h3>
+                  </p>
 
                   {/* ───────────────── TEXTO ───────────────── */}
                   <p className="mt-2 whitespace-pre-line text-[14px] lg:text-[15px] font-medium leading-6 text-[#4E5D78]">

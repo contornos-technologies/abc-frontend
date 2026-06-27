@@ -39,7 +39,10 @@ export default function Hero() {
       }}
     >
       {/* Esconde o background SÓ no mobile (a secção mobile tem o seu próprio fundo) */}
-      <div className="absolute inset-0 bg-[#F4F8FC] md:hidden pointer-events-none z-0" />
+      <div
+        className="absolute inset-0 bg-[#F4F8FC] md:hidden pointer-events-none z-0"
+        aria-hidden="true"
+      />
 
       <div
         className="absolute inset-0 pointer-events-none hidden md:block"

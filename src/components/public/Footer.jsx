@@ -223,7 +223,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-white/70">
               © {year} ABC — Academia Berço do Conhecimento. Todos os direitos
               reservados.
             </p>
@@ -231,13 +231,13 @@ export default function Footer() {
             <div className="flex items-center gap-6">
               <Link
                 to="/privacy"
-                className="text-xs text-white/50 hover:text-white/80 transition-colors duration-200"
+                className="text-xs text-white/70 hover:text-white/80 transition-colors duration-200"
               >
                 Política de Privacidade
               </Link>
               <Link
                 to="/terms"
-                className="text-xs text-white/50 hover:text-white/80 transition-colors duration-200"
+                className="text-xs text-white/70 hover:text-white/80 transition-colors duration-200"
               >
                 Termos de Uso
               </Link>
@@ -258,7 +258,7 @@ export default function Footer() {
             >
               <span
                 className="contornos-credit-label"
-                style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}
+                style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}
               >
                 Desenvolvido por
               </span>
