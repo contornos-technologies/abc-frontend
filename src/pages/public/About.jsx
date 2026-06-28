@@ -98,7 +98,8 @@ const LEADERSHIP = {
   level1: {
     name: 'Jonas Lucamba Fernando',
     role: 'Director Geral',
-    photoUrl: null,
+    photoUrl:
+      'https://res.cloudinary.com/dsh0vjhgf/image/upload/w_200,h_200,c_thumb,g_face,z_0.7,q_auto,f_auto/v1782672122/Jonas_Lucamba_Fernando_nyc1q6.png',
   },
   level2: {
     name: 'André Nfuanani da Costa',
@@ -109,19 +110,26 @@ const LEADERSHIP = {
     {
       name: 'Aurélio Cachumbo Josué',
       role: 'Secretário-Geral',
-      photoUrl: null,
+      photoUrl:
+        'https://res.cloudinary.com/dsh0vjhgf/image/upload/w_200,h_200,c_thumb,g_face,z_0.7,q_auto,f_auto/v1782672094/Aur%C3%A9lio_Cachumbo_Josu%C3%A9_oew44k.png',
     },
     {
       name: 'Paulino Bongo Bento',
       role: 'Director Financeiro',
-      photoUrl: null,
+      photoUrl:
+        'https://res.cloudinary.com/dsh0vjhgf/image/upload/w_200,h_200,c_thumb,g_face,z_0.7,q_auto,f_auto/v1782672101/Paulino_Bongo_Bento_uyqjgz.png',
     },
   ],
   level4: [
     {
       groupLabel: 'Equipa de Marketing e Comunicação',
       members: [
-        { name: 'Feliciano Filjo Manuel', role: 'Director', photoUrl: null },
+        {
+          name: 'Feliciano Filjo Manuel',
+          role: 'Director',
+          photoUrl:
+            'https://res.cloudinary.com/dsh0vjhgf/image/upload/w_200,h_200,c_thumb,g_face,z_0.7,q_auto,f_auto/v1782672114/Feliciano_Filjo_Manuel_j1obtc.png',
+        },
         {
           name: 'Baltazar Manuel Lupupa',
           role: 'Vice-Director',
@@ -133,7 +141,12 @@ const LEADERSHIP = {
       groupLabel: 'Equipa Pedagógica',
       members: [
         { name: 'Samuel Siku Domingos', role: 'Director', photoUrl: null },
-        { name: 'José Maria Kayove', role: 'Vice-Director', photoUrl: null },
+        {
+          name: 'José Maria Kayove',
+          role: 'Vice-Director',
+          photoUrl:
+            'https://res.cloudinary.com/dsh0vjhgf/image/upload/w_200,h_200,c_thumb,g_face,z_0.7,q_auto,f_auto/v1782672069/Jos%C3%A9_Kayove_bw2rie.png',
+        },
       ],
     },
   ],
