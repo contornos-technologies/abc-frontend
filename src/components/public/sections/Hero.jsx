@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import heroBg from '../../../assets/hero-bg.webp'
 import heroBgMobile from '../../../assets/hero-students-mobile.webp'
-import { TrendingUp } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { Star } from 'lucide-react'
 
 export default function Hero() {
   const shouldReduceMotion = useReducedMotion()
@@ -63,7 +64,7 @@ export default function Hero() {
             className="absolute inset-0 w-full h-full object-cover object-[center_25%]"
           />
 
-          {/* Overlay gradiente — azul da marca (#0A3956); cobre a biblioteca clara no topo e cria transição suave até ao texto */}
+          {/* Overlay gradiente */}
           <div
             className="absolute inset-0"
             style={{
@@ -72,7 +73,7 @@ export default function Hero() {
             }}
           />
 
-          {/* Badge Taxa de Aprovação — canto direito */}
+          {/* Badge — canto direito */}
           <motion.div
             className="absolute top-20 right-8 z-20 flex items-center gap-2
               bg-white/20 backdrop-blur-md
@@ -84,18 +85,14 @@ export default function Hero() {
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.85 }}
           >
             <div className="bg-white rounded-full p-1 flex-shrink-0 shadow-sm">
-              <TrendingUp
-                size={12}
-                strokeWidth={2}
-                className="text-[#41B349]"
-              />
+              <Star size={16} strokeWidth={2} className="text-[#41B349]" />
             </div>
             <div>
               <p className="text-xs font-bold text-white leading-none mb-0.5">
-                Há 10 Anos
+                10 Anos a
               </p>
               <p className="text-[7px] uppercase tracking-wider font-bold text-white/70 leading-none mt-0.5 text-center">
-                Impactando
+                Preparar Futuros
               </p>
             </div>
           </motion.div>
@@ -163,9 +160,15 @@ export default function Hero() {
           <motion.div className="w-fit" {...fadeDown(0.1)}>
             <span
               className="bg-blue-50 border border-blue-100 text-[#1565A8] rounded-full font-semibold
-              px-3 py-1 text-xs lg:px-4 lg:py-2 lg:text-sm"
+    px-4 py-2 text-sm lg:px-5 lg:py-2.5 lg:text-base
+    inline-flex items-center gap-2"
             >
-              Líder na Preparação para o Acesso ao Ensino Superior
+              <Star
+                size={16}
+                strokeWidth={2}
+                className="text-[#41B349]"
+              />
+              10 Anos a Preparar Futuros
             </span>
           </motion.div>
 
