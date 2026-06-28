@@ -4,7 +4,7 @@
 // ============================================================================
 
 import { useState } from 'react'
-import { MapPin, Mail, Phone, Facebook, Instagram } from 'lucide-react'
+import { MapPin, Mail, Phone, Facebook, MessageCircle } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL
@@ -184,7 +184,7 @@ export default function ContactInfoSection() {
                   Email
                 </h3>
                 <p className="mt-1 text-[15px] leading-relaxed text-[#6B7280]">
-                  abc@gmail.com
+                  info@abchuambo.com
                 </p>
               </div>
             </div>
@@ -205,9 +205,9 @@ export default function ContactInfoSection() {
                   Telefone
                 </h3>
                 <p className="mt-1 text-[15px] leading-relaxed text-[#6B7280]">
-                  +244 923 111 222
+                  +244 930 469 087
                   <br />
-                  +244 923 111 333
+                  +244 929 335 273
                 </p>
               </div>
             </div>
@@ -223,9 +223,21 @@ export default function ContactInfoSection() {
             </h3>
 
             <div className="mt-5 flex items-center justify-center gap-4">
-              {[Facebook, Instagram].map((Icon, index) => (
-                <button
+              {[
+                {
+                  Icon: Facebook,
+                  href: 'https://web.facebook.com/profile.php?id=100063701794266',
+                },
+                {
+                  Icon: MessageCircle,
+                  href: 'https://wa.me/244942082678',
+                },
+              ].map(({ Icon, href }, index) => (
+                <a
                   key={index}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="
                     flex h-12 w-12
                     items-center justify-center
@@ -235,7 +247,7 @@ export default function ContactInfoSection() {
                   "
                 >
                   <Icon size={20} />
-                </button>
+                </a>
               ))}
             </div>
           </div>

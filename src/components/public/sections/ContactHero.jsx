@@ -74,7 +74,8 @@ export default function ContactHero() {
         <div
           className="
             relative z-10
-            flex items-center justify-center
+            flex items-start justify-center
+            pt-32 sm:items-center sm:pt-0
 
             min-h-[560px]
             sm:min-h-[620px]
