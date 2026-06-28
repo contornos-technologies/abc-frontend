@@ -11,10 +11,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ABC Huambo</title>
 
-    <!-- Inter Font -->
+    <!-- SEO -->
+    <meta name="description" content="Centro Preparatório da Academia Berço do Conhecimento (ABC), no Huambo, Angola. Preparação para o Exame de Acesso ao Ensino Superior desde 2016." />
+    <link rel="canonical" href="https://www.abchuambo.com/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ABC Huambo" />
+    <meta property="og:title" content="ABC Huambo — Academia Berço do Conhecimento" />
+    <meta property="og:description" content="Centro Preparatório da Academia Berço do Conhecimento (ABC), no Huambo, Angola. Preparação para o Exame de Acesso ao Ensino Superior desde 2016." />
+    <meta property="og:url" content="https://www.abchuambo.com/" />
+    <meta property="og:image" content="https://www.abchuambo.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="pt_AO" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ABC Huambo — Academia Berço do Conhecimento" />
+    <meta name="twitter:description" content="Centro Preparatório da Academia Berço do Conhecimento (ABC), no Huambo, Angola. Preparação para o Exame de Acesso ao Ensino Superior desde 2016." />
+    <meta name="twitter:image" content="https://www.abchuambo.com/og-image.jpg" />
+
+    <!-- Preload Hero images — quebra a cadeia lazy-load → LCP -->
+    <link rel="preload" as="image" href="/hero-bg.webp" media="(min-width: 768px)" fetchpriority="high">
+    <link rel="preload" as="image" href="/hero-students-mobile.webp" media="(max-width: 767px)" fetchpriority="high">
+
+    <!-- Inter Font — non-blocking -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'">
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

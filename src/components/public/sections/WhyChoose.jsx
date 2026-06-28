@@ -7,7 +7,7 @@ import {
   HeartHandshake,
 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import whyChooseImage from '../../../assets/why-choose-abc.png'
+import whyChooseImage from '../../../assets/why-choose-abc.webp'
 
 const benefits = [
   { icon: HandshakeIcon, title: 'Comprometimento' },

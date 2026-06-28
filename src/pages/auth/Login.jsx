@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { login as loginService } from '../../services/authService'
 import PublicLayout from '../../components/public/PublicLayout'
-import loginIllustration from '../../assets/login-illustration.png'
+import loginIllustration from '../../assets/login-illustration.webp'
 import loginMobileIllustration from '../../assets/login-mobile-Illustration.png'
 
 export default function Login() {

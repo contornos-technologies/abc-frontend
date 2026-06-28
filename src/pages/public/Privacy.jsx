@@ -55,6 +55,11 @@ export default function Privacy() {
               Dados de utilização: informação técnica básica gerada pelo acesso
               ao site e à plataforma de simulações.
             </li>
+            <li>
+              Dados de navegação: páginas visitadas, duração da visita e
+              interacções no site, recolhidos através do Google Analytics 4
+              (apenas com o seu consentimento).
+            </li>
           </ul>
         </>
       ),
@@ -85,6 +90,11 @@ export default function Privacy() {
             </li>
             <li>Responder a mensagens de contacto e pedidos de informação;</li>
             <li>Cumprir obrigações legais e administrativas do centro.</li>
+            <li>
+              Analisar o comportamento de navegação no site de forma agregada e
+              anónima, para melhorar a experiência dos utilizadores (apenas com
+              consentimento prévio).
+            </li>
           </ul>
         </>
       ),
@@ -124,6 +134,10 @@ export default function Privacy() {
             <li>
               Fornecedores de serviços de comunicação utilizados para enviar
               notificações por WhatsApp (Meta) e email;
+            </li>
+            <li>
+              A Google LLC, através do Google Analytics 4, para análise de
+              navegação agregada (apenas com consentimento);
             </li>
             <li>
               Universidades, exclusivamente quando o estudante regista uma
@@ -202,6 +216,34 @@ export default function Privacy() {
       ),
     },
     {
+      id: 'cookies',
+      eyebrow: 'Cookies e analytics',
+      title: 'Utilização de cookies e dados de navegação',
+      node: (
+        <>
+          <p>
+            O nosso site utiliza o Google Analytics 4 (Google LLC) para recolher
+            dados de navegação de forma agregada, nomeadamente páginas visitadas,
+            duração da visita, origem do tráfego e interacções gerais com o site.
+            Esta recolha só ocorre após o visitante dar o seu consentimento
+            explícito através do aviso apresentado na parte inferior da página.
+          </p>
+          <p>
+            Os dados recolhidos pelo Google Analytics são processados pela Google
+            LLC nos termos das suas próprias políticas de privacidade. Não
+            recolhemos dados pessoais identificáveis através desta ferramenta.
+          </p>
+          <p>
+            Pode retirar o seu consentimento a qualquer momento limpando os dados
+            do navegador (em Definições → Privacidade → Limpar dados de
+            navegação) ou através das definições de cookies do seu navegador. Após
+            retirar o consentimento, nenhum dado de navegação será enviado ao
+            Google Analytics nas visitas seguintes.
+          </p>
+        </>
+      ),
+    },
+    {
       id: 'alteracoes',
       eyebrow: 'Alterações',
       title: 'Alterações a esta política',
@@ -219,7 +261,7 @@ export default function Privacy() {
       title: 'Como nos contactar',
       node: (
         <p>
-         Centro Preparatório ABC — Academia Berço do Conhecimento
+          Centro Preparatório ABC — Academia Berço do Conhecimento
           <br />
           Cidade Alta, Escola do Ensino Especial, Huambo, Angola
           <br />

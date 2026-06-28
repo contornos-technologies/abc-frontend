@@ -4,7 +4,7 @@
 // ============================================================================
 
 import { motion, useReducedMotion } from "framer-motion";
-import heroImage from "../../../assets/contact-hero.png";
+import heroImage from '../../../assets/contact-hero.webp';
 
 export default function ContactHero() {
   const shouldReduceMotion = useReducedMotion();
