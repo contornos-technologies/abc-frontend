@@ -267,7 +267,7 @@ export default function Footer() {
                 style={{
                   fontSize: '13px',
                   fontWeight: 700,
-                  color: '#B388C9',
+                  color: '#C49ADB',
                   letterSpacing: '-0.02em',
                 }}
               >
