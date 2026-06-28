@@ -61,7 +61,7 @@ export default function Hero() {
             src={heroBgMobile}
             alt="Estudantes a estudar"
             fetchPriority="high"
-            className="absolute inset-0 w-full h-full object-cover object-[center_25%]"
+            className="absolute inset-0 w-full h-full object-cover object-[center_8%]"
           />
 
           {/* Overlay gradiente */}
