@@ -54,7 +54,7 @@ export default function Hero() {
 
       {/* ══════════════════════════ MOBILE ══════════════════════════ */}
       <div className="md:hidden relative -mt-14 -mx-6">
-        <div className="relative min-h-[640px] flex flex-col">
+        <div className="relative min-h-[500px] flex flex-col">
           {/* Imagem de fundo full-bleed */}
           <img
             src={heroBgMobile}
@@ -101,7 +101,7 @@ export default function Hero() {
           </motion.div>
 
           {/* Conteúdo centralizado, ancorado na base */}
-          <div className="relative z-10 mt-auto px-6 pb-10 pt-24 flex flex-col items-center text-center gap-4">
+          <div className="relative z-10 mt-auto px-6 pb-10 flex flex-col items-center text-center gap-4">
             <motion.h1
               className="text-white font-extrabold leading-[1.15] tracking-tight text-[30px]"
               style={{ textShadow: '0 2px 12px rgba(0,0,0,0.35)' }}
