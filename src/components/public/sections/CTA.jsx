@@ -138,7 +138,7 @@ export default function CTA() {
 
             {/* botão secundário — link externo, <a> correcto */}
             <a
-              href="https://wa.me/244900000000"
+              href="https://wa.me/244942082678"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center justify-center gap-2.5 w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-white/8 hover:bg-white/14 border border-white/20 hover:border-white/30 text-white font-semibold text-sm sm:text-base transition-all duration-200 hover:-translate-y-0.5 backdrop-blur-sm"
