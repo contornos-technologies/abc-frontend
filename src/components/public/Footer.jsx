@@ -22,10 +22,14 @@ const DISCIPLINES = [
 ]
 
 const SOCIAL_LINKS = [
-  { label: 'Facebook', href: '#', icon: Facebook },
+  {
+    label: 'Facebook',
+    href: 'https://web.facebook.com/profile.php?id=100063701794266',
+    icon: Facebook,
+  },
   {
     label: 'WhatsApp',
-    href: 'https://wa.me/244900000000',
+    href: 'https://wa.me/244942082678',
     icon: MessageCircle,
   },
 ]
