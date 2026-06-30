@@ -1,139 +1,184 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import {
-  ArrowLeft, ChevronRight, ChevronLeft,
-  GraduationCap, Trash2, X, Loader2
-} from 'lucide-react';
-import api from '../../services/api';
+  ArrowLeft,
+  ChevronRight,
+  ChevronLeft,
+  GraduationCap,
+  Trash2,
+  X,
+  Loader2,
+} from 'lucide-react'
+import api from '../../services/api'
 
 // ─────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────
 
-const PRICE_TABLE = { 1: 10000, 2: 13000, 3: 15000 };
+const formatKz = (value) => Number(value).toLocaleString('pt-PT') + ' Kz'
 
-const getPrice = (count) => {
-  if (count === 0) return null;
-  return PRICE_TABLE[count] ?? 17000;
-};
-
-const formatKz = (value) =>
-  Number(value).toLocaleString('pt-PT') + ' Kz';
+// Encontra o tier de preço correspondente ao número de disciplinas seleccionadas.
+// Os tiers vêm de GET /api/public/pricing — nunca hardcodar preços (ver convenções do backend).
+const findTier = (tiers, count) => {
+  if (count === 0) return null
+  return (
+    tiers.find(
+      (t) =>
+        count >= t.minSubjects &&
+        (t.maxSubjects === null || count <= t.maxSubjects)
+    ) ?? null
+  )
+}
 
 // ─────────────────────────────────────────────
 // COMPONENTE PRINCIPAL
 // ─────────────────────────────────────────────
 
 export default function EnrollmentCreate() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   // ── Steps ────────────────────────────────────────────────────
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1)
 
   // ── Dados da API ─────────────────────────────────────────────
-  const [subjects, setSubjects]       = useState([]);
-  const [universities, setUniversities] = useState([]);
-  const [loadingSubjects, setLoadingSubjects] = useState(true);
-  const [loadingUnis, setLoadingUnis]         = useState(false);
+  const [subjects, setSubjects] = useState([])
+  const [universities, setUniversities] = useState([])
+  const [loadingSubjects, setLoadingSubjects] = useState(true)
+  const [loadingUnis, setLoadingUnis] = useState(false)
+
+  // ── Preçário (PricingTier) — dinâmico, igual ao Pricing.jsx ──
+  const [pricingTiers, setPricingTiers] = useState([])
+  const [loadingPricing, setLoadingPricing] = useState(true)
 
   // ── Step 1 — Disciplinas ─────────────────────────────────────
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [selectedSubjects, setSelectedSubjects] = useState([])
 
   // ── Step 2 — Candidaturas ────────────────────────────────────
-  const [applications, setApplications] = useState([]);
-  const [isModalOpen, setIsModalOpen]   = useState(false);
+  const [applications, setApplications] = useState([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Modal — estado do formulário
-  const [faculties, setFaculties]   = useState([]);
-  const [courses, setCourses]       = useState([]);
-  const [loadingFac, setLoadingFac] = useState(false);
-  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [faculties, setFaculties] = useState([])
+  const [courses, setCourses] = useState([])
+  const [loadingFac, setLoadingFac] = useState(false)
+  const [loadingCourses, setLoadingCourses] = useState(false)
 
-  const [selectedUniId, setSelectedUniId]     = useState('');
-  const [selectedFacId, setSelectedFacId]     = useState('');
-  const [selectedCourseId, setSelectedCourseId] = useState('');
-  const [customUniversity, setCustomUniversity] = useState('');
-  const [customFaculty, setCustomFaculty]       = useState('');
-  const [customCourse, setCustomCourse]         = useState('');
-  const [useCustomUni, setUseCustomUni]         = useState(false);
-  const [useCustomFac, setUseCustomFac]         = useState(false);
-  const [useCustomCourse, setUseCustomCourse]   = useState(false);
+  const [selectedUniId, setSelectedUniId] = useState('')
+  const [selectedFacId, setSelectedFacId] = useState('')
+  const [selectedCourseId, setSelectedCourseId] = useState('')
+  const [customUniversity, setCustomUniversity] = useState('')
+  const [customFaculty, setCustomFaculty] = useState('')
+  const [customCourse, setCustomCourse] = useState('')
+  const [useCustomUni, setUseCustomUni] = useState(false)
+  const [useCustomFac, setUseCustomFac] = useState(false)
+  const [useCustomCourse, setUseCustomCourse] = useState(false)
 
   // ── Submissão final ──────────────────────────────────────────
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   // ── Carregar disciplinas ao montar ───────────────────────────
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await api.get('/enrollment/subjects');
-        setSubjects(res.data);
+        const res = await api.get('/enrollment/subjects')
+        setSubjects(res.data)
       } catch {
         // silencioso — array vazio
       } finally {
-        setLoadingSubjects(false);
+        setLoadingSubjects(false)
       }
-    };
-    fetchSubjects();
-  }, []);
+    }
+    fetchSubjects()
+  }, [])
+
+  // ── Carregar preçário ao montar — GET /api/public/pricing ────
+  // Mesmo padrão usado em Pricing.jsx (V16.2): nunca hardcodar preços,
+  // consultar sempre PricingTier via API. Fallback silencioso em erro
+  // (price fica null, o resumo de preço simplesmente não aparece).
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const res = await api.get('/public/pricing')
+        const data = res.data?.data ?? res.data
+        setPricingTiers(Array.isArray(data) ? data : [])
+      } catch {
+        setPricingTiers([])
+      } finally {
+        setLoadingPricing(false)
+      }
+    }
+    fetchPricing()
+  }, [])
 
   // ── Carregar universidades ao entrar no step 2 ───────────────
   useEffect(() => {
-    if (currentStep !== 2 || universities.length > 0) return;
+    if (currentStep !== 2 || universities.length > 0) return
     const fetchUnis = async () => {
-      setLoadingUnis(true);
+      setLoadingUnis(true)
       try {
-        const res = await api.get('/enrollment/universities');
-        setUniversities(res.data);
+        const res = await api.get('/enrollment/universities')
+        setUniversities(res.data)
       } catch {
         // silencioso
       } finally {
-        setLoadingUnis(false);
+        setLoadingUnis(false)
       }
-    };
-    fetchUnis();
-  }, [currentStep]);
+    }
+    fetchUnis()
+  }, [currentStep])
 
   // ── Carregar faculdades quando universidade é seleccionada ───
   useEffect(() => {
-    if (!selectedUniId) { setFaculties([]); setSelectedFacId(''); return; }
+    if (!selectedUniId) {
+      setFaculties([])
+      setSelectedFacId('')
+      return
+    }
     const fetchFac = async () => {
-      setLoadingFac(true);
-      setFaculties([]);
-      setSelectedFacId('');
-      setCourses([]);
-      setSelectedCourseId('');
+      setLoadingFac(true)
+      setFaculties([])
+      setSelectedFacId('')
+      setCourses([])
+      setSelectedCourseId('')
       try {
-        const res = await api.get(`/enrollment/faculties?universityId=${selectedUniId}`);
-        setFaculties(res.data);
+        const res = await api.get(
+          `/enrollment/faculties?universityId=${selectedUniId}`
+        )
+        setFaculties(res.data)
       } catch {
         // silencioso
       } finally {
-        setLoadingFac(false);
+        setLoadingFac(false)
       }
-    };
-    fetchFac();
-  }, [selectedUniId]);
+    }
+    fetchFac()
+  }, [selectedUniId])
 
   // ── Carregar cursos quando faculdade é seleccionada ─────────
   useEffect(() => {
-    if (!selectedFacId) { setCourses([]); setSelectedCourseId(''); return; }
+    if (!selectedFacId) {
+      setCourses([])
+      setSelectedCourseId('')
+      return
+    }
     const fetchCourses = async () => {
-      setLoadingCourses(true);
-      setCourses([]);
-      setSelectedCourseId('');
+      setLoadingCourses(true)
+      setCourses([])
+      setSelectedCourseId('')
       try {
-        const res = await api.get(`/enrollment/courses?facultyId=${selectedFacId}`);
-        setCourses(res.data);
+        const res = await api.get(
+          `/enrollment/courses?facultyId=${selectedFacId}`
+        )
+        setCourses(res.data)
       } catch {
         // silencioso
       } finally {
-        setLoadingCourses(false);
+        setLoadingCourses(false)
       }
-    };
-    fetchCourses();
-  }, [selectedFacId]);
+    }
+    fetchCourses()
+  }, [selectedFacId])
 
   // ─────────────────────────────────────────────
   // HANDLERS — Step 1
@@ -142,49 +187,61 @@ export default function EnrollmentCreate() {
   const toggleSubject = (id) => {
     setSelectedSubjects((prev) =>
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  };
+    )
+  }
 
   // ─────────────────────────────────────────────
   // HANDLERS — Modal candidatura
   // ─────────────────────────────────────────────
 
   const resetModal = () => {
-    setSelectedUniId('');
-    setSelectedFacId('');
-    setSelectedCourseId('');
-    setCustomUniversity('');
-    setCustomFaculty('');
-    setCustomCourse('');
-    setUseCustomUni(false);
-    setUseCustomFac(false);
-    setUseCustomCourse(false);
-    setFaculties([]);
-    setCourses([]);
-  };
+    setSelectedUniId('')
+    setSelectedFacId('')
+    setSelectedCourseId('')
+    setCustomUniversity('')
+    setCustomFaculty('')
+    setCustomCourse('')
+    setUseCustomUni(false)
+    setUseCustomFac(false)
+    setUseCustomCourse(false)
+    setFaculties([])
+    setCourses([])
+  }
 
-  const openModal = () => { resetModal(); setIsModalOpen(true); };
-  const closeModal = () => { setIsModalOpen(false); resetModal(); };
+  const openModal = () => {
+    resetModal()
+    setIsModalOpen(true)
+  }
+  const closeModal = () => {
+    setIsModalOpen(false)
+    resetModal()
+  }
 
   // Verificar se o modal pode ser submetido
-  const uniOk    = useCustomUni ? customUniversity.trim() !== '' : selectedUniId !== '';
-  const facOk    = useCustomFac ? customFaculty.trim() !== ''    : selectedFacId !== '';
-  const courseOk = useCustomCourse ? customCourse.trim() !== ''  : selectedCourseId !== '';
-  const canAddApplication = uniOk && facOk && courseOk;
+  const uniOk = useCustomUni
+    ? customUniversity.trim() !== ''
+    : selectedUniId !== ''
+  const facOk = useCustomFac
+    ? customFaculty.trim() !== ''
+    : selectedFacId !== ''
+  const courseOk = useCustomCourse
+    ? customCourse.trim() !== ''
+    : selectedCourseId !== ''
+  const canAddApplication = uniOk && facOk && courseOk
 
   const handleAddApplication = () => {
-    if (!canAddApplication) return;
+    if (!canAddApplication) return
 
     // Encontrar nomes para exibição local
-    const uniName    = useCustomUni
+    const uniName = useCustomUni
       ? customUniversity
-      : universities.find((u) => u.id === selectedUniId)?.name || '';
-    const facName    = useCustomFac
+      : universities.find((u) => u.id === selectedUniId)?.name || ''
+    const facName = useCustomFac
       ? customFaculty
-      : faculties.find((f) => f.id === selectedFacId)?.name || '';
+      : faculties.find((f) => f.id === selectedFacId)?.name || ''
     const courseName = useCustomCourse
       ? customCourse
-      : courses.find((c) => c.id === selectedCourseId)?.name || '';
+      : courses.find((c) => c.id === selectedCourseId)?.name || ''
 
     // Construir payload para o backend — REGRA CRÍTICA: nunca ID + custom ao mesmo tempo
     const appPayload = {
@@ -197,7 +254,7 @@ export default function EnrollmentCreate() {
       ...(useCustomCourse
         ? { customCourse: customCourse.trim() }
         : { courseId: selectedCourseId }),
-    };
+    }
 
     setApplications((prev) => [
       ...prev,
@@ -208,56 +265,56 @@ export default function EnrollmentCreate() {
         courseName,
         payload: appPayload,
       },
-    ]);
+    ])
 
-    closeModal();
-  };
+    closeModal()
+  }
 
   const removeApplication = (localId) => {
-    setApplications((prev) => prev.filter((a) => a._localId !== localId));
-  };
+    setApplications((prev) => prev.filter((a) => a._localId !== localId))
+  }
 
   // ─────────────────────────────────────────────
   // SUBMISSÃO FINAL
   // ─────────────────────────────────────────────
 
   const handleSubmit = async () => {
-    if (selectedSubjects.length === 0) return;
-    setSubmitting(true);
-    setSubmitError('');
+    if (selectedSubjects.length === 0) return
+    setSubmitting(true)
+    setSubmitError('')
 
     try {
       const body = {
         subjectIds: selectedSubjects,
         applications: applications.map((a) => a.payload),
-      };
+      }
 
-      const res = await api.post('/enrollment/create', body);
+      const res = await api.post('/enrollment/create', body)
       // O backend devolve { target: { ... } }
-      const target = res.data.target;
-      navigate('/student/enrollment/success', { state: { target } });
+      const target = res.data.target
+      navigate('/student/enrollment/success', { state: { target } })
     } catch (err) {
-      const msg = err?.response?.data?.error;
+      const msg = err?.response?.data?.error
       if (err?.response?.status === 409) {
-        setSubmitError('Já tens uma inscrição activa para este ano.');
+        setSubmitError('Já tens uma inscrição activa para este ano.')
       } else {
-        setSubmitError(msg || 'Erro ao criar inscrição. Tenta novamente.');
+        setSubmitError(msg || 'Erro ao criar inscrição. Tenta novamente.')
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   // ─────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────
 
-  const price = getPrice(selectedSubjects.length);
+  const tier = findTier(pricingTiers, selectedSubjects.length)
+  const price = tier?.totalPrice ?? null
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] py-8 px-4">
       <div className="max-w-4xl mx-auto">
-
         {/* ── Header ── */}
         <div className="mb-8">
           <Link
@@ -267,27 +324,49 @@ export default function EnrollmentCreate() {
             <ArrowLeft className="w-5 h-5" />
             <span>Voltar</span>
           </Link>
-          <h1 className="text-3xl font-bold text-[#0A3956] mb-6">Nova Inscrição</h1>
+          <h1 className="text-3xl font-bold text-[#0A3956] mb-6">
+            Nova Inscrição
+          </h1>
 
           {/* Step Indicator */}
           <div className="flex items-center gap-4 max-w-md">
-            <div className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all ${
-              currentStep === 1 ? 'bg-[#F69220] text-white' : 'border-2 border-gray-300 text-gray-500'
-            }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
-                currentStep === 1 ? 'bg-white text-[#F69220]' : 'bg-gray-300 text-white'
-              }`}>1</div>
+            <div
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all ${
+                currentStep === 1
+                  ? 'bg-[#F69220] text-white'
+                  : 'border-2 border-gray-300 text-gray-500'
+              }`}
+            >
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
+                  currentStep === 1
+                    ? 'bg-white text-[#F69220]'
+                    : 'bg-gray-300 text-white'
+                }`}
+              >
+                1
+              </div>
               <span className="font-semibold">Disciplinas</span>
             </div>
 
             <div className="h-0.5 w-12 bg-gray-300" />
 
-            <div className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all ${
-              currentStep === 2 ? 'bg-[#F69220] text-white' : 'border-2 border-gray-300 text-gray-500'
-            }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
-                currentStep === 2 ? 'bg-white text-[#F69220]' : 'bg-gray-300 text-white'
-              }`}>2</div>
+            <div
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all ${
+                currentStep === 2
+                  ? 'bg-[#F69220] text-white'
+                  : 'border-2 border-gray-300 text-gray-500'
+              }`}
+            >
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
+                  currentStep === 2
+                    ? 'bg-white text-[#F69220]'
+                    : 'bg-gray-300 text-white'
+                }`}
+              >
+                2
+              </div>
               <span className="font-semibold">Universidades</span>
             </div>
           </div>
@@ -295,14 +374,15 @@ export default function EnrollmentCreate() {
 
         {/* ── Main Card ── */}
         <div className="bg-white rounded-xl shadow-md border-t-4 border-[#F69220] p-6 md:p-8">
-
           {/* ── STEP 1 — Disciplinas ── */}
           {currentStep === 1 && (
             <div>
               <h2 className="text-xl font-bold text-[#0A3956] mb-1">
                 Selecciona as tuas disciplinas
               </h2>
-              <p className="text-[#6C757D] mb-6">Podes escolher entre 1 e 9 disciplinas</p>
+              <p className="text-[#6C757D] mb-6">
+                Podes escolher entre 1 e 9 disciplinas
+              </p>
 
               {loadingSubjects ? (
                 <div className="flex items-center justify-center py-12">
@@ -312,7 +392,7 @@ export default function EnrollmentCreate() {
                 <>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     {subjects.map((subject) => {
-                      const isSelected = selectedSubjects.includes(subject.id);
+                      const isSelected = selectedSubjects.includes(subject.id)
                       return (
                         <button
                           key={subject.id}
@@ -325,38 +405,70 @@ export default function EnrollmentCreate() {
                         >
                           {/* Checkbox */}
                           <div className="absolute top-3 right-3">
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                              isSelected ? 'bg-[#F69220] border-[#F69220]' : 'border-gray-300'
-                            }`}>
+                            <div
+                              className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                                isSelected
+                                  ? 'bg-[#F69220] border-[#F69220]'
+                                  : 'border-gray-300'
+                              }`}
+                            >
                               {isSelected && (
-                                <svg className="w-3 h-3 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg
+                                  className="w-3 h-3 text-white"
+                                  fill="none"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="3"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
                                   <path d="M5 13l4 4L19 7" />
                                 </svg>
                               )}
                             </div>
                           </div>
-                          <p className="text-[#0A3956] font-semibold pr-8">{subject.name}</p>
-                          <p className="text-[#6C757D] text-sm">{subject.code}</p>
+                          <p className="text-[#0A3956] font-semibold pr-8">
+                            {subject.name}
+                          </p>
+                          <p className="text-[#6C757D] text-sm">
+                            {subject.code}
+                          </p>
                         </button>
-                      );
+                      )
                     })}
                   </div>
 
                   {/* Pricing Summary */}
-                  {price ? (
+                  {selectedSubjects.length === 0 ? (
+                    <div className="text-center py-8 text-[#6C757D]">
+                      Selecciona pelo menos 1 disciplina para continuar
+                    </div>
+                  ) : loadingPricing ? (
+                    <div className="bg-orange-50 border-l-4 border-[#F69220] p-5 rounded-lg animate-pulse">
+                      <div className="h-5 bg-orange-100 rounded w-2/3 mb-2" />
+                      <div className="h-4 bg-orange-100 rounded w-1/3" />
+                    </div>
+                  ) : price ? (
                     <div className="bg-orange-50 border-l-4 border-[#F69220] p-5 rounded-lg">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-[#0A3956] font-semibold">
                           {selectedSubjects.length}{' '}
-                          {selectedSubjects.length === 1 ? 'disciplina seleccionada' : 'disciplinas seleccionadas'}
+                          {selectedSubjects.length === 1
+                            ? 'disciplina seleccionada'
+                            : 'disciplinas seleccionadas'}
                         </span>
-                        <span className="text-[#F69220] font-bold text-lg">{formatKz(price)}</span>
+                        <span className="text-[#F69220] font-bold text-lg">
+                          {formatKz(price)}
+                        </span>
                       </div>
-                      <p className="text-[#6C757D] text-sm">Preço actualizado automaticamente</p>
+                      <p className="text-[#6C757D] text-sm">
+                        Preço actualizado automaticamente
+                      </p>
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-[#6C757D]">
-                      Selecciona pelo menos 1 disciplina para continuar
+                    <div className="text-center py-4 text-[#6C757D] text-sm">
+                      Não foi possível obter o preço agora — o valor final será
+                      confirmado no resumo da inscrição.
                     </div>
                   )}
                 </>
@@ -371,7 +483,9 @@ export default function EnrollmentCreate() {
                 A que universidade(s) vais te candidatar?
               </h2>
               <p className="text-[#6C757D] mb-6">
-                Indica a universidade, faculdade e curso a que pretendes concorrer. É opcional — podes adicionar mais do que uma, ou fazer isto mais tarde no teu perfil.
+                Indica a universidade, faculdade e curso a que pretendes
+                concorrer. É opcional — podes adicionar mais do que uma, ou
+                fazer isto mais tarde no teu perfil.
               </p>
 
               {/* Erro de submissão */}
@@ -384,7 +498,9 @@ export default function EnrollmentCreate() {
               {applications.length === 0 ? (
                 <div className="text-center py-12">
                   <GraduationCap className="w-16 h-16 text-[#F69220] mx-auto mb-4" />
-                  <p className="text-[#6C757D] mb-6">Ainda não indicaste nenhuma universidade ou curso</p>
+                  <p className="text-[#6C757D] mb-6">
+                    Ainda não indicaste nenhuma universidade ou curso
+                  </p>
                   <button
                     onClick={openModal}
                     className="bg-[#F69220] text-white px-6 py-3 rounded-lg hover:bg-[#e58419] transition-colors font-semibold"
@@ -400,9 +516,13 @@ export default function EnrollmentCreate() {
                       className="bg-white border-t-4 border-[#F69220] rounded-lg shadow-sm p-5 flex justify-between items-start"
                     >
                       <div>
-                        <h3 className="text-[#0A3956] font-bold mb-1">{app.uniName}</h3>
+                        <h3 className="text-[#0A3956] font-bold mb-1">
+                          {app.uniName}
+                        </h3>
                         <p className="text-[#6C757D] text-sm">{app.facName}</p>
-                        <p className="text-[#6C757D] text-sm">{app.courseName}</p>
+                        <p className="text-[#6C757D] text-sm">
+                          {app.courseName}
+                        </p>
                       </div>
                       <button
                         onClick={() => removeApplication(app._localId)}
@@ -461,8 +581,8 @@ export default function EnrollmentCreate() {
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  A criar inscrição...
+                  <Loader2 className="w-5 h-5 animate-spin" />A criar
+                  inscrição...
                 </>
               ) : (
                 'Concluir inscrição'
@@ -476,10 +596,11 @@ export default function EnrollmentCreate() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-[#0A3956]">Nova Universidade</h3>
+              <h3 className="text-xl font-bold text-[#0A3956]">
+                Nova Universidade
+              </h3>
               <button
                 onClick={closeModal}
                 className="text-[#6C757D] hover:text-[#0A3956] transition-colors"
@@ -489,7 +610,6 @@ export default function EnrollmentCreate() {
             </div>
 
             <div className="space-y-5">
-
               {/* ── Universidade ── */}
               <div>
                 <label className="block text-[#0A3956] font-semibold mb-2">
@@ -511,25 +631,29 @@ export default function EnrollmentCreate() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F69220] bg-white"
                   >
                     <option value="">
-                      {loadingUnis ? 'A carregar...' : 'Selecciona uma universidade'}
+                      {loadingUnis
+                        ? 'A carregar...'
+                        : 'Selecciona uma universidade'}
                     </option>
                     {universities.map((uni) => (
-                      <option key={uni.id} value={uni.id}>{uni.name}</option>
+                      <option key={uni.id} value={uni.id}>
+                        {uni.name}
+                      </option>
                     ))}
                   </select>
                 )}
                 <button
                   onClick={() => {
-                    setUseCustomUni(!useCustomUni);
-                    setCustomUniversity('');
-                    setSelectedUniId('');
+                    setUseCustomUni(!useCustomUni)
+                    setCustomUniversity('')
+                    setSelectedUniId('')
                     // Reset dependentes
-                    setSelectedFacId('');
-                    setSelectedCourseId('');
-                    setUseCustomFac(false);
-                    setUseCustomCourse(false);
-                    setCustomFaculty('');
-                    setCustomCourse('');
+                    setSelectedFacId('')
+                    setSelectedCourseId('')
+                    setUseCustomFac(false)
+                    setUseCustomCourse(false)
+                    setCustomFaculty('')
+                    setCustomCourse('')
                   }}
                   className="text-[#F69220] underline text-sm mt-2 hover:opacity-70 transition-opacity"
                 >
@@ -561,21 +685,25 @@ export default function EnrollmentCreate() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F69220] disabled:bg-[#F8F9FA] disabled:cursor-not-allowed bg-white"
                   >
                     <option value="">
-                      {loadingFac ? 'A carregar...' : 'Selecciona uma faculdade'}
+                      {loadingFac
+                        ? 'A carregar...'
+                        : 'Selecciona uma faculdade'}
                     </option>
                     {faculties.map((fac) => (
-                      <option key={fac.id} value={fac.id}>{fac.name}</option>
+                      <option key={fac.id} value={fac.id}>
+                        {fac.name}
+                      </option>
                     ))}
                   </select>
                 )}
                 <button
                   onClick={() => {
-                    setUseCustomFac(!useCustomFac);
-                    setCustomFaculty('');
-                    setSelectedFacId('');
-                    setSelectedCourseId('');
-                    setUseCustomCourse(false);
-                    setCustomCourse('');
+                    setUseCustomFac(!useCustomFac)
+                    setCustomFaculty('')
+                    setSelectedFacId('')
+                    setSelectedCourseId('')
+                    setUseCustomCourse(false)
+                    setCustomCourse('')
                   }}
                   disabled={!uniOk}
                   className="text-[#F69220] underline text-sm mt-2 hover:opacity-70 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
@@ -611,15 +739,17 @@ export default function EnrollmentCreate() {
                       {loadingCourses ? 'A carregar...' : 'Selecciona um curso'}
                     </option>
                     {courses.map((course) => (
-                      <option key={course.id} value={course.id}>{course.name}</option>
+                      <option key={course.id} value={course.id}>
+                        {course.name}
+                      </option>
                     ))}
                   </select>
                 )}
                 <button
                   onClick={() => {
-                    setUseCustomCourse(!useCustomCourse);
-                    setCustomCourse('');
-                    setSelectedCourseId('');
+                    setUseCustomCourse(!useCustomCourse)
+                    setCustomCourse('')
+                    setSelectedCourseId('')
                   }}
                   disabled={!facOk}
                   className="text-[#F69220] underline text-sm mt-2 hover:opacity-70 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
@@ -655,5 +785,5 @@ export default function EnrollmentCreate() {
         </div>
       )}
     </div>
-  );
+  )
 }
