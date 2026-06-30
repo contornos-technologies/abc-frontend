@@ -1,29 +1,31 @@
+import { useState, useEffect } from 'react'
 import { Check, Award, Users, CreditCard } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
+import api from '../../../services/api'
 
-const pricingTiers = [
-  {
-    disciplines: '1 Disciplina',
-    price: '10.000 Kz',
-    description: 'Ideal para reforço específico',
-  },
-  {
-    disciplines: '2 Disciplinas',
-    price: '13.000 Kz',
-    description: 'Preparação em áreas chave',
-  },
-  {
-    disciplines: '3 Disciplinas',
-    price: '15.000 Kz',
-    description: 'Cobertura mais abrangente',
-    popular: true,
-  },
-  {
-    disciplines: '4 ou mais',
-    price: '17.000 Kz',
-    description: 'Preparação completa',
-  },
+// helpers
+function formatPrice(value) {
+  return `${Number(value).toLocaleString('pt-PT')} Kz`
+}
+
+function tierLabel(tier) {
+  if (tier.maxSubjects === null)
+    return `${tier.minSubjects} ou mais Disciplinas`
+  if (tier.minSubjects === tier.maxSubjects)
+    return `${tier.minSubjects} Disciplina${tier.minSubjects > 1 ? 's' : ''}`
+  return `${tier.minSubjects}–${tier.maxSubjects} Disciplinas`
+}
+
+function isPopular(tier) {
+  return tier.minSubjects === 3 && tier.maxSubjects === 3
+}
+
+const descriptions = [
+  'Ideal para reforço específico',
+  'Preparação em áreas chave',
+  'Cobertura mais abrangente',
+  'Preparação completa',
 ]
 
 const benefits = [
@@ -58,8 +60,22 @@ const highlights = [
 
 export default function Pricing() {
   const shouldReduceMotion = useReducedMotion()
+  const [pricingTiers, setPricingTiers] = useState([])
+  const [loadingPricing, setLoadingPricing] = useState(true)
 
-  // Variantes reutilizáveis
+  useEffect(() => {
+    api
+      .get('/public/pricing')
+      .then((res) => {
+        const data = res.data?.data ?? res.data
+        setPricingTiers(data)
+      })
+      .catch(() => {
+        // fallback silencioso — não quebra a página
+      })
+      .finally(() => setLoadingPricing(false))
+  }, [])
+
   const fadeUpHeader = {
     hidden: {
       opacity: shouldReduceMotion ? 1 : 0,
@@ -125,42 +141,49 @@ export default function Pricing() {
 
         {/* ───────────────── PRICING CARDS ───────────────── */}
         <div className="mt-8 lg:mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 mb-8 lg:mb-12">
-          {pricingTiers.map((tier, index) => (
-            <motion.article
-              key={index}
-              variants={fadeUpCard(index)}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              className={`
-                relative bg-white rounded-[16px] p-5 sm:p-6
-                transition-all duration-300
-                hover:-translate-y-1.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]
-                ${
-                  tier.popular
-                    ? 'border-2 border-[#F69220] shadow-[0_10px_30px_rgba(246,146,32,0.12)] lg:scale-[1.03]'
-                    : 'border border-[#E7EDF5] shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
-                }
-              `}
-            >
-              {tier.popular && (
-                <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 bg-[#F69220] text-white text-[12px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
-                  Mais Popular
-                </div>
-              )}
-              <div className="text-center">
-                <h3 className="text-[18px] font-bold text-[#071C35] mb-3">
-                  {tier.disciplines}
-                </h3>
-                <div className="text-[32px] lg:text-[36px] leading-none font-extrabold text-[#F69220] mb-3">
-                  {tier.price}
-                </div>
-                <p className="text-[14px] leading-6 text-slate-500">
-                  {tier.description}
-                </p>
-              </div>
-            </motion.article>
-          ))}
+          {loadingPricing
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-[16px] border border-[#E7EDF5] p-6 animate-pulse h-40"
+                />
+              ))
+            : pricingTiers.map((tier, index) => (
+                <motion.article
+                  key={tier.id}
+                  variants={fadeUpCard(index)}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.1 }}
+                  className={`
+                  relative bg-white rounded-[16px] p-5 sm:p-6
+                  transition-all duration-300
+                  hover:-translate-y-1.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]
+                  ${
+                    isPopular(tier)
+                      ? 'border-2 border-[#F69220] shadow-[0_10px_30px_rgba(246,146,32,0.12)] lg:scale-[1.03]'
+                      : 'border border-[#E7EDF5] shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
+                  }
+                `}
+                >
+                  {isPopular(tier) && (
+                    <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 bg-[#F69220] text-white text-[12px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
+                      Mais Popular
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <h3 className="text-[18px] font-bold text-[#071C35] mb-3">
+                      {tierLabel(tier)}
+                    </h3>
+                    <div className="text-[32px] lg:text-[36px] leading-none font-extrabold text-[#F69220] mb-3">
+                      {formatPrice(tier.totalPrice)}
+                    </div>
+                    <p className="text-[14px] leading-6 text-slate-500">
+                      {descriptions[index]}
+                    </p>
+                  </div>
+                </motion.article>
+              ))}
         </div>
 
         {/* ───────────────── INCLUDED ───────────────── */}

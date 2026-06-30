@@ -67,7 +67,7 @@ export default function Terms() {
                 <tr>
                   <td className="px-4 py-2 border border-[#E7EDF5]">3</td>
                   <td className="px-4 py-2 border border-[#E7EDF5]">
-                    15.000 Kz
+                    16.000 Kz
                   </td>
                 </tr>
                 <tr>
@@ -75,7 +75,7 @@ export default function Terms() {
                     4 ou mais
                   </td>
                   <td className="px-4 py-2 border border-[#E7EDF5]">
-                    17.000 Kz
+                    18.000 Kz
                   </td>
                 </tr>
               </tbody>
