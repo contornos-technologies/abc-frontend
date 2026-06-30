@@ -1,6 +1,37 @@
+import { useState, useEffect } from 'react'
 import LegalLayout from '../../components/public/LegalLayout'
+import api from '../../services/api'
+
+// Formata o nº de disciplinas do tier — "4 ou mais" quando maxSubjects é null
+const tierLabel = (tier) => {
+  if (tier.maxSubjects === null) return `${tier.minSubjects} ou mais`
+  if (tier.minSubjects === tier.maxSubjects) return `${tier.minSubjects}`
+  return `${tier.minSubjects}–${tier.maxSubjects}`
+}
+
+const formatKz = (value) => Number(value).toLocaleString('pt-PT') + ' Kz'
 
 export default function Terms() {
+  // Preçário — vem de GET /api/public/pricing, nunca hardcodar (mesmo padrão de Pricing.jsx
+  // e EnrollmentCreate.jsx). Página legal não pode mostrar preços desactualizados.
+  const [pricingTiers, setPricingTiers] = useState([])
+  const [loadingPricing, setLoadingPricing] = useState(true)
+
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const res = await api.get('/public/pricing')
+        const data = res.data?.data ?? res.data
+        setPricingTiers(Array.isArray(data) ? data : [])
+      } catch {
+        setPricingTiers([])
+      } finally {
+        setLoadingPricing(false)
+      }
+    }
+    fetchPricing()
+  }, [])
+
   const sections = [
     {
       id: 'ambito',
@@ -40,46 +71,44 @@ export default function Terms() {
             isolada — de acordo com a seguinte tabela de preços:
           </p>
           <div className="overflow-x-auto mt-3">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-[#F4F8FC] text-left">
-                  <th className="px-4 py-2 border border-[#E7EDF5] font-semibold text-[#071C35]">
-                    Nº de Disciplinas
-                  </th>
-                  <th className="px-4 py-2 border border-[#E7EDF5] font-semibold text-[#071C35]">
-                    Preço Total
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="px-4 py-2 border border-[#E7EDF5]">1</td>
-                  <td className="px-4 py-2 border border-[#E7EDF5]">
-                    10.000 Kz
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2 border border-[#E7EDF5]">2</td>
-                  <td className="px-4 py-2 border border-[#E7EDF5]">
-                    13.000 Kz
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2 border border-[#E7EDF5]">3</td>
-                  <td className="px-4 py-2 border border-[#E7EDF5]">
-                    16.000 Kz
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2 border border-[#E7EDF5]">
-                    4 ou mais
-                  </td>
-                  <td className="px-4 py-2 border border-[#E7EDF5]">
-                    18.000 Kz
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            {loadingPricing ? (
+              <div className="border border-[#E7EDF5] rounded-lg p-4 animate-pulse space-y-2">
+                <div className="h-4 bg-[#F4F8FC] rounded w-full" />
+                <div className="h-4 bg-[#F4F8FC] rounded w-full" />
+                <div className="h-4 bg-[#F4F8FC] rounded w-full" />
+                <div className="h-4 bg-[#F4F8FC] rounded w-full" />
+              </div>
+            ) : pricingTiers.length > 0 ? (
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-[#F4F8FC] text-left">
+                    <th className="px-4 py-2 border border-[#E7EDF5] font-semibold text-[#071C35]">
+                      Nº de Disciplinas
+                    </th>
+                    <th className="px-4 py-2 border border-[#E7EDF5] font-semibold text-[#071C35]">
+                      Preço Total
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pricingTiers.map((tier) => (
+                    <tr key={tier.id}>
+                      <td className="px-4 py-2 border border-[#E7EDF5]">
+                        {tierLabel(tier)}
+                      </td>
+                      <td className="px-4 py-2 border border-[#E7EDF5]">
+                        {formatKz(tier.totalPrice)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-[#6C757D] text-sm">
+                Não foi possível carregar a tabela de preços neste momento.
+                Contacte-nos directamente para confirmar os valores actuais.
+              </p>
+            )}
           </div>
           <p className="mt-3">
             Cada estudante pode ter apenas uma inscrição activa por ano lectivo.
