@@ -31,5 +31,6 @@ export function trackPageView(path, title) {
   window.gtag('event', 'page_view', {
     page_path: path,
     page_title: title,
+    page_location: window.location.origin + path,
   })
 }
